@@ -2,7 +2,21 @@
   "name": "point-n-click",
   "version": "1.0.0",
   "description": "Engine for point-n-click adventures!",
-  "main": "src/index.html",
+  "main": "docs/index.html",
   "author": "Matthijs Groen <matthijs.groen@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "start": "parcel serve ./src/index.html",
+    "build": "parcel build ./src/index.html --no-content-hash"
+  },
+  "dependencies": {
+    "preact": "^10.5.13"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.14.2",
+    "eslint": "^7.26.0",
+    "parcel": "^2.0.0-beta.2",
+    "prettier": "^2.3.0",
+    "typescript": "^4.2.4"
+  }
 }
