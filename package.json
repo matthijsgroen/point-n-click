@@ -1,0 +1,8 @@
+{
+  "name": "point-n-click",
+  "version": "1.0.0",
+  "description": "Engine for point-n-click adventures!",
+  "main": "src/index.html",
+  "author": "Matthijs Groen <matthijs.groen@gmail.com>",
+  "license": "MIT"
+}
