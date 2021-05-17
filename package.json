@@ -17,6 +17,7 @@
     "@babel/core": "^7.14.2",
     "@parcel/transformer-image": "2.0.0-nightly.2292",
     "@parcel/transformer-sass": "2.0.0-nightly.670",
+    "@types/prettier": "^2.2.3",
     "eslint": "^7.26.0",
     "parcel": "^2.0.0-nightly.668",
     "postcss": "^8.2.1",
