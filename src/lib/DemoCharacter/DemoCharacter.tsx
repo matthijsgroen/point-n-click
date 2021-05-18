@@ -10,7 +10,7 @@ interface DemoCharacterProps {
 
 const defaultValueForLayer = (character: Doll, layer: string) => {
   const values = Object.keys(character.images[layer]);
-  return values.includes("default") ? "default" : values[0];
+  return values.includes("default") ? "default" : "";
 };
 
 export function DemoCharacter({ character }: DemoCharacterProps) {
@@ -30,15 +30,17 @@ export function DemoCharacter({ character }: DemoCharacterProps) {
         class={demoCharacter}
         style={{ width: character.size[0], height: character.size[1] }}
       >
-        {character.layers.map((layer) => (
-          <div
-            style={{
-              backgroundImage: `url(${
-                character.images[layer][layerConfig[layer]]
-              })`,
-            }}
-          ></div>
-        ))}
+        {character.layers.map((layer) =>
+          layerConfig[layer] ? (
+            <div
+              style={{
+                backgroundImage: `url(${
+                  character.images[layer][layerConfig[layer]]
+                })`,
+              }}
+            ></div>
+          ) : null
+        )}
       </figure>
       {character.layers.map((layername) => (
         <div key={layername}>
@@ -49,7 +51,11 @@ export function DemoCharacter({ character }: DemoCharacterProps) {
               const value = (event.target as HTMLSelectElement).value;
               setLayerConfig((config) => ({ ...config, [layername]: value }));
             }}
+            value={layerConfig[layername]}
           >
+            {!Object.keys(character.images[layername]).includes("default") && (
+              <option value={""}>(none)</option>
+            )}
             {Object.keys(character.images[layername]).map((name) => (
               <option value={name}>{name}</option>
             ))}

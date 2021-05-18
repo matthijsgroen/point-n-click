@@ -42,7 +42,10 @@ const createCharacterFile = async (
   const data = await buildCharacterStructure(characterPath, folderName);
   let inputCounter = 1;
 
-  const imports = [`import { Doll } from "../../../types/Doll";`];
+  const imports = [
+    "// THIS FILE IS AUTO-GENERATED, DO NOT CHANGE",
+    'import { Doll } from "../../../types/Doll";',
+  ];
 
   const imagePaths: string[] = [];
   let width = 0;
@@ -95,7 +98,9 @@ const createCharacterFile = async (
   const indexFileCode = [...imports, ...generatedCode].join("\n");
   const formatted = format(indexFileCode, { parser: "typescript" });
 
-  writefile(join(characterPath, "index.ts"), formatted);
+  await writefile(join(characterPath, "index.ts"), formatted);
+
+  return folderName;
 };
 
 const program = async () => {
@@ -106,10 +111,16 @@ const program = async () => {
 
   const folders = entries.filter((e) => e.isDirectory()).map((e) => e.name);
 
-  await Promise.all(
+  const characters = await Promise.all(
     folders.map((folder) =>
       createCharacterFile(join(dollContentPath, folder), folder)
     )
   );
+  const indexMap = characters
+    .map((char) => `import ${char} from "./${char}";`)
+    .concat("", `export default [${characters.join(",")}];`)
+    .join("\n");
+  const indexContent = format(indexMap, { parser: "typescript" });
+  await writefile(join(dollContentPath, "index.ts"), indexContent);
 };
 program();
