@@ -4,6 +4,7 @@ import { join, basename, extname } from "path";
 const readdir = promisify(readdirCb);
 const writefile = promisify(writeFileCb);
 import { format } from "prettier";
+import sharp from "sharp";
 
 const getImagesFromLayer = async (path: string) =>
   (await readdir(path, { withFileTypes: true }))
@@ -43,29 +44,48 @@ const createCharacterFile = async (
 
   const imports = [`import { Doll } from "../../../types/Doll";`];
 
+  const imagePaths: string[] = [];
+  let width = 0;
+  let height = 0;
+
   const generateImageLists = (layer: string): string[] => {
     const itemKeys = Object.keys(data.images[layer]);
     const result = [`    "${layer}": {`];
     for (const key of itemKeys) {
+      const imagePath = data.images[layer][key];
       imports.push(
-        `import img${inputCounter} from "url:./${data.images[layer][key]}";`
+        `import img${inputCounter} from "url:./${imagePath}?as=webp";`
       );
       result.push(`"${key}": img${inputCounter},`);
       inputCounter++;
+
+      const fullImagePath = join(characterPath, imagePath);
+      imagePaths.push(fullImagePath);
     }
     result.push("},");
     return result;
   };
+  const imageIncludes = data.layers.reduce<string[]>(
+    (r, e) => r.concat(generateImageLists(e)),
+    []
+  );
+
+  for (const imagePath of imagePaths) {
+    const image = sharp(imagePath);
+    const metadata = await image.metadata();
+    width = Math.max(width, metadata.width || 0);
+    height = Math.max(height, metadata.height || 0);
+  }
 
   const generatedCode = [
     "",
     `const ${folderName}: Doll = {`,
     `name: "${folderName}",`,
-    `size: [600, 800],`, // Read from disk?
+    `size: [${width}, ${height}],`,
     'type: "imagestack",',
     `layers: ["${data.layers.join('", "')}"],`,
     `images: {`,
-    ...data.layers.reduce((r, e) => r.concat(generateImageLists(e)), []),
+    ...imageIncludes,
     "}",
     "};",
     "",
