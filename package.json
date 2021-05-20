@@ -6,8 +6,9 @@
   "author": "Matthijs Groen <matthijs.groen@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "generateDolls": "ts-node bin/generate-dolls.ts",
-    "start": "parcel serve ./src/index.html",
+    "generate-dolls": "ts-node bin/generate-dolls.ts",
+    "start-server": "parcel serve ./src/index.html",
+    "start": "concurrently -s first -k \"yarn start-server\" \"yarn generate-dolls --watch\"",
     "build": "parcel build ./src/index.html --no-content-hash"
   },
   "dependencies": {
@@ -15,12 +16,13 @@
   },
   "devDependencies": {
     "@babel/core": "^7.14.2",
-    "@parcel/transformer-image": "2.0.0-nightly.2292",
-    "@parcel/transformer-sass": "2.0.0-nightly.670",
+    "@parcel/transformer-image": "2.0.0-beta.3.1",
+    "@parcel/transformer-sass": "2.0.0-beta.3.1",
     "@types/prettier": "^2.2.3",
     "@types/sharp": "^0.28.1",
+    "concurrently": "^6.1.0",
     "eslint": "^7.26.0",
-    "parcel": "^2.0.0-nightly.668",
+    "parcel": "^2.0.0-beta.3.1",
     "postcss": "^8.2.1",
     "prettier": "^2.3.0",
     "sharp": "^0.28.2",

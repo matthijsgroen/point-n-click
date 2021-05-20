@@ -1,10 +1,9 @@
-import { readdir as readdirCb, writeFile as writeFileCb } from "fs";
-import { promisify } from "util";
+import { readdir, writeFile } from "fs/promises";
+import { watch } from "fs";
 import { join, basename, extname } from "path";
-const readdir = promisify(readdirCb);
-const writefile = promisify(writeFileCb);
 import { format } from "prettier";
 import sharp from "sharp";
+import { argv } from "process";
 
 const getImagesFromLayer = async (path: string) =>
   (await readdir(path, { withFileTypes: true }))
@@ -98,15 +97,12 @@ const createCharacterFile = async (
   const indexFileCode = [...imports, ...generatedCode].join("\n");
   const formatted = format(indexFileCode, { parser: "typescript" });
 
-  await writefile(join(characterPath, "index.ts"), formatted);
+  await writeFile(join(characterPath, "index.ts"), formatted);
 
   return folderName;
 };
 
-const program = async () => {
-  const current = process.cwd();
-
-  const dollContentPath = join(current, "src", "content", "dolls");
+const updateDolls = async (dollContentPath: string) => {
   const entries = await readdir(dollContentPath, { withFileTypes: true });
 
   const folders = entries.filter((e) => e.isDirectory()).map((e) => e.name);
@@ -121,6 +117,27 @@ const program = async () => {
     .concat("", `export default [${characters.join(",")}];`)
     .join("\n");
   const indexContent = format(indexMap, { parser: "typescript" });
-  await writefile(join(dollContentPath, "index.ts"), indexContent);
+  await writeFile(join(dollContentPath, "index.ts"), indexContent);
+};
+
+const program = async () => {
+  const current = process.cwd();
+
+  const dollContentPath = join(current, "src", "content", "dolls");
+
+  await updateDolls(dollContentPath);
+
+  const watchMode = argv.includes("--watch");
+  if (watchMode) {
+    let processing = false;
+    watch(dollContentPath, { recursive: true }, async () => {
+      if (processing) return;
+      processing = true;
+      await updateDolls(dollContentPath);
+      setTimeout(() => {
+        processing = false;
+      }, 200);
+    });
+  }
 };
 program();
