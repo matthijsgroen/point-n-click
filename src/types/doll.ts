@@ -1,12 +1,12 @@
-export type Doll = ImageStackDoll | GeppettoDoll;
-export type DollType = Doll["type"];
+export type Doll<T> = ImageStackDoll<T> | GeppettoDoll;
+export type DollType = Doll<Record<string, string>>["type"];
 
-type ImageStackDoll = {
+type ImageStackDoll<T extends Record<string, string>> = {
   name: string;
   size: [number, number];
   type: "imagestack";
   layers: string[];
-  images: Record<string, Record<string, string>>;
+  images: { [Property in keyof T]: Record<T[Property], string> };
 };
 
 type GeppettoDoll = {

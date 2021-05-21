@@ -11,6 +11,9 @@ const getImagesFromLayer = async (path: string) =>
     .map((e) => e.name)
     .sort();
 
+const capitalize = (text: string): string =>
+  text.slice(0, 1).toUpperCase() + text.slice(1);
+
 const buildCharacterStructure = async (path: string, name: string) => {
   const layerEntries = await readdir(path, { withFileTypes: true });
   const layers = layerEntries
@@ -43,16 +46,18 @@ const createCharacterFile = async (
 
   const imports = [
     "// THIS FILE IS AUTO-GENERATED, DO NOT CHANGE",
-    'import { Doll } from "../../../types/Doll";',
+    'import { Doll } from "../../../types/doll";',
   ];
 
   const imagePaths: string[] = [];
+  const props: Record<string, string[]> = {};
   let width = 0;
   let height = 0;
 
   const generateImageLists = (layer: string): string[] => {
     const itemKeys = Object.keys(data.images[layer]);
     const result = [`    "${layer}": {`];
+    props[layer] = [];
     for (const key of itemKeys) {
       const imagePath = data.images[layer][key];
       imports.push(
@@ -60,6 +65,7 @@ const createCharacterFile = async (
       );
       result.push(`"${key}": img${inputCounter},`);
       inputCounter++;
+      props[layer] = props[layer].concat(key);
 
       const fullImagePath = join(characterPath, imagePath);
       imagePaths.push(fullImagePath);
@@ -78,10 +84,18 @@ const createCharacterFile = async (
     width = Math.max(width, metadata.width || 0);
     height = Math.max(height, metadata.height || 0);
   }
+  const propLines = Object.entries(props).map(
+    ([key, values]) =>
+      `${key}${values.includes("default") ? "" : "?"}: "${values.join('"|"')}";`
+  );
 
   const generatedCode = [
     "",
-    `const ${folderName}: Doll = {`,
+    `export interface ${capitalize(folderName)}Props {`,
+    ...propLines,
+    "}",
+    "",
+    `const ${folderName}: Doll<${capitalize(folderName)}Props> = {`,
     `name: "${folderName}",`,
     `size: [${width}, ${height}],`,
     'type: "imagestack",',
