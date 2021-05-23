@@ -1,6 +1,6 @@
 {
   "name": "point-n-click",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "description": "Engine for point-n-click adventures!",
   "main": "docs/index.html",
   "author": "Matthijs Groen <matthijs.groen@gmail.com>",
@@ -11,10 +11,13 @@
     "start": "concurrently -s first -k \"yarn start-server\" \"yarn generate-dolls --watch\"",
     "build": "parcel build ./src/index.html --no-content-hash"
   },
-  "dependencies": {
-    "preact": "^10.5.13"
+  "bin": {
+    "point": "./bin/point.js"
   },
-  "devDependencies": {
+  "files": [
+    "src/"
+  ],
+  "dependencies": {
     "@babel/core": "^7.14.2",
     "@parcel/transformer-image": "2.0.0-beta.3.1",
     "@parcel/transformer-sass": "2.0.0-beta.3.1",
@@ -24,6 +27,7 @@
     "eslint": "^7.26.0",
     "parcel": "^2.0.0-beta.3.1",
     "postcss": "^8.2.1",
+    "preact": "^10.5.13",
     "prettier": "^2.3.0",
     "sharp": "^0.28.2",
     "ts-node": "^9.1.1",
