@@ -1,6 +1,6 @@
 {
   "name": "point-n-click",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Engine for point-n-click adventures!",
   "main": "docs/index.html",
   "author": "Matthijs Groen <matthijs.groen@gmail.com>",
@@ -15,7 +15,7 @@
     "point": "./bin/point.js"
   },
   "files": [
-    "src/"
+    "bin"
   ],
   "dependencies": {
     "@babel/core": "^7.14.2",
