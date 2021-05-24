@@ -1,2 +1,2 @@
 # point-n-click
-Point 'n click gam engine
+Point 'n click game engine
