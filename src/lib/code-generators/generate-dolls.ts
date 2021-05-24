@@ -134,14 +134,17 @@ const updateDolls = async (dollContentPath: string) => {
   await writeFile(join(dollContentPath, "index.ts"), indexContent);
 };
 
-const program = async () => {
-  const current = process.cwd();
-
+type Options = {
+  watchMode?: boolean;
+};
+const generateDolls = async (
+  current = process.cwd(),
+  { watchMode = false }: Options = {}
+) => {
   const dollContentPath = join(current, "src", "content", "dolls");
 
   await updateDolls(dollContentPath);
 
-  const watchMode = argv.includes("--watch");
   if (watchMode) {
     let processing = false;
     watch(dollContentPath, { recursive: true }, async () => {
@@ -154,4 +157,5 @@ const program = async () => {
     });
   }
 };
-program();
+
+export default generateDolls;
