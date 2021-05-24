@@ -46,7 +46,7 @@ const createCharacterFile = async (
 
   const imports = [
     "// THIS FILE IS AUTO-GENERATED, DO NOT CHANGE",
-    'import { Doll } from "../../../types/doll";',
+    'import { Doll } from "point-n-click";',
   ];
 
   const imagePaths: string[] = [];

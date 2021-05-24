@@ -1,7 +1,8 @@
-export type Doll<T> = ImageStackDoll<T> | GeppettoDoll;
+type ImageMap = Record<string, string>;
+export type Doll<T extends ImageMap> = ImageStackDoll<T> | GeppettoDoll;
 export type DollType = Doll<Record<string, string>>["type"];
 
-type ImageStackDoll<T extends Record<string, string>> = {
+type ImageStackDoll<T extends ImageMap> = {
   name: string;
   size: [number, number];
   type: "imagestack";
