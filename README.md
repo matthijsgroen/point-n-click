@@ -1,8 +1,8 @@
-# Point 'n click
+# 🚧 Point 'n click
 
 Game engine for point 'n click adventure games
 
-**Status**: In development 👷‍♂️👷‍♀️
+**Status**: 🚧 In development 👷‍♂️👷‍♀️
 
 # Goal
 
