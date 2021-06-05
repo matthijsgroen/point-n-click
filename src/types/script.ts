@@ -1,3 +1,3 @@
-import type { Queue } from "./queue";
+import type { Queue } from "../lib/queue";
 
 export type Script = (q: Queue) => void;

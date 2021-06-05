@@ -1,52 +1,40 @@
 import { MaybePromise } from "../types/generic";
+import { MessageBus } from "./messageBus";
 
 export interface QueueItem {
   type: string;
 }
 
 export interface QueueProcessor<T extends QueueItem> {
-  type: string;
-  handle(item: T): MaybePromise<void>;
+  type: T["type"];
+  handle(item: T, bus: MessageBus): MaybePromise<void>;
   preload?(item: T): MaybePromise<void>;
 }
 
-export type Queue = {
-  length: number;
-  addItem(item: QueueItem): void;
-  addProcessor<T extends QueueItem>(handler: QueueProcessor<T>): void;
-  processItem(): Promise<void>;
-};
-
-type QueuePointer = {
-  index: number;
-};
-
-const queue = (): Queue => {
+const queue = (bus: MessageBus) => {
   const processors: QueueProcessor<QueueItem>[] = [];
   const items: QueueItem[] = [];
-
-  const pointer: QueuePointer = { index: 0 };
-  // foo
 
   return {
     get length() {
       return items.length;
     },
-    addItem(item) {
+    addItem<T extends QueueItem>(item: T) {
       items.push(item);
     },
-    addProcessor(handler) {
+    addProcessor<T extends QueueItem>(handler: QueueProcessor<T>) {
       processors.push(handler);
     },
     async processItem() {
-      const activeItem = items[pointer.index];
-      if (activeItem) {
-        const processor = processors.find((e) => e.type === activeItem.type);
-        await processor?.handle(activeItem);
-        pointer.index++;
+      const item = items.shift();
+      const processor = processors.find((p) => p.type === item?.type);
+      if (processor && item) {
+        await processor.handle(item, bus);
       }
     },
   };
 };
+
+export type Queue = ReturnType<typeof queue>;
 
 export default queue;

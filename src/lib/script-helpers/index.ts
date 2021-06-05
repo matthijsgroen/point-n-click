@@ -1,13 +1,26 @@
-import { Queue } from "../../types/queue";
+import { Queue } from "../../lib/queue";
 
 const scriptHelpers = <GameState>(q: Queue) => {
   return {
-    fadeIn() {},
+    fadeIn() {
+      q.addItem({ type: "screenEffect", effect: "fadeIn" });
+    },
+    say(text: string) {
+      q.addItem({ type: "dialog", text });
+    },
     onState(
       condition: (state: GameState) => boolean,
-      whenTrue: (q: Queue) => void,
-      whenFalse?: (q: Queue) => void
-    ) {},
+      whenTrue: () => void,
+      whenFalse?: () => void
+    ) {
+      q.addItem({
+        type: "state",
+        flowType: "choice",
+        condition,
+        whenTrue,
+        whenFalse,
+      });
+    },
   };
 };
 
