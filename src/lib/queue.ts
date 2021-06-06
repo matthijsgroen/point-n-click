@@ -5,31 +5,46 @@ export interface QueueItem {
   type: string;
 }
 
+export type QueueHelpers = {
+  startSubQueue: () => () => void;
+};
+
 export interface QueueProcessor<T extends QueueItem> {
   type: T["type"];
-  handle(item: T, bus: MessageBus): MaybePromise<void>;
+  handle(item: T, bus: MessageBus, helpers: QueueHelpers): MaybePromise<void>;
   preload?(item: T): MaybePromise<void>;
 }
 
 const queue = (bus: MessageBus) => {
   const processors: QueueProcessor<QueueItem>[] = [];
   const items: QueueItem[] = [];
+  let activeQueue = items;
+
+  const startSubQueue = () => {
+    const queue: QueueItem[] = [];
+    const prevQueue = activeQueue;
+    activeQueue = queue;
+
+    return () => {
+      activeQueue = queue.concat(prevQueue);
+    };
+  };
 
   return {
     get length() {
-      return items.length;
+      return activeQueue.length;
     },
     addItem<T extends QueueItem>(item: T) {
-      items.push(item);
+      activeQueue.push(item);
     },
     addProcessor<T extends QueueItem>(handler: QueueProcessor<T>) {
       processors.push(handler);
     },
     async processItem() {
-      const item = items.shift();
+      const item = activeQueue.shift();
       const processor = processors.find((p) => p.type === item?.type);
       if (processor && item) {
-        await processor.handle(item, bus);
+        await processor.handle(item, bus, { startSubQueue });
       }
     },
   };

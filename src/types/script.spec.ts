@@ -1,10 +1,11 @@
 import scriptHelpers from "../lib/script-helpers";
 import { Script } from "./script";
-import queue, { QueueProcessor, QueueItem, Queue } from "../lib/queue";
+import queue, { QueueProcessor, Queue } from "../lib/queue";
 import messageBus, { MessageBus, Event } from "../lib/messageBus";
+import { stateSystem } from "../lib/gameState";
 
 type GameState = {
-  dayPart: string;
+  dayPart: "morning" | "evening";
 };
 
 const testScript: Script = (q) => {
@@ -69,23 +70,39 @@ describe("Script", () => {
       },
     };
 
-    it("delegates work to registered processors", async () => {
+    beforeEach(() => {
+      const gameState: GameState = {
+        dayPart: "morning",
+      };
+      const stateManager = stateSystem(gameState);
+
       q.addProcessor(screenProcessor);
       q.addProcessor(dialogProcessor);
+      q.addProcessor(stateManager.stateProcessor);
+    });
 
+    it("delegates work to registered processors", async () => {
       const received: Event[] = [];
       const send: Event[] = [];
+
       bus.listen("out:*", (event) => send.push(event));
       bus.listen("in:*", (event) => received.push(event));
-
       bus.listen("out:dialog", () => bus.trigger({ type: "in:dialog:done" }));
 
-      await q.processItem();
-      await q.processItem();
-      await q.processItem();
+      while (q.length > 0) {
+        await q.processItem();
+      }
 
-      console.log(received);
-      console.log(send);
+      expect(send).toEqual([
+        { effect: "fadeIn", type: "out:screen:effect" },
+        { text: "Good morning", type: "out:dialog" },
+        { text: "How are you?", type: "out:dialog" },
+      ]);
+
+      expect(received).toEqual([
+        { type: "in:dialog:done" },
+        { type: "in:dialog:done" },
+      ]);
     });
   });
 });

@@ -14,7 +14,7 @@ const scriptHelpers = <GameState>(q: Queue) => {
       whenFalse?: () => void
     ) {
       q.addItem({
-        type: "state",
+        type: "gameState",
         flowType: "choice",
         condition,
         whenTrue,
