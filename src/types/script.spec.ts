@@ -3,26 +3,17 @@ import { Script } from "./script";
 import queue, { QueueProcessor, Queue } from "../lib/queue";
 import messageBus, { MessageBus, Event } from "../lib/messageBus";
 import { stateSystem } from "../lib/gameState";
+import { MaybePromise } from "./generic";
 
 type GameState = {
   dayPart: "morning" | "evening";
 };
 
-const testScript: Script = (q) => {
-  const { fadeIn, onState, say } = scriptHelpers<GameState>(q);
-
-  fadeIn();
-
-  onState(
-    (s) => s.dayPart === "morning",
-    () => {
-      say("Good morning");
-    },
-    () => {
-      say("Good evening!");
-    }
-  );
-  say("How are you?");
+const times = (x: number) => async (f: () => MaybePromise<void>) => {
+  if (x > 0) {
+    await f();
+    await times(x - 1)(f);
+  }
 };
 
 describe("Script", () => {
@@ -32,10 +23,27 @@ describe("Script", () => {
   beforeEach(() => {
     bus = messageBus();
     q = queue(bus);
-    testScript(q);
   });
 
   it("builds a queue on execution", () => {
+    const testScript: Script = (q) => {
+      const { fadeIn, onState, say } = scriptHelpers<GameState>(q);
+
+      fadeIn();
+
+      onState(
+        (s) => s.dayPart === "morning",
+        () => {
+          say("Good morning");
+        },
+        () => {
+          say("Good evening!");
+        }
+      );
+      say("How are you?");
+    };
+    testScript(q);
+
     expect(q).toHaveLength(3); // contents in 'onState' is not unfolded
   });
 
@@ -85,6 +93,15 @@ describe("Script", () => {
       const received: Event[] = [];
       const send: Event[] = [];
 
+      const testScript: Script = (q) => {
+        const { fadeIn, onState, say } = scriptHelpers<GameState>(q);
+
+        fadeIn();
+        say("How are you?");
+      };
+
+      testScript(q);
+
       bus.listen("out:*", (event) => send.push(event));
       bus.listen("in:*", (event) => received.push(event));
       bus.listen("out:dialog", () => bus.trigger({ type: "in:dialog:done" }));
@@ -92,6 +109,99 @@ describe("Script", () => {
       while (q.length > 0) {
         await q.processItem();
       }
+
+      expect(send).toEqual([
+        { effect: "fadeIn", type: "out:screen:effect" },
+        { text: "How are you?", type: "out:dialog" },
+      ]);
+
+      expect(received).toEqual([{ type: "in:dialog:done" }]);
+    });
+
+    it("unfolds tasks during execution", async () => {
+      const received: Event[] = [];
+      const send: Event[] = [];
+
+      const testScript: Script = (q) => {
+        const { fadeIn, onState, say } = scriptHelpers<GameState>(q);
+
+        fadeIn();
+
+        onState(
+          (s) => s.dayPart === "morning",
+          () => {
+            say("Good morning");
+          },
+          () => {
+            say("Good evening!");
+          }
+        );
+        say("How are you?");
+      };
+
+      testScript(q);
+
+      bus.listen("out:*", (event) => send.push(event));
+      bus.listen("in:*", (event) => received.push(event));
+      bus.listen("out:dialog", () => bus.trigger({ type: "in:dialog:done" }));
+
+      while (q.length > 0) {
+        await q.processItem();
+      }
+
+      expect(send).toEqual([
+        { effect: "fadeIn", type: "out:screen:effect" },
+        { text: "Good morning", type: "out:dialog" },
+        { text: "How are you?", type: "out:dialog" },
+      ]);
+
+      expect(received).toEqual([
+        { type: "in:dialog:done" },
+        { type: "in:dialog:done" },
+      ]);
+    });
+
+    it("can restore state using events", async () => {
+      const received: Event[] = [];
+      const send: Event[] = [];
+
+      const testScript: Script = (q) => {
+        const { fadeIn, onState, say } = scriptHelpers<GameState>(q);
+
+        fadeIn();
+
+        onState(
+          (s) => s.dayPart === "morning",
+          () => {
+            say("Good morning");
+            say("How are you?");
+          },
+          () => {
+            say("Good evening!");
+          }
+        );
+        say("Fine.");
+        onState(
+          (s) => s.dayPart !== "evening",
+          () => {
+            say("It is early.");
+          },
+          () => {
+            say("Phew it is late!");
+          }
+        );
+      };
+
+      testScript(q);
+
+      bus.listen("out:*", (event) => send.push(event));
+      bus.listen("in:*", (event) => received.push(event));
+      bus.listen("out:dialog", () => bus.trigger({ type: "in:dialog:done" }));
+
+      // don't execute last step
+      await times(4)(() => q.processItem());
+
+      // TODO: now do a replay with restore....
 
       expect(send).toEqual([
         { effect: "fadeIn", type: "out:screen:effect" },
