@@ -3,7 +3,6 @@ import { watch } from "fs";
 import { join, basename, extname } from "path";
 import { format } from "prettier";
 import sharp from "sharp";
-import { argv } from "process";
 
 const getImagesFromLayer = async (path: string) =>
   (await readdir(path, { withFileTypes: true }))
