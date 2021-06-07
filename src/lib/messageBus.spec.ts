@@ -52,4 +52,20 @@ describe("MessageBus", () => {
       }
     });
   });
+
+  describe("playbackQueue", () => {
+    it("emits a message from the queue as soon as someone listens", async () => {
+      const event = { type: "background:image:update", background: "forest" };
+
+      const bus = messageBus();
+      bus.playbackQueue([event]);
+
+      const listener = jest.fn();
+      bus.listen("background:image:update", listener);
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(listener).toBeCalledWith(event);
+    });
+  });
 });

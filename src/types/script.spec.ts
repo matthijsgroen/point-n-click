@@ -1,7 +1,7 @@
 import scriptHelpers from "../lib/script-helpers";
 import { Script } from "./script";
 import queue, { QueueProcessor, Queue } from "../lib/queue";
-import messageBus, { MessageBus, Event } from "../lib/messageBus";
+import messageBus, { MessageBus, Event, Listener } from "../lib/messageBus";
 import { stateSystem } from "../lib/gameState";
 import { MaybePromise } from "./generic";
 
@@ -65,16 +65,30 @@ describe("Script", () => {
       text: string;
     };
 
+    const reply = <T extends Event>(
+      bus: MessageBus,
+      message: T,
+      replyType: string,
+      listener?: Listener
+    ) => {
+      return new Promise<void>((resolve) => {
+        const unsub = bus.listen(replyType, async (event) => {
+          unsub();
+          listener && (await listener(event));
+          resolve();
+        });
+        bus.trigger(message);
+      });
+    };
+
     const dialogProcessor: QueueProcessor<DialogEvent> = {
       type: "dialog",
-      handle(item, bus) {
-        return new Promise((resolve) => {
-          const unsub = bus.listen("in:dialog:done", () => {
-            unsub();
-            resolve();
-          });
-          bus.trigger({ type: "out:dialog", text: item.text });
-        });
+      async handle(item, bus) {
+        await reply(
+          bus,
+          { type: "out:dialog", text: item.text },
+          "in:dialog:done"
+        );
       },
     };
 
@@ -196,23 +210,41 @@ describe("Script", () => {
 
       bus.listen("out:*", (event) => send.push(event));
       bus.listen("in:*", (event) => received.push(event));
-      bus.listen("out:dialog", () => bus.trigger({ type: "in:dialog:done" }));
+      bus.listen("out:dialog", () =>
+        setTimeout(() => bus.trigger({ type: "in:dialog:done" }), 1)
+      );
 
       // don't execute last step
       await times(4)(() => q.processItem());
 
-      // TODO: now do a replay with restore....
+      // Now do a replay
 
-      expect(send).toEqual([
-        { effect: "fadeIn", type: "out:screen:effect" },
-        { text: "Good morning", type: "out:dialog" },
-        { text: "How are you?", type: "out:dialog" },
-      ]);
+      const newBus = messageBus();
+      const newQ = queue(newBus);
+      const gameState: GameState = {
+        dayPart: "morning",
+      };
+      const stateManager = stateSystem(gameState);
 
-      expect(received).toEqual([
-        { type: "in:dialog:done" },
-        { type: "in:dialog:done" },
-      ]);
+      newQ.addProcessor(screenProcessor);
+      newQ.addProcessor(dialogProcessor);
+      newQ.addProcessor(stateManager.stateProcessor);
+
+      testScript(newQ);
+      newBus.playbackQueue(received);
+
+      await times(4)(() => newQ.processItem());
+
+      const newDialog: Event[] = [];
+      newBus.listen("out:*", (event) => newDialog.push(event));
+      newBus.listen("out:dialog", () =>
+        setTimeout(() => newBus.trigger({ type: "in:dialog:done" }), 1)
+      );
+
+      await times(3)(() => newQ.processItem());
+
+      expect((newDialog[0] as DialogEvent).text).toEqual("Fine.");
+      expect((newDialog[1] as DialogEvent).text).toEqual("It is early.");
     });
   });
 });

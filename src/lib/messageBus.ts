@@ -1,3 +1,5 @@
+import { MaybePromise } from "../types/generic";
+
 export interface Event {
   type: string;
 }
@@ -23,10 +25,13 @@ export type Unsubscribe = () => void;
 export type MessageBus = {
   trigger: <T extends Event>(event: T) => void;
   listen: (pattern: string, listener: Listener) => Unsubscribe;
+  playbackQueue: <T extends Event>(events: T[]) => void;
 };
 
 const messageBus = (): MessageBus => {
   let listeners: { pattern: string; listener: Listener }[] = [];
+
+  let playbackQueue: Event[] = [];
 
   return {
     trigger: (event) =>
@@ -36,9 +41,21 @@ const messageBus = (): MessageBus => {
       ),
     listen: (pattern, listener) => {
       listeners = listeners.concat({ pattern, listener });
+
+      if (playbackQueue[0] && matchPattern(pattern, playbackQueue[0].type)) {
+        const event = playbackQueue.shift();
+        // Execute after the return
+        setTimeout(() => {
+          listener(event!);
+        }, 0);
+      }
+
       return () => {
         listeners = listeners.filter((e) => e.listener !== listener);
       };
+    },
+    playbackQueue: (events) => {
+      playbackQueue = events;
     },
   };
 };
