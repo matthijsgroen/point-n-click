@@ -2,19 +2,42 @@ import scriptHelpers from "../lib/script-helpers";
 import { Script } from "./script";
 import queue, { QueueProcessor, Queue } from "../lib/queue";
 import messageBus, { MessageBus, Event, Listener } from "../lib/messageBus";
-import { stateSystem } from "../lib/gameState";
 import { MaybePromise } from "./generic";
+import { configureStore, createSlice } from "@reduxjs/toolkit";
+import reply from "../lib/test-helpers/reply";
+import times from "../lib/test-helpers/times";
+import { stateSystem } from "../lib/script-helpers/state";
 
 type GameState = {
   dayPart: "morning" | "evening";
+  day: number;
 };
 
-const times = (x: number) => async (f: () => MaybePromise<void>) => {
-  if (x > 0) {
-    await f();
-    await times(x - 1)(f);
-  }
-};
+const slice = createSlice({
+  name: "game",
+  initialState: {
+    dayPart: "morning",
+    day: 1,
+  } as GameState,
+  reducers: {
+    timePasses(state) {
+      if (state.dayPart === "morning") {
+        state.dayPart = "evening";
+      } else {
+        state.dayPart = "morning";
+        state.day++;
+      }
+    },
+  },
+});
+
+const store = configureStore({
+  reducer: {
+    gameState: slice.reducer,
+  },
+});
+
+const helpers = scriptHelpers(slice);
 
 describe("Script", () => {
   let q: Queue;
@@ -27,7 +50,7 @@ describe("Script", () => {
 
   it("builds a queue on execution", () => {
     const testScript: Script = (q) => {
-      const { fadeIn, onState, say } = scriptHelpers<GameState>(q);
+      const { fadeIn, onState, say } = helpers(q);
 
       fadeIn();
 
@@ -65,22 +88,6 @@ describe("Script", () => {
       text: string;
     };
 
-    const reply = <T extends Event>(
-      bus: MessageBus,
-      message: T,
-      replyType: string,
-      listener?: Listener
-    ) => {
-      return new Promise<void>((resolve) => {
-        const unsub = bus.listen(replyType, async (event) => {
-          unsub();
-          listener && (await listener(event));
-          resolve();
-        });
-        bus.trigger(message);
-      });
-    };
-
     const dialogProcessor: QueueProcessor<DialogEvent> = {
       type: "dialog",
       async handle(item, bus) {
@@ -93,10 +100,7 @@ describe("Script", () => {
     };
 
     beforeEach(() => {
-      const gameState: GameState = {
-        dayPart: "morning",
-      };
-      const stateManager = stateSystem(gameState);
+      const stateManager = stateSystem(store);
 
       q.addProcessor(screenProcessor);
       q.addProcessor(dialogProcessor);
@@ -108,7 +112,7 @@ describe("Script", () => {
       const send: Event[] = [];
 
       const testScript: Script = (q) => {
-        const { fadeIn, onState, say } = scriptHelpers<GameState>(q);
+        const { fadeIn, say } = helpers(q);
 
         fadeIn();
         say("How are you?");
@@ -137,7 +141,7 @@ describe("Script", () => {
       const send: Event[] = [];
 
       const testScript: Script = (q) => {
-        const { fadeIn, onState, say } = scriptHelpers<GameState>(q);
+        const { fadeIn, onState, say } = helpers(q);
 
         fadeIn();
 
@@ -180,7 +184,7 @@ describe("Script", () => {
       const send: Event[] = [];
 
       const testScript: Script = (q) => {
-        const { fadeIn, onState, say } = scriptHelpers<GameState>(q);
+        const { fadeIn, onState, say } = helpers(q);
 
         fadeIn();
 
@@ -218,13 +222,12 @@ describe("Script", () => {
       await times(4)(() => q.processItem());
 
       // Now do a replay
+      const steps = q.itemsProcessed;
+      expect(steps).toEqual(4);
 
       const newBus = messageBus();
       const newQ = queue(newBus);
-      const gameState: GameState = {
-        dayPart: "morning",
-      };
-      const stateManager = stateSystem(gameState);
+      const stateManager = stateSystem(store);
 
       newQ.addProcessor(screenProcessor);
       newQ.addProcessor(dialogProcessor);
@@ -233,7 +236,7 @@ describe("Script", () => {
       testScript(newQ);
       newBus.playbackQueue(received);
 
-      await times(4)(() => newQ.processItem());
+      await times(steps)(() => newQ.processItem());
 
       const newDialog: Event[] = [];
       newBus.listen("out:*", (event) => newDialog.push(event));
@@ -245,6 +248,25 @@ describe("Script", () => {
 
       expect((newDialog[0] as DialogEvent).text).toEqual("Fine.");
       expect((newDialog[1] as DialogEvent).text).toEqual("It is early.");
+    });
+
+    it.skip("can have multiple paths running in parallel", () => {
+      const received: Event[] = [];
+      const send: Event[] = [];
+
+      const testScript: Script = (q) => {
+        const { fadeIn, onState, say } = helpers(q);
+
+        fadeIn();
+      };
+
+      testScript(q);
+
+      bus.listen("out:*", (event) => send.push(event));
+      bus.listen("in:*", (event) => received.push(event));
+      bus.listen("out:dialog", () =>
+        setTimeout(() => bus.trigger({ type: "in:dialog:done" }), 1)
+      );
     });
   });
 });

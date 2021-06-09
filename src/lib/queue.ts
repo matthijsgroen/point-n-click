@@ -19,6 +19,7 @@ const queue = (bus: MessageBus) => {
   const processors: QueueProcessor<QueueItem>[] = [];
   const items: QueueItem[] = [];
   let activeQueue = items;
+  let stepsProcessed = 0;
 
   const startSubQueue = () => {
     const queue: QueueItem[] = [];
@@ -34,6 +35,9 @@ const queue = (bus: MessageBus) => {
     get length() {
       return activeQueue.length;
     },
+    get itemsProcessed() {
+      return stepsProcessed;
+    },
     addItem<T extends QueueItem>(item: T) {
       activeQueue.push(item);
     },
@@ -41,6 +45,7 @@ const queue = (bus: MessageBus) => {
       processors.push(handler);
     },
     async processItem() {
+      stepsProcessed++;
       const item = activeQueue.shift();
       const processor = processors.find((p) => p.type === item?.type);
       if (processor && item) {
