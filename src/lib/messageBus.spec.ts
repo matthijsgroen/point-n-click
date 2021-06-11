@@ -53,6 +53,30 @@ describe("MessageBus", () => {
     });
   });
 
+  describe("requests", () => {
+    it("can register requesthandlers using reply", async () => {
+      type SomeRequest = {
+        type: "request";
+        payload: string;
+      };
+      const bus = messageBus();
+      const unregister = bus.reply(
+        "channel:some:request",
+        (respond, payload: SomeRequest) => {
+          respond(payload + " done!");
+        }
+      );
+
+      const reply = await bus.request("channel:some:request", "foo");
+
+      expect(reply).toEqual("foo done!");
+      unregister();
+      expect(() => {
+        bus.request("channel:some:request", "foo");
+      }).toThrowError("No responder found for 'channel:some:request'");
+    });
+  });
+
   describe("playbackQueue", () => {
     it("emits a message from the queue as soon as someone listens", async () => {
       const event = { type: "background:image:update", background: "forest" };
