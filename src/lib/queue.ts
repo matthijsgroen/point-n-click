@@ -1,5 +1,5 @@
 import { MaybePromise } from "../types/generic";
-import { MessageBus } from "./messageBus";
+import messageBus, { MessageBus } from "./messageBus";
 
 export interface QueueItem {
   type: string;
@@ -11,7 +11,11 @@ export type QueueHelpers = {
 
 export interface QueueProcessor<T extends QueueItem> {
   type: T["type"];
-  handle(item: T, bus: MessageBus, helpers: QueueHelpers): MaybePromise<void>;
+  handle(
+    item: T,
+    channel: { request: MessageBus["request"]; trigger: MessageBus["trigger"] },
+    helpers: QueueHelpers
+  ): MaybePromise<void>;
   preload?(item: T): MaybePromise<void>;
 }
 
@@ -49,7 +53,15 @@ const queue = (bus: MessageBus) => {
       const item = activeQueue.shift();
       const processor = processors.find((p) => p.type === item?.type);
       if (processor && item) {
-        await processor.handle(item, bus, { startSubQueue });
+        const request: MessageBus["request"] = (message, data) => {
+          bus.trigger({ type: message, payload: data, queueItem: item });
+          return bus.request(message, { queueItem: item, message: data });
+        };
+        await processor.handle(
+          item,
+          { request, trigger: bus.trigger },
+          { startSubQueue }
+        );
       }
     },
   };
