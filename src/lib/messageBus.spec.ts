@@ -1,4 +1,4 @@
-import messageBus from "./messageBus";
+import messageBus, { Event } from "./messageBus";
 
 describe("MessageBus", () => {
   describe("listeners", () => {
@@ -71,9 +71,9 @@ describe("MessageBus", () => {
 
       expect(reply).toEqual("foo done!");
       unregister();
-      expect(() => {
-        bus.request("channel:some:request", "foo");
-      }).toThrowError("No responder found for 'channel:some:request'");
+      expect(bus.request("channel:some:request", "foo")).rejects.toEqual(
+        new Error("No responder found for 'channel:some:request'")
+      );
     });
   });
 

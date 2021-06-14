@@ -29,7 +29,7 @@ export type MessageBus = {
   listen: (pattern: string, listener: Listener) => Unsubscribe;
   playbackQueue: <T extends Event>(events: T[]) => void;
   reply: <T, K>(message: string, responder: Responder<T, K>) => Unsubscribe;
-  request: <T, R>(messae: string, data: T) => Promise<R>;
+  request: <T, R>(message: string, data: T) => Promise<R>;
 };
 
 const messageBus = (): MessageBus => {
@@ -39,7 +39,7 @@ const messageBus = (): MessageBus => {
   let playbackQueue: Event[] = [];
 
   return {
-    trigger: (event) =>
+    trigger: <E extends Event>(event: E) =>
       listeners.forEach(
         ({ pattern, listener }) =>
           matchPattern(pattern, event.type) && listener(event)
@@ -68,13 +68,17 @@ const messageBus = (): MessageBus => {
         responders = responders.filter(({ responder: r }) => r !== responder);
       };
     },
-    request: <T, R>(message: string, data: T): Promise<R> => {
+    request: async <T, R>(message: string, data: T): Promise<R> => {
       const responder = responders.find((r) => r.message === message);
       if (!responder) {
         throw new Error(`No responder found for '${message}'`);
       }
 
-      return new Promise<R>((resolve) => responder.responder(resolve, data));
+      const result = await new Promise<R>((resolve) =>
+        responder.responder(resolve, data)
+      );
+
+      return result;
     },
     playbackQueue: (events) => {
       playbackQueue = events;
