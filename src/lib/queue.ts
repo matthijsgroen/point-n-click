@@ -19,11 +19,24 @@ export interface QueueProcessor<T extends QueueItem> {
   preload?(item: T): MaybePromise<void>;
 }
 
+type ProcessLogItem<
+  Q extends QueueItem = QueueItem,
+  Payload extends unknown = any,
+  Response extends unknown = any
+> = {
+  type: string;
+  payload: Payload;
+  queueItem: Q;
+  result?: Response;
+  direction: "request" | "response";
+};
+
 const queue = (bus: MessageBus) => {
   const processors: QueueProcessor<QueueItem>[] = [];
   const items: QueueItem[] = [];
   let activeQueue = items;
   let stepsProcessed = 0;
+  const processLog: ProcessLogItem[] = [];
 
   const startSubQueue = () => {
     const queue: QueueItem[] = [];
@@ -42,6 +55,9 @@ const queue = (bus: MessageBus) => {
     get itemsProcessed() {
       return stepsProcessed;
     },
+    get processLog() {
+      return processLog;
+    },
     addItem<T extends QueueItem>(item: T) {
       activeQueue.push(item);
     },
@@ -53,9 +69,29 @@ const queue = (bus: MessageBus) => {
       const item = activeQueue.shift();
       const processor = processors.find((p) => p.type === item?.type);
       if (processor && item) {
-        const request: MessageBus["request"] = (message, data) => {
-          bus.trigger({ type: message, payload: data, queueItem: item });
-          return bus.request(message, { queueItem: item, message: data });
+        const request: MessageBus["request"] = async <T, R>(
+          message: string,
+          data: T
+        ): Promise<R> => {
+          processLog.push({
+            type: message,
+            payload: data,
+            queueItem: item,
+            direction: "request",
+          });
+          const result: R = await bus.request(message, {
+            queueItem: item,
+            message: data,
+          });
+          processLog.push({
+            type: message,
+            payload: data,
+            result,
+            queueItem: item,
+            direction: "response",
+          });
+
+          return result;
         };
         await processor.handle(
           item,

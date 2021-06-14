@@ -124,11 +124,17 @@ describe("Script", () => {
         await q.processItem();
       }
 
-      expect(send).toEqual([
-        { effect: "fadeIn", type: "out:screen:effect" },
+      expect(q.processLog).toEqual([
         {
-          payload: "How are you?",
           type: "out:dialog",
+          direction: "request",
+          payload: "How are you?",
+          queueItem: { text: "How are you?", type: "dialog" },
+        },
+        {
+          type: "out:dialog",
+          direction: "response",
+          payload: "How are you?",
           queueItem: { text: "How are you?", type: "dialog" },
         },
       ]);
@@ -170,24 +176,34 @@ describe("Script", () => {
         await q.processItem();
       }
 
-      expect(send).toEqual([
-        { effect: "fadeIn", type: "out:screen:effect" },
+      expect(q.processLog).toEqual([
         {
-          payload: "Good morning",
           type: "out:dialog",
+          direction: "request",
+          payload: "Good morning",
           queueItem: { text: "Good morning", type: "dialog" },
         },
         {
-          payload: "How are you?",
           type: "out:dialog",
+          direction: "response",
+          payload: "Good morning",
+          result: undefined,
+          queueItem: { text: "Good morning", type: "dialog" },
+        },
+        {
+          type: "out:dialog",
+          direction: "request",
+          payload: "How are you?",
+          queueItem: { text: "How are you?", type: "dialog" },
+        },
+        {
+          type: "out:dialog",
+          direction: "response",
+          payload: "How are you?",
+          result: undefined,
           queueItem: { text: "How are you?", type: "dialog" },
         },
       ]);
-
-      // expect(received).toEqual([
-      //   { type: "in:dialog:done" },
-      //   { type: "in:dialog:done" },
-      // ]);
     });
 
     it("can restore state using events", async () => {
