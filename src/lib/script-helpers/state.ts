@@ -54,11 +54,8 @@ export const stateSystem = <
   State extends { gameState: GameState },
   EngineState extends Store<State, Action<any>>,
   GameState
-  //   Reducers extends SliceCaseReducers<GameState>,
-  //   Name extends string
 >(
   store: EngineState
-  //   slice: Slice<GameState, Reducers, Name>
 ) => {
   const stateProcessor: QueueProcessor<StateEvent<GameState>> = {
     type: "gameState",
