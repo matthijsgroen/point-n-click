@@ -4,6 +4,7 @@ import queue, { QueueProcessor, Queue } from "../lib/queue";
 import messageBus, { MessageBus, Event, Listener } from "../lib/messageBus";
 import { configureStore, createSlice } from "@reduxjs/toolkit";
 import { stateSystem } from "../lib/script-helpers/state";
+import times from "../lib/test-helpers/times";
 
 type GameState = {
   dayPart: "morning" | "evening";
@@ -198,7 +199,7 @@ describe("Script", () => {
       ]);
     });
 
-    it("can restore state using events", async () => {
+    it.only("can restore state using events", async () => {
       const testScript: Script = (q) => {
         const { fadeIn, onState, say } = helpers(q);
 
@@ -214,6 +215,7 @@ describe("Script", () => {
             say("Good evening!");
           }
         );
+        // -- first run stops here --
         say("Fine.");
         onState(
           (s) => s.dayPart !== "evening",
@@ -235,29 +237,18 @@ describe("Script", () => {
         }
       );
 
-      /*
       // don't execute last step
       await times(4)(() => q.processItem());
 
       // Now do a replay
       const steps = q.itemsProcessed;
       expect(steps).toEqual(4);
+      const log = q.processLog;
 
       const newBus = messageBus();
       const newQ = queue(newBus);
       const stateManager = stateSystem(store);
 
-      newQ.addProcessor(screenProcessor);
-      newQ.addProcessor(dialogProcessor);
-      newQ.addProcessor(stateManager.stateProcessor);
-
-      testScript(newQ);
-      newBus.playbackQueue(received);
-
-      await times(steps)(() => newQ.processItem());
-
-      const newDialog: Event[] = [];
-      newBus.listen("out:*", (event) => newDialog.push(event));
       newBus.reply(
         "out:dialog",
         (reply: (result: void) => void, _payload: string) => {
@@ -265,11 +256,26 @@ describe("Script", () => {
         }
       );
 
-      await times(3)(() => newQ.processItem());
+      newQ.addProcessor(screenProcessor);
+      newQ.addProcessor(dialogProcessor);
+      newQ.addProcessor(stateManager.stateProcessor);
 
-      expect((newDialog[0] as DialogEvent).text).toEqual("Fine.");
-      expect((newDialog[1] as DialogEvent).text).toEqual("It is early.");
-      */
+      testScript(newQ);
+
+      newQ.replay(log);
+
+      await times(3)(() => newQ.processItem());
+      const newLog = newQ.processLog;
+      const dialogTexts = newLog
+        .filter((item) => item.direction === "request")
+        .map((item) => item.payload);
+
+      expect(dialogTexts).toEqual([
+        "Good morning",
+        "How are you?",
+        "Fine.",
+        "It is early.",
+      ]);
     });
 
     it.skip("can have multiple paths running in parallel", () => {

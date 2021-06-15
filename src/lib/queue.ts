@@ -100,6 +100,7 @@ const queue = (bus: MessageBus) => {
         );
       }
     },
+    replay(log: ProcessLogItem[]) {},
   };
 };
 
