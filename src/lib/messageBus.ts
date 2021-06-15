@@ -27,7 +27,6 @@ export type Unsubscribe = () => void;
 export type MessageBus = {
   trigger: <T extends Event>(event: T) => void;
   listen: (pattern: string, listener: Listener) => Unsubscribe;
-  playbackQueue: <T extends Event>(events: T[]) => void;
   reply: <T, K>(message: string, responder: Responder<T, K>) => Unsubscribe;
   request: <T, R>(message: string, data: T) => Promise<R>;
 };
@@ -35,8 +34,6 @@ export type MessageBus = {
 const messageBus = (): MessageBus => {
   let listeners: { pattern: string; listener: Listener }[] = [];
   let responders: { message: string; responder: Responder }[] = [];
-
-  let playbackQueue: Event[] = [];
 
   return {
     trigger: <E extends Event>(event: E) =>
@@ -46,14 +43,6 @@ const messageBus = (): MessageBus => {
       ),
     listen: (pattern, listener) => {
       listeners = listeners.concat({ pattern, listener });
-
-      if (playbackQueue[0] && matchPattern(pattern, playbackQueue[0].type)) {
-        const event = playbackQueue.shift();
-        // Execute after the return
-        setTimeout(() => {
-          listener(event!);
-        }, 0);
-      }
 
       return () => {
         listeners = listeners.filter((e) => e.listener !== listener);
@@ -79,9 +68,6 @@ const messageBus = (): MessageBus => {
       );
 
       return result;
-    },
-    playbackQueue: (events) => {
-      playbackQueue = events;
     },
   };
 };

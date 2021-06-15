@@ -101,8 +101,6 @@ describe("Script", () => {
     });
 
     it("delegates work to registered processors", async () => {
-      const send: Event[] = [];
-
       const testScript: Script = (q) => {
         const { fadeIn, say } = helpers(q);
 
@@ -112,7 +110,6 @@ describe("Script", () => {
 
       testScript(q);
 
-      bus.listen("out:*", (event) => send.push(event));
       bus.reply(
         "out:dialog",
         (reply: (result: void) => void, _payload: string) => {
@@ -141,9 +138,6 @@ describe("Script", () => {
     });
 
     it("unfolds tasks during execution", async () => {
-      const received: Event[] = [];
-      const send: Event[] = [];
-
       const testScript: Script = (q) => {
         const { fadeIn, onState, say } = helpers(q);
 
@@ -163,8 +157,6 @@ describe("Script", () => {
 
       testScript(q);
 
-      bus.listen("out:*", (event) => send.push(event));
-      bus.listen("in:*", (event) => received.push(event));
       bus.reply(
         "out:dialog",
         (reply: (result: void) => void, _payload: string) => {
@@ -207,9 +199,6 @@ describe("Script", () => {
     });
 
     it("can restore state using events", async () => {
-      const received: Event[] = [];
-      const send: Event[] = [];
-
       const testScript: Script = (q) => {
         const { fadeIn, onState, say } = helpers(q);
 
@@ -239,8 +228,6 @@ describe("Script", () => {
 
       testScript(q);
 
-      bus.listen("out:*", (event) => send.push(event));
-      bus.listen("in:*", (event) => received.push(event));
       bus.reply(
         "out:dialog",
         (reply: (result: void) => void, _payload: string) => {
@@ -297,10 +284,11 @@ describe("Script", () => {
 
       testScript(q);
 
-      bus.listen("out:*", (event) => send.push(event));
-      bus.listen("in:*", (event) => received.push(event));
-      bus.listen("out:dialog", () =>
-        setTimeout(() => bus.trigger({ type: "in:dialog:done" }), 1)
+      bus.reply(
+        "out:dialog",
+        (reply: (result: void) => void, _payload: string) => {
+          reply();
+        }
       );
     });
 
