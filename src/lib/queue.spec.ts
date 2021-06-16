@@ -1,10 +1,10 @@
-import scriptHelpers from "../lib/script-helpers";
-import { Script } from "./script";
-import queue, { QueueProcessor, Queue } from "../lib/queue";
-import messageBus, { MessageBus, Event, Listener } from "../lib/messageBus";
+import scriptHelpers from "./script-helpers";
+import { Script } from "../types/script";
+import queue, { QueueProcessor, Queue } from "./queue";
+import messageBus, { MessageBus, Event, Listener } from "./messageBus";
 import { configureStore, createSlice } from "@reduxjs/toolkit";
-import { stateSystem } from "../lib/script-helpers/state";
-import times from "../lib/test-helpers/times";
+import { stateSystem } from "./script-helpers/state";
+import times from "./test-helpers/times";
 
 type GameState = {
   dayPart: "morning" | "evening";
