@@ -1,6 +1,7 @@
 import { Slice, SliceCaseReducers } from "@reduxjs/toolkit";
 import { Queue } from "../../lib/queue";
 import { stateHelpers } from "./state";
+import { interfaceHelpers } from "./interface";
 
 const scriptHelpers =
   <
@@ -19,6 +20,7 @@ const scriptHelpers =
         q.addItem({ type: "dialog", text });
       },
       ...stateHelpers(slice, q),
+      ...interfaceHelpers(slice, q),
     };
   };
 

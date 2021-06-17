@@ -28,7 +28,7 @@ export type MessageBus = {
   trigger: <T extends Event>(event: T) => void;
   listen: (pattern: string, listener: Listener) => Unsubscribe;
   reply: <T, K>(message: string, responder: Responder<T, K>) => Unsubscribe;
-  request: <T, R>(message: string, data: T) => Promise<R>;
+  request: <R, T>(message: string, data: T) => Promise<R>;
 };
 
 const messageBus = (): MessageBus => {

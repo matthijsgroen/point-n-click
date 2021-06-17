@@ -1,5 +1,5 @@
 import { MaybePromise } from "../types/generic";
-import messageBus, { MessageBus } from "./messageBus";
+import { MessageBus } from "./messageBus";
 
 export interface QueueItem {
   type: string;
@@ -76,6 +76,7 @@ const queue = (bus: MessageBus) => {
   const processItem = async () => {
     stepsProcessed++;
     const item = activeQueue.shift();
+
     const processor = processors.find((p) => p.type === item?.type);
     if (processor && item) {
       const request: MessageBus["request"] = async <T, R>(
@@ -95,10 +96,7 @@ const queue = (bus: MessageBus) => {
         if (resultFromReplay !== NO_DATA) {
           return Promise.resolve(resultFromReplay);
         } else {
-          const result: R = await bus.request(message, {
-            queueItem: item,
-            message: data,
-          });
+          const result: R = await bus.request(message, data);
           processLog.push({
             type: message,
             payload: data,

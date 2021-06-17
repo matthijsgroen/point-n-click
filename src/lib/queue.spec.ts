@@ -4,6 +4,7 @@ import queue, { QueueProcessor, Queue } from "./queue";
 import messageBus, { MessageBus, Event, Listener } from "./messageBus";
 import { configureStore, createSlice } from "@reduxjs/toolkit";
 import { stateSystem } from "./script-helpers/state";
+import { callbackProcessor } from "./queue-utils/callback";
 import times from "./test-helpers/times";
 
 type GameState = {
@@ -99,6 +100,7 @@ describe("Script", () => {
       q.addProcessor(screenProcessor);
       q.addProcessor(dialogProcessor);
       q.addProcessor(stateManager.stateProcessor);
+      q.addProcessor(callbackProcessor);
     });
 
     it("delegates work to registered processors", async () => {
@@ -278,14 +280,38 @@ describe("Script", () => {
       ]);
     });
 
-    it.skip("can have multiple paths running in parallel", () => {
+    it("can have multiple paths running in parallel", async () => {
       const received: Event[] = [];
       const send: Event[] = [];
 
       const testScript: Script = (q) => {
-        const { fadeIn, onState, say } = helpers(q);
+        const { fadeIn, buttons, say } = helpers(q);
 
         fadeIn();
+        buttons([
+          {
+            id: "character",
+            hoverEffect: "glow",
+            coordinates: [730, 0, 919, 0, 890, 95, 730, 191],
+            onClick: ({ hide, show }) => {
+              hide();
+              say("Hey, how are you?");
+              say("Do you have any money?");
+              say("Thanks!");
+              show();
+            },
+          },
+          {
+            id: "inventory",
+            hoverEffect: "glow",
+            coordinates: [730, 0, 919, 0, 890, 95, 730, 191],
+            onClick: ({ hide, show }) => {
+              hide();
+              say("Here, some money!");
+              show();
+            },
+          },
+        ]);
       };
 
       testScript(q);
@@ -296,6 +322,15 @@ describe("Script", () => {
           reply();
         }
       );
+      bus.reply(
+        "ui:waitButtonPress",
+        (reply: (result: string) => void, payload: { items: string[] }) => {
+          reply(payload.items[payload.items.length - 1]);
+        }
+      );
+
+      await q.processItem();
+      await q.processItem();
     });
 
     it.todo("stops point restoration at the point that content is changed");
