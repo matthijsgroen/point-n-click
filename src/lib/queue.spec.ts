@@ -199,7 +199,7 @@ describe("Script", () => {
       ]);
     });
 
-    it.only("can restore state using events", async () => {
+    it("can restore state using events", async () => {
       const testScript: Script = (q) => {
         const { fadeIn, onState, say } = helpers(q);
 
@@ -262,7 +262,7 @@ describe("Script", () => {
 
       testScript(newQ);
 
-      newQ.replay(log);
+      await newQ.replay(log);
 
       await times(3)(() => newQ.processItem());
       const newLog = newQ.processLog;

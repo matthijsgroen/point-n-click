@@ -31,12 +31,15 @@ type ProcessLogItem<
   direction: "request" | "response";
 };
 
+const NO_DATA = Symbol("No Data");
+
 const queue = (bus: MessageBus) => {
   const processors: QueueProcessor<QueueItem>[] = [];
   const items: QueueItem[] = [];
   let activeQueue = items;
   let stepsProcessed = 0;
   const processLog: ProcessLogItem[] = [];
+  let processReplay: ProcessLogItem[] = [];
 
   const startSubQueue = () => {
     const queue: QueueItem[] = [];
@@ -46,6 +49,72 @@ const queue = (bus: MessageBus) => {
     return () => {
       activeQueue = queue.concat(prevQueue);
     };
+  };
+
+  const responseNextInReplayLog = <R>(
+    request: ProcessLogItem
+  ): R | typeof NO_DATA => {
+    const serializedRequest = JSON.stringify(request);
+    const itemIndex = processReplay.findIndex(
+      (e) => JSON.stringify(e) === serializedRequest
+    );
+    const potentialReply = processReplay[itemIndex + 1];
+    if (!potentialReply) return NO_DATA;
+    if (
+      potentialReply.direction === "response" &&
+      JSON.stringify(potentialReply.queueItem) ===
+        JSON.stringify(request.queueItem) &&
+      JSON.stringify(potentialReply.payload) === JSON.stringify(request.payload)
+    ) {
+      processLog.push(potentialReply);
+      processReplay.splice(itemIndex, 2);
+      return potentialReply.result as R;
+    }
+    return NO_DATA;
+  };
+
+  const processItem = async () => {
+    stepsProcessed++;
+    const item = activeQueue.shift();
+    const processor = processors.find((p) => p.type === item?.type);
+    if (processor && item) {
+      const request: MessageBus["request"] = async <T, R>(
+        message: string,
+        data: T
+      ): Promise<R> => {
+        const requestItem: ProcessLogItem<typeof item, T> = {
+          type: message,
+          payload: data,
+          queueItem: item,
+          direction: "request",
+        };
+
+        processLog.push(requestItem);
+        const resultFromReplay = responseNextInReplayLog<R>(requestItem);
+
+        if (resultFromReplay !== NO_DATA) {
+          return Promise.resolve(resultFromReplay);
+        } else {
+          const result: R = await bus.request(message, {
+            queueItem: item,
+            message: data,
+          });
+          processLog.push({
+            type: message,
+            payload: data,
+            result,
+            queueItem: item,
+            direction: "response",
+          });
+          return result;
+        }
+      };
+      await processor.handle(
+        item,
+        { request, trigger: bus.trigger },
+        { startSubQueue }
+      );
+    }
   };
 
   return {
@@ -64,43 +133,17 @@ const queue = (bus: MessageBus) => {
     addProcessor<T extends QueueItem>(handler: QueueProcessor<T>) {
       processors.push(handler);
     },
-    async processItem() {
-      stepsProcessed++;
-      const item = activeQueue.shift();
-      const processor = processors.find((p) => p.type === item?.type);
-      if (processor && item) {
-        const request: MessageBus["request"] = async <T, R>(
-          message: string,
-          data: T
-        ): Promise<R> => {
-          processLog.push({
-            type: message,
-            payload: data,
-            queueItem: item,
-            direction: "request",
-          });
-          const result: R = await bus.request(message, {
-            queueItem: item,
-            message: data,
-          });
-          processLog.push({
-            type: message,
-            payload: data,
-            result,
-            queueItem: item,
-            direction: "response",
-          });
+    processItem,
+    async replay(log: ProcessLogItem[]) {
+      processReplay = log;
 
-          return result;
-        };
-        await processor.handle(
-          item,
-          { request, trigger: bus.trigger },
-          { startSubQueue }
-        );
-      }
+      let processed: number;
+
+      do {
+        processed = stepsProcessed;
+        await processItem();
+      } while (stepsProcessed > processed && processReplay.length > 0);
     },
-    replay(log: ProcessLogItem[]) {},
   };
 };
 
