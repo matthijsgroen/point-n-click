@@ -34,11 +34,39 @@ export const interfaceHelpers = <
 ) => {
   return {
     buttons: (buttons: (Button<GameState> | Highlight<GameState>)[]) => {
-      callback(q, ({ request }) => {
+      callback<GameState>(q, ({ request, store }, { startSubQueue }) => {
         request<string, { items: string[] }>("ui:waitButtonPress", {
           items: buttons.map((b) => b.id),
         }).then((pressed) => {
-          console.log(pressed);
+          const item = buttons.find((b) => b.id === pressed);
+          if (item) {
+            const gameState = () => store.getState()["gameState"];
+            const skipResult = item.skip ? item.skip(gameState()) : false;
+            const conditionResult = item.condition
+              ? item.condition(gameState())
+              : true;
+
+            if (conditionResult && !skipResult) {
+              const endSubQueue = startSubQueue();
+
+              item.onClick({
+                hide: () => {
+                  // TODO
+                },
+                show: () => {
+                  // TODO
+                },
+                hideAll: () => {
+                  // TODO
+                },
+                remove: () => {
+                  // TODO
+                },
+              });
+
+              endSubQueue();
+            }
+          }
         });
 
         // test for each button the 'condition' and 'skip'

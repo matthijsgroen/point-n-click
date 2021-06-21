@@ -54,7 +54,7 @@ describe("state helpers", () => {
 
       const bus = messageBus();
       const q = queue(bus);
-      q.addProcessor(stateSys.stateProcessor);
+      q.addProcessor(stateSys.processor);
 
       script(q);
 
@@ -91,7 +91,7 @@ describe("state helpers", () => {
 
       const bus = messageBus();
       const q = queue(bus);
-      q.addProcessor(stateSys.stateProcessor);
+      q.addProcessor(stateSys.processor);
 
       script(q);
       await q.processItem();

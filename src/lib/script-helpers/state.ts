@@ -57,7 +57,7 @@ export const stateSystem = <
 >(
   store: EngineState
 ) => {
-  const stateProcessor: QueueProcessor<StateEvent<GameState>> = {
+  const processor: QueueProcessor<StateEvent<GameState>> = {
     type: "gameState",
     handle: (item, _bus, { startSubQueue }) => {
       if (item.flowType === "choice") {
@@ -78,6 +78,6 @@ export const stateSystem = <
     },
   };
   return {
-    stateProcessor,
+    processor,
   };
 };

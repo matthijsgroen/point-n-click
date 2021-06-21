@@ -40,6 +40,7 @@ const queue = (bus: MessageBus) => {
   let stepsProcessed = 0;
   const processLog: ProcessLogItem[] = [];
   let processReplay: ProcessLogItem[] = [];
+  let waitingForItems: (() => void)[] = [];
 
   const startSubQueue = () => {
     const queue: QueueItem[] = [];
@@ -47,7 +48,12 @@ const queue = (bus: MessageBus) => {
     activeQueue = queue;
 
     return () => {
-      activeQueue = queue.concat(prevQueue);
+      activeQueue = prevQueue;
+      queue.reverse().forEach((e) => activeQueue.unshift(e));
+      if (activeQueue === items) {
+        waitingForItems.forEach((call) => call());
+        waitingForItems = [];
+      }
     };
   };
 
@@ -127,11 +133,24 @@ const queue = (bus: MessageBus) => {
     },
     addItem<T extends QueueItem>(item: T) {
       activeQueue.push(item);
+      if (activeQueue === items) {
+        waitingForItems.forEach((call) => call());
+        waitingForItems = [];
+      }
     },
     addProcessor<T extends QueueItem>(handler: QueueProcessor<T>) {
       processors.push(handler);
     },
     processItem,
+    async waitForItem() {
+      if (activeQueue[0] !== undefined) {
+        return Promise.resolve();
+      }
+
+      return new Promise<void>((resolve) => {
+        waitingForItems.push(resolve);
+      });
+    },
     async replay(log: ProcessLogItem[]) {
       processReplay = log;
 

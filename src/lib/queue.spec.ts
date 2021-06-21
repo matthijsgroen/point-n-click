@@ -4,7 +4,7 @@ import queue, { QueueProcessor, Queue } from "./queue";
 import messageBus, { MessageBus, Event, Listener } from "./messageBus";
 import { configureStore, createSlice } from "@reduxjs/toolkit";
 import { stateSystem } from "./script-helpers/state";
-import { callbackProcessor } from "./queue-utils/callback";
+import { callbackSystem } from "./queue-utils/callback";
 import times from "./test-helpers/times";
 
 type GameState = {
@@ -96,11 +96,12 @@ describe("Script", () => {
 
     beforeEach(() => {
       const stateManager = stateSystem(store);
+      const callbackManager = callbackSystem(store);
 
       q.addProcessor(screenProcessor);
       q.addProcessor(dialogProcessor);
-      q.addProcessor(stateManager.stateProcessor);
-      q.addProcessor(callbackProcessor);
+      q.addProcessor(stateManager.processor);
+      q.addProcessor(callbackManager.processor);
     });
 
     it("delegates work to registered processors", async () => {
@@ -260,7 +261,7 @@ describe("Script", () => {
 
       newQ.addProcessor(screenProcessor);
       newQ.addProcessor(dialogProcessor);
-      newQ.addProcessor(stateManager.stateProcessor);
+      newQ.addProcessor(stateManager.processor);
 
       testScript(newQ);
 
@@ -309,12 +310,30 @@ describe("Script", () => {
               hide();
               say("Here, some money!");
               show();
+              buttons([
+                {
+                  id: "extraPath",
+                  hoverEffect: "glow",
+                  coordinates: [730, 0, 919, 0, 890, 95, 730, 191],
+                  onClick: ({ hide, show }) => {
+                    say("Hey, how are you?");
+                    say("Do you have any money?");
+                  },
+                },
+              ]);
             },
           },
         ]);
       };
 
       testScript(q);
+
+      /**
+       * A script is never truely finished. It either waits until new items are added to process.
+       * Or it jumps or ends through a command.
+       * This will eliminate the need for a 'hold' command to keep listening for button
+       * events that triggers a new sub-queue.
+       */
 
       bus.reply(
         "out:dialog",
@@ -325,12 +344,18 @@ describe("Script", () => {
       bus.reply(
         "ui:waitButtonPress",
         (reply: (result: string) => void, payload: { items: string[] }) => {
-          reply(payload.items[payload.items.length - 1]);
+          if (payload.items.includes("inventory")) {
+            setTimeout(() => reply("inventory"), 10);
+          }
         }
       );
 
       await q.processItem();
       await q.processItem();
+
+      await q.waitForItem();
+
+      // Wait for 'exit'?
     });
 
     it.todo("stops point restoration at the point that content is changed");
