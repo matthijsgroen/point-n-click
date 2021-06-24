@@ -130,13 +130,13 @@ describe("Script", () => {
           type: "out:dialog",
           direction: "request",
           payload: "How are you?",
-          queueItem: { text: "How are you?", type: "dialog" },
+          queueItem: { hash: "-ufpg3", type: "dialog" },
         },
         {
           type: "out:dialog",
           direction: "response",
           payload: "How are you?",
-          queueItem: { text: "How are you?", type: "dialog" },
+          queueItem: { hash: "-ufpg3", type: "dialog" },
         },
       ]);
     });
@@ -177,27 +177,27 @@ describe("Script", () => {
           type: "out:dialog",
           direction: "request",
           payload: "Good morning",
-          queueItem: { text: "Good morning", type: "dialog" },
+          queueItem: { hash: "tw31bm", type: "dialog" },
         },
         {
           type: "out:dialog",
           direction: "response",
           payload: "Good morning",
           result: undefined,
-          queueItem: { text: "Good morning", type: "dialog" },
+          queueItem: { hash: "tw31bm", type: "dialog" },
         },
         {
           type: "out:dialog",
           direction: "request",
           payload: "How are you?",
-          queueItem: { text: "How are you?", type: "dialog" },
+          queueItem: { hash: "-ufpg3", type: "dialog" },
         },
         {
           type: "out:dialog",
           direction: "response",
           payload: "How are you?",
           result: undefined,
-          queueItem: { text: "How are you?", type: "dialog" },
+          queueItem: { hash: "-ufpg3", type: "dialog" },
         },
       ]);
     });
@@ -266,7 +266,6 @@ describe("Script", () => {
       testScript(newQ);
 
       await newQ.replay(log);
-
       await times(3)(() => newQ.processItem());
       const newLog = newQ.processLog;
       const dialogTexts = newLog
@@ -282,9 +281,6 @@ describe("Script", () => {
     });
 
     it("can have multiple paths running in parallel", async () => {
-      const received: Event[] = [];
-      const send: Event[] = [];
-
       const testScript: Script = (q) => {
         const { fadeIn, buttons, say } = helpers(q);
 
@@ -315,7 +311,7 @@ describe("Script", () => {
                   id: "extraPath",
                   hoverEffect: "glow",
                   coordinates: [730, 0, 919, 0, 890, 95, 730, 191],
-                  onClick: ({ hide, show }) => {
+                  onClick: () => {
                     say("Hey, how are you?");
                     say("Do you have any money?");
                   },
@@ -324,6 +320,8 @@ describe("Script", () => {
             },
           },
         ]);
+
+        say("Wow nice here!");
       };
 
       testScript(q);
@@ -352,12 +350,48 @@ describe("Script", () => {
 
       await q.processItem();
       await q.processItem();
+      await q.processItem();
 
       await q.waitForItem();
 
-      // Wait for 'exit'?
-    });
+      await q.processItem();
+      await q.processItem();
 
-    it.todo("stops point restoration at the point that content is changed");
+      // console.log("-- here --");
+
+      const log = JSON.stringify(q.processLog);
+
+      // Wait for 'exit'?
+
+      const newBus = messageBus();
+      const newQ = queue(newBus);
+
+      const stateManager = stateSystem(store);
+      const callbackManager = callbackSystem(store);
+
+      newQ.addProcessor(screenProcessor);
+      newQ.addProcessor(dialogProcessor);
+      newQ.addProcessor(stateManager.processor);
+      newQ.addProcessor(callbackManager.processor);
+
+      newBus.reply(
+        "out:dialog",
+        (reply: (result: void) => void, _payload: string) => {
+          reply();
+        }
+      );
+      newBus.reply(
+        "ui:waitButtonPress",
+        (reply: (result: string) => void, payload: { items: string[] }) => {
+          if (payload.items.includes("inventory")) {
+            setTimeout(() => reply("inventory"), 10);
+          }
+        }
+      );
+
+      testScript(newQ);
+
+      await newQ.replay(JSON.parse(log));
+    });
   });
 });
