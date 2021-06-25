@@ -139,7 +139,6 @@ const queue = (bus: MessageBus) => {
   };
 
   const processItem = async () => {
-    stepsProcessed++;
     const item = activeQueue.shift();
 
     const processor = processors.find((p) => p.type === item?.type);
@@ -159,8 +158,6 @@ const queue = (bus: MessageBus) => {
         const resultFromReplay = responseNextInReplayLog<R>(requestItem);
         checkForResponses();
 
-        // console.log("Request: ", message, item, resultFromReplay);
-
         switch (resultFromReplay.type) {
           case ResponseType.NoResponse:
             const result: R = await bus.request(message, data);
@@ -175,9 +172,7 @@ const queue = (bus: MessageBus) => {
           case ResponseType.Response:
             return Promise.resolve(resultFromReplay.data);
           case ResponseType.ResponseLater:
-            // Wait until response is at top of queue
             return new Promise((resolve) => {
-              // console.log("Resolve Later!");
               waitingForReplayResponse.push({
                 resolver: () => {
                   resolve(resultFromReplay.data);
@@ -187,6 +182,9 @@ const queue = (bus: MessageBus) => {
             });
         }
       };
+
+      stepsProcessed++;
+
       await processor.handle(
         item,
         { request, trigger: bus.trigger },
@@ -225,20 +223,16 @@ const queue = (bus: MessageBus) => {
         waitingForItems.push(resolve);
       });
     },
-    async replay(log: ProcessLogItem[]) {
+    async replay(log: ProcessLogItem[]): Promise<boolean> {
       processReplay = log;
 
       let processed: number;
-      let step = 0;
       do {
         processed = stepsProcessed;
-        step++;
         await processItem();
-      } while (
-        stepsProcessed > processed &&
-        processReplay.length > 0 &&
-        step < 20
-      );
+      } while (stepsProcessed > processed && processReplay.length > 0);
+
+      return true;
     },
   };
 };

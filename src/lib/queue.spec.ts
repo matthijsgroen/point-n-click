@@ -265,7 +265,10 @@ describe("Script", () => {
 
       testScript(newQ);
 
-      await newQ.replay(log);
+      const success = await newQ.replay(log);
+
+      expect(success).toEqual(true);
+
       await times(3)(() => newQ.processItem());
       const newLog = newQ.processLog;
       const dialogTexts = newLog
@@ -357,8 +360,6 @@ describe("Script", () => {
       await q.processItem();
       await q.processItem();
 
-      // console.log("-- here --");
-
       const log = JSON.stringify(q.processLog);
 
       // Wait for 'exit'?
@@ -391,7 +392,8 @@ describe("Script", () => {
 
       testScript(newQ);
 
-      await newQ.replay(JSON.parse(log));
+      const success = await newQ.replay(JSON.parse(log));
+      expect(success).toEqual(true);
     });
   });
 });
