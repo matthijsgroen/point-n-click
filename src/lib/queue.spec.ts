@@ -394,6 +394,29 @@ describe("Script", () => {
 
       const success = await newQ.replay(JSON.parse(log));
       expect(success).toEqual(true);
+
+      const newLog = newQ.processLog;
+      const dialogTexts = newLog
+        .map((item) => {
+          switch (item.type) {
+            case "ui:waitButtonPress":
+              return item.direction === "request"
+                ? `waiting for button press ${item.payload.items.join(",")}`
+                : `pressed ${item.result}`;
+            case "out:dialog":
+              return item.direction === "request" ? item.payload : null;
+          }
+          return null;
+        })
+        .filter((item) => item !== null);
+
+      expect(dialogTexts).toEqual([
+        "waiting for button press character,inventory",
+        "Wow nice here!",
+        "pressed inventory",
+        "Here, some money!",
+        "waiting for button press extraPath",
+      ]);
     });
   });
 });

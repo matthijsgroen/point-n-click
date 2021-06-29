@@ -175,6 +175,13 @@ const queue = (bus: MessageBus) => {
             return new Promise((resolve) => {
               waitingForReplayResponse.push({
                 resolver: () => {
+                  processLog.push({
+                    type: message,
+                    payload: data,
+                    result: resultFromReplay.data,
+                    queueItem: { type: item.type, hash: hash(item) },
+                    direction: "response",
+                  });
                   resolve(resultFromReplay.data);
                 },
                 item: resultFromReplay.item,
