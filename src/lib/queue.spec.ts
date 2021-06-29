@@ -38,15 +38,44 @@ const store = configureStore({
 
 const helpers = scriptHelpers(slice);
 
+type ScreenEffect = {
+  type: "screenEffect";
+  effect: string;
+};
+
+type DialogEvent = {
+  type: "dialog";
+  text: string;
+};
+
+const setupQueue = () => {
+  const bus = messageBus();
+  const q = queue(bus);
+
+  const stateManager = stateSystem(store);
+  const callbackManager = callbackSystem(store);
+  const screenProcessor: QueueProcessor<ScreenEffect> = {
+    type: "screenEffect",
+    handle(item, { trigger }) {
+      trigger({ type: "out:screen:effect", effect: item.effect });
+    },
+  };
+  const dialogProcessor: QueueProcessor<DialogEvent> = {
+    type: "dialog",
+    async handle(item, { request }) {
+      await request("out:dialog", item.text);
+    },
+  };
+
+  q.addProcessor(screenProcessor);
+  q.addProcessor(dialogProcessor);
+  q.addProcessor(stateManager.processor);
+  q.addProcessor(callbackManager.processor);
+
+  return { q, bus };
+};
+
 describe("Script", () => {
-  let q: Queue;
-  let bus: MessageBus;
-
-  beforeEach(() => {
-    bus = messageBus();
-    q = queue(bus);
-  });
-
   it("builds a queue on execution", () => {
     const testScript: Script = (q) => {
       const { fadeIn, onState, say } = helpers(q);
@@ -64,46 +93,15 @@ describe("Script", () => {
       );
       say("How are you?");
     };
+
+    const { q } = setupQueue();
+
     testScript(q);
 
     expect(q).toHaveLength(3); // contents in 'onState' is not unfolded
   });
 
   describe("queue processing", () => {
-    type ScreenEffect = {
-      type: "screenEffect";
-      effect: string;
-    };
-
-    const screenProcessor: QueueProcessor<ScreenEffect> = {
-      type: "screenEffect",
-      handle(item, { trigger }) {
-        trigger({ type: "out:screen:effect", effect: item.effect });
-      },
-    };
-
-    type DialogEvent = {
-      type: "dialog";
-      text: string;
-    };
-
-    const dialogProcessor: QueueProcessor<DialogEvent> = {
-      type: "dialog",
-      async handle(item, { request }) {
-        await request("out:dialog", item.text);
-      },
-    };
-
-    beforeEach(() => {
-      const stateManager = stateSystem(store);
-      const callbackManager = callbackSystem(store);
-
-      q.addProcessor(screenProcessor);
-      q.addProcessor(dialogProcessor);
-      q.addProcessor(stateManager.processor);
-      q.addProcessor(callbackManager.processor);
-    });
-
     it("delegates work to registered processors", async () => {
       const testScript: Script = (q) => {
         const { fadeIn, say } = helpers(q);
@@ -112,6 +110,7 @@ describe("Script", () => {
         say("How are you?");
       };
 
+      const { q, bus } = setupQueue();
       testScript(q);
 
       bus.reply(
@@ -158,6 +157,8 @@ describe("Script", () => {
         );
         say("How are you?");
       };
+
+      const { q, bus } = setupQueue();
 
       testScript(q);
 
@@ -231,6 +232,8 @@ describe("Script", () => {
         );
       };
 
+      const { q, bus } = setupQueue();
+
       testScript(q);
 
       bus.reply(
@@ -248,20 +251,13 @@ describe("Script", () => {
       expect(steps).toEqual(4);
       const log = q.processLog;
 
-      const newBus = messageBus();
-      const newQ = queue(newBus);
-      const stateManager = stateSystem(store);
-
+      const { q: newQ, bus: newBus } = setupQueue();
       newBus.reply(
         "out:dialog",
         (reply: (result: void) => void, _payload: string) => {
           reply();
         }
       );
-
-      newQ.addProcessor(screenProcessor);
-      newQ.addProcessor(dialogProcessor);
-      newQ.addProcessor(stateManager.processor);
 
       testScript(newQ);
 
@@ -327,6 +323,8 @@ describe("Script", () => {
         say("Wow nice here!");
       };
 
+      const { q, bus } = setupQueue();
+
       testScript(q);
 
       /**
@@ -363,17 +361,7 @@ describe("Script", () => {
       const log = JSON.stringify(q.processLog);
 
       // Wait for 'exit'?
-
-      const newBus = messageBus();
-      const newQ = queue(newBus);
-
-      const stateManager = stateSystem(store);
-      const callbackManager = callbackSystem(store);
-
-      newQ.addProcessor(screenProcessor);
-      newQ.addProcessor(dialogProcessor);
-      newQ.addProcessor(stateManager.processor);
-      newQ.addProcessor(callbackManager.processor);
+      const { q: newQ, bus: newBus } = setupQueue();
 
       newBus.reply(
         "out:dialog",
