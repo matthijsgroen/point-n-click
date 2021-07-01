@@ -20,11 +20,22 @@ export interface QueueProcessor<T extends QueueItem> {
   preload?(item: T): MaybePromise<void>;
 }
 
-type ProcessLogItem<
+export type ProcessLogItem<
+  Payload extends unknown = any,
+  Response extends unknown = any
+> = ProcessLogQueueItem | ProcessLogBusItem<Payload, Response>;
+
+export type ProcessLogQueueItem = {
+  type: "queueItem";
+  queueItem: { type: string; hash: string };
+};
+
+export type ProcessLogBusItem<
   Payload extends unknown = any,
   Response extends unknown = any
 > = {
-  type: string;
+  type: "busItem";
+  message: string;
   payload: Payload;
   queueItem: { type: string; hash: string };
   result?: Response;
@@ -69,7 +80,11 @@ const queue = (bus: MessageBus) => {
 
   const checkForResponses = () => {
     const response = processReplay[0];
-    if (response && response.direction === "response") {
+    if (
+      response &&
+      response.type === "busItem" &&
+      response.direction === "response"
+    ) {
       const replyIndex = waitingForReplayResponse.findIndex(
         (e) => e.item === response
       );
@@ -99,9 +114,10 @@ const queue = (bus: MessageBus) => {
     };
   };
 
-  const getResponseIndex = (request: ProcessLogItem): number | undefined =>
+  const getResponseIndex = (request: ProcessLogBusItem): number | undefined =>
     processReplay.findIndex(
       (potentialReply) =>
+        potentialReply.type === "busItem" &&
         potentialReply.direction === "response" &&
         JSON.stringify(potentialReply.queueItem) ===
           JSON.stringify(request.queueItem) &&
@@ -110,7 +126,7 @@ const queue = (bus: MessageBus) => {
     );
 
   const responseNextInReplayLog = <R>(
-    request: ProcessLogItem
+    request: ProcessLogBusItem
   ): ReplayResponse<R> => {
     const serializedRequest = JSON.stringify(request);
     const itemIndex = processReplay.findIndex(
@@ -119,7 +135,8 @@ const queue = (bus: MessageBus) => {
     const responseIndex = getResponseIndex(request);
 
     if (responseIndex === itemIndex + 1) {
-      const result = processReplay[responseIndex].result as R;
+      const result = (processReplay[responseIndex] as ProcessLogBusItem)
+        .result as R;
       processReplay.splice(0, responseIndex + 1);
       return {
         data: result,
@@ -127,7 +144,7 @@ const queue = (bus: MessageBus) => {
       };
     }
     if (responseIndex !== undefined && responseIndex > itemIndex + 1) {
-      const item = processReplay[responseIndex];
+      const item = processReplay[responseIndex] as ProcessLogBusItem;
       processReplay.splice(itemIndex, 1);
       return {
         data: item.result,
@@ -145,11 +162,12 @@ const queue = (bus: MessageBus) => {
     if (processor && item) {
       const request: MessageBus["request"] = async <T, R>(
         message: string,
-        data: T
+        payload: T
       ): Promise<R> => {
         const requestItem: ProcessLogItem<T> = {
-          type: message,
-          payload: data,
+          type: "busItem",
+          message,
+          payload,
           queueItem: { type: item.type, hash: hash(item) },
           direction: "request",
         };
@@ -158,12 +176,25 @@ const queue = (bus: MessageBus) => {
         const resultFromReplay = responseNextInReplayLog<R>(requestItem);
         checkForResponses();
 
+        // console.log(
+        //   {
+        //     [ResponseType.NoResponse]: "No Response",
+        //     [ResponseType.Response]: "Response",
+        //     [ResponseType.ResponseLater]: "Later",
+        //   }[resultFromReplay.type]
+        // );
+
+        // if (processLog.length > 0 && resultFromReplay.type === ResponseType.NoResponse ) {
+        //   return false
+        // }
+
         switch (resultFromReplay.type) {
           case ResponseType.NoResponse:
-            const result: R = await bus.request(message, data);
+            const result: R = await bus.request(message, payload);
             processLog.push({
-              type: message,
-              payload: data,
+              type: "busItem",
+              message,
+              payload,
               result,
               queueItem: { type: item.type, hash: hash(item) },
               direction: "response",
@@ -176,8 +207,9 @@ const queue = (bus: MessageBus) => {
               waitingForReplayResponse.push({
                 resolver: () => {
                   processLog.push({
-                    type: message,
-                    payload: data,
+                    type: "busItem",
+                    message,
+                    payload,
                     result: resultFromReplay.data,
                     queueItem: { type: item.type, hash: hash(item) },
                     direction: "response",
@@ -197,6 +229,7 @@ const queue = (bus: MessageBus) => {
         { request, trigger: bus.trigger },
         { startSubQueue }
       );
+      return true;
     }
   };
 
@@ -237,7 +270,11 @@ const queue = (bus: MessageBus) => {
       do {
         processed = stepsProcessed;
         await processItem();
+
+        console.log(activeQueue[0]);
       } while (stepsProcessed > processed && processReplay.length > 0);
+
+      console.log(stepsProcessed, processed, processReplay.length);
 
       return true;
     },

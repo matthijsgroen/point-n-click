@@ -1,6 +1,6 @@
 import scriptHelpers from "./script-helpers";
 import { Script } from "../types/script";
-import queue, { QueueProcessor, Queue } from "./queue";
+import queue, { QueueProcessor, Queue, ProcessLogBusItem } from "./queue";
 import messageBus, { MessageBus, Event, Listener } from "./messageBus";
 import { configureStore, createSlice } from "@reduxjs/toolkit";
 import { stateSystem } from "./script-helpers/state";
@@ -126,13 +126,15 @@ describe("Script", () => {
 
       expect(q.processLog).toEqual([
         {
-          type: "out:dialog",
+          type: "busItem",
+          message: "out:dialog",
           direction: "request",
           payload: "How are you?",
           queueItem: { hash: "-ufpg3", type: "dialog" },
         },
         {
-          type: "out:dialog",
+          type: "busItem",
+          message: "out:dialog",
           direction: "response",
           payload: "How are you?",
           queueItem: { hash: "-ufpg3", type: "dialog" },
@@ -175,26 +177,30 @@ describe("Script", () => {
 
       expect(q.processLog).toEqual([
         {
-          type: "out:dialog",
+          type: "busItem",
+          message: "out:dialog",
           direction: "request",
           payload: "Good morning",
           queueItem: { hash: "tw31bm", type: "dialog" },
         },
         {
-          type: "out:dialog",
+          type: "busItem",
+          message: "out:dialog",
           direction: "response",
           payload: "Good morning",
           result: undefined,
           queueItem: { hash: "tw31bm", type: "dialog" },
         },
         {
-          type: "out:dialog",
+          type: "busItem",
+          message: "out:dialog",
           direction: "request",
           payload: "How are you?",
           queueItem: { hash: "-ufpg3", type: "dialog" },
         },
         {
-          type: "out:dialog",
+          type: "busItem",
+          message: "out:dialog",
           direction: "response",
           payload: "How are you?",
           result: undefined,
@@ -267,9 +273,11 @@ describe("Script", () => {
 
       await times(3)(() => newQ.processItem());
       const newLog = newQ.processLog;
-      const dialogTexts = newLog
-        .filter((item) => item.direction === "request")
-        .map((item) => item.payload);
+      const dialogTexts = (
+        newLog.filter(
+          (item) => item.type === "busItem" && item.direction === "request"
+        ) as ProcessLogBusItem[]
+      ).map((item) => item.payload);
 
       expect(dialogTexts).toEqual([
         "Good morning",
@@ -386,7 +394,10 @@ describe("Script", () => {
       const newLog = newQ.processLog;
       const dialogTexts = newLog
         .map((item) => {
-          switch (item.type) {
+          if (item.type !== "busItem") {
+            return null;
+          }
+          switch (item.message) {
             case "ui:waitButtonPress":
               return item.direction === "request"
                 ? `waiting for button press ${item.payload.items.join(",")}`
@@ -405,6 +416,75 @@ describe("Script", () => {
         "Here, some money!",
         "waiting for button press extraPath",
       ]);
+    });
+
+    it.only("can replay a log until a content change", async () => {
+      const oldScript: Script = (q) => {
+        const { fadeIn, say } = helpers(q);
+
+        fadeIn();
+        say("Hey, how are you?");
+        say("Do you have any money?");
+        say("Thanks!");
+      };
+
+      const newScript: Script = (q) => {
+        const { fadeIn, say } = helpers(q);
+
+        fadeIn();
+        say("Hey, how are you?");
+        say("Do you have some money?");
+        say("Thanks!");
+      };
+
+      const { q, bus } = setupQueue();
+
+      oldScript(q);
+
+      bus.reply(
+        "out:dialog",
+        (reply: (result: void) => void, _payload: string) => {
+          reply();
+        }
+      );
+
+      await times(4)(() => q.processItem());
+
+      const log = q.processLog;
+      const dialogTexts = (
+        log.filter(
+          (item) => item.type === "busItem" && item.direction === "request"
+        ) as ProcessLogBusItem[]
+      ).map((item) => item.payload);
+
+      expect(dialogTexts).toEqual([
+        "Hey, how are you?",
+        "Do you have any money?",
+        "Thanks!",
+      ]);
+
+      const { q: newQ, bus: newBus } = setupQueue();
+
+      newScript(newQ);
+
+      newBus.reply(
+        "out:dialog",
+        (reply: (result: void) => void, _payload: string) => {
+          reply();
+        }
+      );
+
+      const success = await newQ.replay(log);
+      expect(success).toEqual(false);
+
+      const newLog = newQ.processLog;
+      const newDialogTexts = (
+        newLog.filter(
+          (item) => item.type === "busItem" && item.direction === "request"
+        ) as ProcessLogBusItem[]
+      ).map((item) => item.payload);
+
+      expect(newDialogTexts).toEqual(["Hey, how are you?"]);
     });
   });
 });
