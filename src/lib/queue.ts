@@ -157,6 +157,9 @@ const queue = (bus: MessageBus) => {
 
   const processItem = async () => {
     const item = activeQueue.shift();
+    if (item === undefined) {
+      return true;
+    }
 
     const processor = processors.find((p) => p.type === item?.type);
     if (processor && item) {
@@ -175,18 +178,6 @@ const queue = (bus: MessageBus) => {
         processLog.push(requestItem);
         const resultFromReplay = responseNextInReplayLog<R>(requestItem);
         checkForResponses();
-
-        // console.log(
-        //   {
-        //     [ResponseType.NoResponse]: "No Response",
-        //     [ResponseType.Response]: "Response",
-        //     [ResponseType.ResponseLater]: "Later",
-        //   }[resultFromReplay.type]
-        // );
-
-        // if (processLog.length > 0 && resultFromReplay.type === ResponseType.NoResponse ) {
-        //   return false
-        // }
 
         switch (resultFromReplay.type) {
           case ResponseType.NoResponse:
@@ -222,7 +213,21 @@ const queue = (bus: MessageBus) => {
         }
       };
 
+      const logItem: ProcessLogQueueItem = {
+        type: "queueItem",
+        queueItem: { type: item.type, hash: hash(item) },
+      };
+
+      if (processReplay.length > 0) {
+        if (JSON.stringify(logItem) !== JSON.stringify(processReplay[0])) {
+          activeQueue.unshift(item);
+          return false;
+        }
+        processReplay.shift();
+      }
+
       stepsProcessed++;
+      processLog.push(logItem);
 
       await processor.handle(
         item,
@@ -269,12 +274,12 @@ const queue = (bus: MessageBus) => {
       let processed: number;
       do {
         processed = stepsProcessed;
-        await processItem();
 
-        console.log(activeQueue[0]);
+        const success = await processItem();
+        if (!success) {
+          return false;
+        }
       } while (stepsProcessed > processed && processReplay.length > 0);
-
-      console.log(stepsProcessed, processed, processReplay.length);
 
       return true;
     },

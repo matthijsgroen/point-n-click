@@ -38,11 +38,8 @@ export const callbackSystem = <
     ) => void;
   }> = {
     type: "callback",
-    handle: async (item, channel, helpers) => {
-      // const endSubQueue = startSubQueue();
-      await item.cb({ ...channel, store }, helpers);
-      // endSubQueue();
-    },
+    handle: async (item, channel, helpers) =>
+      item.cb({ ...channel, store }, helpers),
   };
 
   return { processor };

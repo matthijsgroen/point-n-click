@@ -126,6 +126,14 @@ describe("Script", () => {
 
       expect(q.processLog).toEqual([
         {
+          type: "queueItem",
+          queueItem: { type: "screenEffect", hash: "xh1ew3" },
+        },
+        {
+          type: "queueItem",
+          queueItem: { type: "dialog", hash: "-ufpg3" },
+        },
+        {
           type: "busItem",
           message: "out:dialog",
           direction: "request",
@@ -177,6 +185,18 @@ describe("Script", () => {
 
       expect(q.processLog).toEqual([
         {
+          type: "queueItem",
+          queueItem: { type: "screenEffect", hash: "xh1ew3" },
+        },
+        {
+          type: "queueItem",
+          queueItem: { type: "gameState", hash: "-xbl60d" },
+        },
+        {
+          type: "queueItem",
+          queueItem: { type: "dialog", hash: "tw31bm" },
+        },
+        {
           type: "busItem",
           message: "out:dialog",
           direction: "request",
@@ -190,6 +210,10 @@ describe("Script", () => {
           payload: "Good morning",
           result: undefined,
           queueItem: { hash: "tw31bm", type: "dialog" },
+        },
+        {
+          type: "queueItem",
+          queueItem: { type: "dialog", hash: "-ufpg3" },
         },
         {
           type: "busItem",
@@ -418,7 +442,7 @@ describe("Script", () => {
       ]);
     });
 
-    it.only("can replay a log until a content change", async () => {
+    it("can replay a log until a content change", async () => {
       const oldScript: Script = (q) => {
         const { fadeIn, say } = helpers(q);
 
