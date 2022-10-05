@@ -51,6 +51,15 @@ export const exitGame = (code = 0) => {
 let keyPressed: (key: string) => void = () => {};
 const stdin = process.stdin;
 
+let skip = false;
+
+export const wait = (ms: number) =>
+  skip ? undefined : new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+export const stopSkip = () => {
+  skip = false;
+};
+
 export const enableKeyPresses = () => {
   stdin.resume();
   stdin.setRawMode(true);
@@ -61,9 +70,9 @@ export const enableKeyPresses = () => {
     if (key === "\u0003" || key === "\u001b") {
       exitGame();
     }
-    // if (key === "\u0020") {
-    //   skip = true;
-    // }
+    if (key === "\u0020") {
+      skip = true;
+    }
     keyPressed(key);
   });
 };

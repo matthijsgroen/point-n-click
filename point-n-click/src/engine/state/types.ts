@@ -4,6 +4,10 @@ export type GameState<Game extends GameWorld> = {
   currentLocation: keyof Game["locations"];
   previousLocation?: keyof Game["locations"];
   overlayStack: string[];
+  settings: {
+    cpm: number;
+    skipMode: "tillChoice" | "screen" | "off";
+  };
   items: {
     [K in keyof Game["items"]]?: {
       state: Game["items"][K]["states"] | "unknown";

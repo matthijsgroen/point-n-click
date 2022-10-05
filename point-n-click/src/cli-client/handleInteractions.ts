@@ -2,7 +2,7 @@ import { getDisplayText } from "../engine/text/processText";
 import { GameInteraction, GameModel } from "../dsl/ast-types";
 import { GameStateManager } from "../engine/state/types";
 import { GameWorld } from "../dsl/world-types";
-import { cls, keypress } from "./utils";
+import { cls, keypress, stopSkip } from "./utils";
 import { determineTextScope } from "../engine/text/determineTextScope";
 import { renderText } from "./renderText";
 import { runScript } from "./runScript";
@@ -36,11 +36,13 @@ export const handleInteractions = async <Game extends GameWorld>(
         textScope
       )
     );
-    renderText(text, 500, {});
+    const cpm = stateManager.getState().settings.cpm;
+    await renderText(text, cpm, {});
   }
 
   let input: string | undefined;
   let chosenAction: { action: GameInteraction<Game>; key: string } | undefined;
+  stopSkip();
   do {
     input = await keypress();
     chosenAction = possibleInteractions.find(

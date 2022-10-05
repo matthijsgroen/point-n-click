@@ -44,7 +44,8 @@ const statementHandler = <
           textScope,
           textScope
         );
-        renderText(text, 500, { color });
+        const cpm = stateManager.getState().settings.cpm;
+        await renderText(text, cpm, { color });
       }
 
       if (color) {
@@ -141,7 +142,7 @@ const statementHandler = <
         })
       );
     },
-    CharacterSay: ({ character, sentences }, gameModel, stateManager) => {
+    CharacterSay: async ({ character, sentences }, gameModel, stateManager) => {
       const name =
         stateManager.getState().characters[character]?.name ??
         gameModel.settings.characterConfigs[character].defaultName;
@@ -171,7 +172,8 @@ const statementHandler = <
         if (Number(index) === sentences.length - 1) {
           text.push({ type: "text", text: '"' });
         }
-        renderText(text, 500, { color });
+        const cpm = stateManager.getState().settings.cpm;
+        await renderText(text, cpm, { color });
       }
       console.log("");
       if (useColor && color) {

@@ -7,6 +7,10 @@ export const createDefaultState = <Game extends GameWorld>(
 ): GameState<Game> => ({
   currentLocation: gameModel.locations[0].id,
   overlayStack: [],
+  settings: {
+    cpm: 3000,
+    skipMode: "off",
+  },
   items: {},
   characters: Object.entries(gameModel.settings.characterConfigs).reduce<
     Partial<GameState<Game>["characters"]>

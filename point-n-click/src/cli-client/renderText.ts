@@ -1,8 +1,10 @@
 import { FormattedText } from "../engine/text/types";
 import { getSettings } from "./settings";
-import { resetStyling, setStyling, TextStyling } from "./utils";
+import { wait, resetStyling, setStyling, TextStyling } from "./utils";
 
-export const renderText = (
+const minute = 60e3;
+
+export const renderText = async (
   text: FormattedText,
   cpm: number,
   styling: TextStyling,
@@ -13,7 +15,17 @@ export const renderText = (
   }
   for (const element of text) {
     if (element.type === "text") {
-      process.stdout.write(element.text);
+      if (cpm === Infinity || cpm === 0) {
+        process.stdout.write(element.text);
+      } else {
+        const delay = minute / cpm;
+        const chars = element.text.split("");
+
+        for (const char of chars) {
+          process.stdout.write(char);
+          await wait(delay);
+        }
+      }
     }
     if (element.type === "formatting") {
       const newStyling = {
@@ -31,7 +43,7 @@ export const renderText = (
       if (element.format === "s") {
         newStyling.strikeThrough = true;
       }
-      renderText(element.contents, cpm, newStyling, false);
+      await renderText(element.contents, cpm, newStyling, false);
       if (getSettings().color) {
         resetStyling();
         setStyling(styling);

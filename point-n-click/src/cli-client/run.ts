@@ -20,6 +20,9 @@ export const runGame =
       ...createDefaultState(gameModel),
       ...gameModel.settings.initialState,
     };
+    if (color === false) {
+      gameState.settings.cpm = Infinity;
+    }
 
     const stateManager: GameStateManager<Game> = {
       getState: () => gameState,
