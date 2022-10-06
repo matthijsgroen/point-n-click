@@ -1,6 +1,6 @@
 {
   "name": "point-n-click",
-  "version": "2.0.0-alpha.0",
+  "version": "2.0.0-alhpa.0",
   "description": "Adventure game engine, from text to graphical",
   "license": "MIT",
   "source": "./src/index.ts",
