@@ -1,6 +1,6 @@
 {
   "name": "point-n-click",
-  "version": "2.0.0",
+  "version": "2.0.0-alpha.0",
   "description": "Adventure game engine, from text to graphical",
   "license": "MIT",
   "source": "./src/index.ts",
@@ -11,6 +11,10 @@
     "build": "parcel build",
     "watch": "parcel watch"
   },
+  "bin": "./bin/point-n-click.js",
+  "files": [
+    "bin/"
+  ],
   "devDependencies": {
     "@parcel/packager-ts": "2.7.0",
     "@parcel/transformer-typescript-types": "2.7.0",

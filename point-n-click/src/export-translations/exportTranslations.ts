@@ -62,7 +62,11 @@ const mergeTranslations = (
   const result: TranslationFile = {};
 
   for (const removedKey of removedKeys) {
-    result[`DELETED ${removedKey}`] = existingTranslations[removedKey];
+    if (removedKey.startsWith("DELETED ")) {
+      result[removedKey] = existingTranslations[removedKey];
+    } else {
+      result[`DELETED ${removedKey}`] = existingTranslations[removedKey];
+    }
   }
   for (const addedKey of addedKeys) {
     result[addedKey] = newTranslations[addedKey];
