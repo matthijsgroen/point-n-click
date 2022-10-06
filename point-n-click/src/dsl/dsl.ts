@@ -13,10 +13,8 @@ import type {
   ConversationScript as OverlayScript,
 } from "./world-types";
 
-let worldModel: GameModel<GameWorld> | undefined = undefined;
-
 export const world = <Game extends GameWorld>(settings: Settings<Game>) => {
-  worldModel = {
+  let worldModel: GameModel<GameWorld> = {
     settings: settings as Settings<GameWorld>,
     locations: [],
   };
@@ -210,12 +208,10 @@ export const world = <Game extends GameWorld>(settings: Settings<Game>) => {
     },
     onState,
     ...dslStateConditions<Game>(),
+    __exportWorld: () => worldModel,
   };
 };
 
 export type GameConverter = <Game extends GameWorld>(
   model: GameModel<Game> | undefined
 ) => void;
-
-export const convertGame = <Game extends GameWorld>(converter: GameConverter) =>
-  converter(worldModel as unknown as GameModel<Game>);

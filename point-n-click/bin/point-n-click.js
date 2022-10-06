@@ -1,3 +1,3 @@
 #!/usr/bin/env node
 
-require("../dist/main").cli(process.args);
+require("../dist/main").cli(process.argv);
