@@ -1,4 +1,5 @@
 import { createWorkerFarm, Parcel } from "@parcel/core";
+import { PackagedBundle } from "@parcel/types";
 import { MemoryFS } from "@parcel/fs";
 import { readFile, writeFile } from "fs/promises";
 import path, { join } from "path";
@@ -36,6 +37,20 @@ const loadTranslationData = async (
   return translationData;
 };
 
+const convertToGameModel = async (
+  fileContents: string
+): Promise<GameModel<GameWorld>> => {
+  const absPath = path.resolve(`./${CACHE_FOLDER}/contents.js`);
+  await writeFile(absPath, fileContents, "utf-8");
+
+  const gameModel = await import(absPath);
+  const jsonModel: GameModel<GameWorld> =
+    gameModel.default.default.__exportWorld();
+  const absContentPath = path.resolve(`./${CACHE_FOLDER}/contents.json`);
+  await writeFile(absContentPath, JSON.stringify(jsonModel), "utf-8");
+  return jsonModel;
+};
+
 export const devServer = async (fileName: string, options: ServerOptions) => {
   await mkdir(CACHE_FOLDER);
 
@@ -54,13 +69,7 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
     let { bundleGraph } = await bundler.run();
     for (let bundle of bundleGraph.getBundles()) {
       const gameContentsDSL = await outputFS.readFile(bundle.filePath, "utf-8");
-      const absPath = path.resolve(`./${CACHE_FOLDER}/contents.js`);
-      await writeFile(absPath, gameContentsDSL, "utf-8");
-
-      const gameModel = await import(absPath);
-      jsonModel = gameModel.default.default.__exportWorld();
-      const absContentPath = path.resolve(`./${CACHE_FOLDER}/contents.json`);
-      await writeFile(absContentPath, JSON.stringify(jsonModel), "utf-8");
+      jsonModel = await convertToGameModel(gameContentsDSL);
     }
   } catch (err) {
     console.log(err.diagnostics);
