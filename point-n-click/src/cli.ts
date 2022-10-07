@@ -11,9 +11,10 @@ export const cli = (args: string[]) => {
 
   program
     .command("dev [source]")
+    .option("-l, --lang <language>")
     .description("start build server and game")
-    .action((source) => {
-      devServer(source);
+    .action((source, options) => {
+      devServer(source, options);
     });
 
   program.parse(args);

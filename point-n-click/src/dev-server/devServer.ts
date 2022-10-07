@@ -1,17 +1,42 @@
 import { createWorkerFarm, Parcel } from "@parcel/core";
 import { MemoryFS } from "@parcel/fs";
-import { writeFile } from "fs/promises";
-import path from "path";
+import { readFile, writeFile } from "fs/promises";
+import path, { join } from "path";
 import { runGame } from "../cli-client/run";
 import { GameModel } from "../dsl/ast-types";
 import { GameWorld } from "../dsl/world-types";
+import { gameModelManager } from "../engine/model/gameModel";
+import { TranslationFile } from "../export-translations/exportTranslations";
 import { mkdir } from "./mkdir";
 
 const CACHE_FOLDER = ".point-n-cache";
 
-export const devServer = async (fileName: string) => {
-  console.log("dev command called", fileName);
+type ServerOptions = {
+  lang: string;
+};
 
+const loadTranslationData = async (
+  locale?: string
+): Promise<TranslationFile | undefined> => {
+  const runRoot = process.cwd();
+
+  let translationData: TranslationFile | undefined = undefined;
+  if (locale) {
+    try {
+      const translationFilePath = join(
+        runRoot,
+        "src",
+        "translations",
+        `${locale}.json`
+      );
+      const data = await readFile(translationFilePath, { encoding: "utf-8" });
+      translationData = JSON.parse(data) as unknown as TranslationFile;
+    } catch (e) {}
+  }
+  return translationData;
+};
+
+export const devServer = async (fileName: string, options: ServerOptions) => {
   await mkdir(CACHE_FOLDER);
 
   let workerFarm = createWorkerFarm();
@@ -43,6 +68,12 @@ export const devServer = async (fileName: string) => {
     await workerFarm.end();
   }
 
-  // run CLI
-  runGame({ color: true })(jsonModel);
+  const translationData = await loadTranslationData(options.lang);
+
+  if (jsonModel) {
+    const modelManager = gameModelManager(jsonModel);
+
+    // run CLI
+    runGame({ color: true, translationData }, modelManager);
+  }
 };

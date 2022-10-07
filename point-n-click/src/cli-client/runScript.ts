@@ -11,11 +11,12 @@ import { resetStyling, setColor } from "./utils";
 import { renderText } from "./renderText";
 import { determineTextScope } from "../engine/text/determineTextScope";
 import { FormattedText } from "../engine/text/types";
+import { GameModelManager } from "../../dist/types";
 
 type StatementMap<Game extends GameWorld> = {
   [K in ScriptStatement<Game> as K["statementType"]]: (
     statement: K,
-    gameModel: GameModel<Game>,
+    gameModelManager: GameModelManager<Game>,
     stateManager: GameStateManager<Game>
   ) => Promise<void> | void;
 };
@@ -27,13 +28,15 @@ const statementHandler = <
   statementType: K["statementType"]
 ): ((
   statement: K,
-  gameModel: GameModel<Game>,
+  gameModelManager: GameModelManager<Game>,
   stateManager: GameStateManager<Game>
 ) => Promise<void> | void) => {
   const statementMap: StatementMap<Game> = {
-    Text: async (statement, gameModel, stateManager) => {
+    Text: async (statement, gameModelManager, stateManager) => {
       const useColor = getSettings().color;
-      const color = useColor ? gameModel.settings.defaultTextColor : undefined;
+      const color = useColor
+        ? gameModelManager.getModel().settings.defaultTextColor
+        : undefined;
 
       const textScope = determineTextScope(stateManager, "text");
 
@@ -53,13 +56,17 @@ const statementHandler = <
       }
       console.log("");
     },
-    Travel: ({ destination }, _gameModel, stateManager) => {
+    Travel: ({ destination }, _gameModelManager, stateManager) => {
       stateManager.updateState((state) => ({
         ...state,
         currentLocation: destination,
       }));
     },
-    UpdateItemState: ({ stateItem, newState }, _gameModel, stateManager) => {
+    UpdateItemState: (
+      { stateItem, newState },
+      _gameModelManager,
+      stateManager
+    ) => {
       stateManager.updateState(
         produce((draft) => {
           const item = (draft as GameState<Game>).items[stateItem];
@@ -74,7 +81,11 @@ const statementHandler = <
         })
       );
     },
-    UpdateItemFlag: ({ stateItem, flag, value }, _gameModel, stateManager) => {
+    UpdateItemFlag: (
+      { stateItem, flag, value },
+      _gameModelManager,
+      stateManager
+    ) => {
       stateManager.updateState(
         produce((draft) => {
           const item = (draft as GameState<Game>).items[stateItem];
@@ -91,7 +102,7 @@ const statementHandler = <
     },
     UpdateCharacterState: (
       { stateItem, newState },
-      _gameModel,
+      _gameModelManager,
       stateManager
     ) => {
       stateManager.updateState(
@@ -102,7 +113,7 @@ const statementHandler = <
     },
     UpdateCharacterFlag: (
       { stateItem, flag, value },
-      _gameModel,
+      _gameModelManager,
       stateManager
     ) => {
       stateManager.updateState(
@@ -112,7 +123,11 @@ const statementHandler = <
         })
       );
     },
-    UpdateCharacterName: ({ character, newName }, _gameModel, stateManager) => {
+    UpdateCharacterName: (
+      { character, newName },
+      _gameModelManager,
+      stateManager
+    ) => {
       stateManager.updateState(
         produce((draft) => {
           (draft as GameState<Game>).characters[character].name = newName;
@@ -121,7 +136,7 @@ const statementHandler = <
     },
     UpdateLocationState: (
       { stateItem, newState },
-      _gameModel,
+      _gameModelManager,
       stateManager
     ) => {
       stateManager.updateState(
@@ -132,7 +147,7 @@ const statementHandler = <
     },
     UpdateLocationFlag: (
       { stateItem, flag, value },
-      _gameModel,
+      _gameModelManager,
       stateManager
     ) => {
       stateManager.updateState(
@@ -142,14 +157,20 @@ const statementHandler = <
         })
       );
     },
-    CharacterSay: async ({ character, sentences }, gameModel, stateManager) => {
+    CharacterSay: async (
+      { character, sentences },
+      gameModelManager,
+      stateManager
+    ) => {
       const name =
         stateManager.getState().characters[character]?.name ??
-        gameModel.settings.characterConfigs[character].defaultName;
+        gameModelManager.getModel().settings.characterConfigs[character]
+          .defaultName;
 
       const useColor = getSettings().color;
       const color = useColor
-        ? gameModel.settings.characterConfigs[character].textColor
+        ? gameModelManager.getModel().settings.characterConfigs[character]
+            .textColor
         : undefined;
 
       const textScope = determineTextScope(stateManager, String(character));
@@ -182,29 +203,29 @@ const statementHandler = <
     },
     Condition: async (
       { condition, body, elseBody },
-      gameModel,
+      gameModelManager,
       stateManager
     ) => {
       if (testCondition(condition, stateManager)) {
-        await runScript(body, gameModel, stateManager);
+        await runScript(body, gameModelManager, stateManager);
       } else {
-        await runScript(elseBody, gameModel, stateManager);
+        await runScript(elseBody, gameModelManager, stateManager);
       }
     },
-    OpenOverlay: async (statement, gameModel, stateManager) => {
+    OpenOverlay: async (statement, gameModelManager, stateManager) => {
       await handleOverlay(
         statement.overlayId,
-        gameModel,
+        gameModelManager,
         stateManager,
         statement.onStart.script,
         statement.onEnd.script,
         statement.interactions
       );
       if (stateManager.getState().overlayStack.length === 0) {
-        await describeLocation(gameModel, stateManager);
+        await describeLocation(gameModelManager, stateManager);
       }
     },
-    CloseOverlay: ({ overlayId }, _gameModel, stateManager) => {
+    CloseOverlay: ({ overlayId }, _gameModelManager, stateManager) => {
       stateManager.updateState(
         produce((draft) => {
           draft.overlayStack = draft.overlayStack.filter(
@@ -217,20 +238,20 @@ const statementHandler = <
 
   return statementMap[statementType] as (
     statement: K,
-    gameModel: GameModel<Game>,
+    gameModelManager: GameModelManager<Game>,
     stateManager: GameStateManager<Game>
   ) => Promise<void> | void;
 };
 
 export const runScript = async <Game extends GameWorld>(
   script: ScriptAST<Game>,
-  gameModel: GameModel<Game>,
+  gameModelManager: GameModelManager<Game>,
   stateManager: GameStateManager<Game>
 ) => {
   for (const statement of script) {
     const handler = statementHandler<Game, ScriptStatement<Game>>(
       statement.statementType
     );
-    await handler(statement, gameModel, stateManager);
+    await handler(statement, gameModelManager, stateManager);
   }
 };

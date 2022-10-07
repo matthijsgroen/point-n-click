@@ -3,15 +3,17 @@ import { GameStateManager } from "../engine/state/types";
 import { GameWorld } from "../dsl/world-types";
 import { runScript } from "./runScript";
 import { exitGame } from "./utils";
+import { GameModelManager } from "../engine/model/gameModel";
 
 export const describeLocation = async <Game extends GameWorld>(
-  gameModel: GameModel<Game>,
+  gameModelManager: GameModelManager<Game>,
   stateManager: GameStateManager<Game>
 ) => {
   const currentLocation = stateManager.getState().currentLocation;
-  const locationData = gameModel.locations.find(
-    (l) => l.id === currentLocation
-  );
+  const locationData = gameModelManager
+    .getModel()
+    .locations.find((l) => l.id === currentLocation);
+
   if (!locationData) {
     console.log(`Location not found: ${String(currentLocation)}`);
     exitGame(1);
@@ -23,7 +25,7 @@ export const describeLocation = async <Game extends GameWorld>(
       (item) => item.from === previousLocation
     );
     if (enterScript) {
-      await runScript<Game>(enterScript.script, gameModel, stateManager);
+      await runScript<Game>(enterScript.script, gameModelManager, stateManager);
       stateManager.updateState((state) => ({
         ...state,
         previousLocation: currentLocation,
@@ -33,7 +35,7 @@ export const describeLocation = async <Game extends GameWorld>(
 
   await runScript<Game>(
     locationData?.describe.script || [],
-    gameModel,
+    gameModelManager,
     stateManager
   );
 };

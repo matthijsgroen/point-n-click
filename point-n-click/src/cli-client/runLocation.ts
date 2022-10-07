@@ -1,24 +1,25 @@
-import { GameModel } from "../dsl/ast-types";
 import { GameStateManager } from "../engine/state/types";
 import { GameWorld } from "../dsl/world-types";
 import { describeLocation } from "./describeLocation";
 import { handleInteractions } from "./handleInteractions";
 import { runScript } from "./runScript";
+import { GameModelManager } from "../engine/model/gameModel";
 
 export const runLocation = async <Game extends GameWorld>(
-  gameModel: GameModel<Game>,
+  gameModelManager: GameModelManager<Game>,
   stateManager: GameStateManager<Game>
 ) => {
-  await describeLocation(gameModel, stateManager);
+  await describeLocation(gameModelManager, stateManager);
 
   const currentLocation = stateManager.getState().currentLocation;
-  const locationData = gameModel.locations.find(
-    (l) => l.id === currentLocation
-  );
+  const locationData = gameModelManager
+    .getModel()
+    .locations.find((l) => l.id === currentLocation);
+
   while (stateManager.getState().currentLocation === currentLocation) {
     await handleInteractions(
       locationData?.interactions || [],
-      gameModel,
+      gameModelManager,
       stateManager
     );
   }
@@ -27,6 +28,6 @@ export const runLocation = async <Game extends GameWorld>(
     (item) => item.to === newLocation
   );
   if (exitScript) {
-    await runScript<Game>(exitScript.script, gameModel, stateManager);
+    await runScript<Game>(exitScript.script, gameModelManager, stateManager);
   }
 };

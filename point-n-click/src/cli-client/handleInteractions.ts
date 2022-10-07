@@ -8,10 +8,11 @@ import { renderText } from "./renderText";
 import { runScript } from "./runScript";
 import { testCondition } from "../engine/state/testCondition";
 import { FormattedText } from "../engine/text/types";
+import { GameModelManager } from "../engine/model/gameModel";
 
 export const handleInteractions = async <Game extends GameWorld>(
   interactions: GameInteraction<Game>[],
-  gameModel: GameModel<Game>,
+  gameModelManager: GameModelManager<Game>,
   stateManager: GameStateManager<Game>
 ) => {
   // prompt: should be default configured, and can be redefined for overlays
@@ -51,5 +52,9 @@ export const handleInteractions = async <Game extends GameWorld>(
   } while (!chosenAction);
   cls();
 
-  await runScript<Game>(chosenAction.action.script, gameModel, stateManager);
+  await runScript<Game>(
+    chosenAction.action.script,
+    gameModelManager,
+    stateManager
+  );
 };
