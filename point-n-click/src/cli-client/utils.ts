@@ -60,21 +60,29 @@ export const stopSkip = () => {
   skip = false;
 };
 
+const keyListener = function (key: string) {
+  // ctrl-c ( end of text )
+  if (key === "\u0003" || key === "\u001b") {
+    exitGame();
+  }
+  if (key === "\u0020") {
+    skip = true;
+  }
+  keyPressed(key);
+};
+
 export const enableKeyPresses = () => {
   stdin.resume();
   stdin.setRawMode(true);
   stdin.setEncoding("utf8");
 
-  stdin.on("data", function (key: string) {
-    // ctrl-c ( end of text )
-    if (key === "\u0003" || key === "\u001b") {
-      exitGame();
-    }
-    if (key === "\u0020") {
-      skip = true;
-    }
-    keyPressed(key);
-  });
+  stdin.on("data", keyListener);
+};
+
+export const stopKeyPresses = () => {
+  stdin.setRawMode(false);
+  stdin.off("data", keyListener);
+  stdin.pause();
 };
 
 export const keypress = () =>

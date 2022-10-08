@@ -64,25 +64,26 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
   });
 
   let jsonModel: GameModel<GameWorld> | undefined = undefined;
+  let modelManager = gameModelManager(undefined);
 
-  try {
-    let { bundleGraph } = await bundler.run();
-    for (let bundle of bundleGraph.getBundles()) {
+  let subscription = await bundler.watch(async (err, event) => {
+    if (err) {
+      // fatal error
+      throw err;
+    }
+
+    if (event && event.type === "buildSuccess") {
+      let bundle = event.bundleGraph.getBundles()[0];
       const gameContentsDSL = await outputFS.readFile(bundle.filePath, "utf-8");
       jsonModel = await convertToGameModel(gameContentsDSL);
+      modelManager.setNewModel(jsonModel);
+    } else if (event && event.type === "buildFailure") {
+      console.log(event.diagnostics);
+      modelManager.setNewModel(undefined);
     }
-  } catch (err) {
-    console.log(err.diagnostics);
-  } finally {
-    await workerFarm.end();
-  }
+  });
 
-  const translationData = await loadTranslationData(options.lang);
-
-  if (jsonModel) {
-    const modelManager = gameModelManager(jsonModel);
-
-    // run CLI
-    runGame({ color: true, translationData }, modelManager);
-  }
+  await runGame({ color: true }, modelManager);
+  await subscription.unsubscribe();
+  process.exit(0);
 };

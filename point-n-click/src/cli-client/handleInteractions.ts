@@ -46,6 +46,15 @@ export const handleInteractions = async <Game extends GameWorld>(
   stopSkip();
   do {
     input = await keypress();
+    if (input === "q") {
+      stateManager.setPlayState("quitting");
+    }
+    if (input === "r") {
+      stateManager.setPlayState("reloading");
+    }
+    if (stateManager.isAborting()) {
+      return;
+    }
     chosenAction = possibleInteractions.find(
       (interaction) => interaction.key === input
     );

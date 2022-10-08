@@ -30,9 +30,14 @@ export type GameState<Game extends GameWorld> = {
   };
 };
 
+export type PlayState = "playing" | "loading" | "quitting" | "reloading";
+
 export type GameStateManager<Game extends GameWorld> = {
   getState: () => GameState<Game>;
   updateState: (
     mutation: (currentState: GameState<Game>) => GameState<Game>
   ) => void;
+  getPlayState: () => PlayState;
+  setPlayState: (state: PlayState) => void;
+  isAborting: () => boolean;
 };

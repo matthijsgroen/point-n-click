@@ -22,6 +22,9 @@ export const runLocation = async <Game extends GameWorld>(
       gameModelManager,
       stateManager
     );
+    if (stateManager.isAborting()) {
+      return;
+    }
   }
   const newLocation = stateManager.getState().currentLocation;
   const exitScript = locationData?.onLeave.find(

@@ -1,5 +1,5 @@
 import produce from "immer";
-import { GameModel, ScriptAST, ScriptStatement } from "../dsl/ast-types";
+import { ScriptAST, ScriptStatement } from "../dsl/ast-types";
 import { GameState, GameStateManager } from "../engine/state/types";
 import { testCondition } from "../engine/state/testCondition";
 import { GameWorld } from "../dsl/world-types";
@@ -11,7 +11,7 @@ import { resetStyling, setColor } from "./utils";
 import { renderText } from "./renderText";
 import { determineTextScope } from "../engine/text/determineTextScope";
 import { FormattedText } from "../engine/text/types";
-import { GameModelManager } from "../../dist/types";
+import { GameModelManager } from "../engine/model/gameModel";
 
 type StatementMap<Game extends GameWorld> = {
   [K in ScriptStatement<Game> as K["statementType"]]: (
@@ -221,6 +221,9 @@ const statementHandler = <
         statement.onEnd.script,
         statement.interactions
       );
+      if (stateManager.isAborting()) {
+        return;
+      }
       if (stateManager.getState().overlayStack.length === 0) {
         await describeLocation(gameModelManager, stateManager);
       }
@@ -249,6 +252,9 @@ export const runScript = async <Game extends GameWorld>(
   stateManager: GameStateManager<Game>
 ) => {
   for (const statement of script) {
+    if (stateManager.isAborting()) {
+      return;
+    }
     const handler = statementHandler<Game, ScriptStatement<Game>>(
       statement.statementType
     );

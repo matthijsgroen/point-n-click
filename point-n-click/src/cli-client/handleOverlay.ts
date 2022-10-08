@@ -28,6 +28,7 @@ export const handleOverlay = async <Game extends GameWorld>(
       stateManager
     );
     currentOverlayId = stateManager.getState().overlayStack.slice(-1)[0];
+    if (stateManager.isAborting()) return;
   } while (currentOverlayId === overlayId);
 
   await runScript(endScript, gameModelManager, stateManager);
