@@ -10,6 +10,7 @@ export type GameWorld = {
   locations: Record<string, WorldObjectSettings>;
   characters: Record<string, WorldObjectSettings>;
   items: Record<string, WorldObjectSettings>;
+  overlays: unknown;
 };
 
 export type Script = () => void;
@@ -30,9 +31,9 @@ export type LocationScript<
   interaction: Interaction<Game>;
 }) => void;
 
-export type ConversationScript<Game extends GameWorld> = (events: {
-  onStart: (script: Script) => void;
-  onEnd: (script: Script) => void;
+export type OverlayScript<Game extends GameWorld> = (events: {
+  onEnter: (script: Script) => void;
+  onLeave: (script: Script) => void;
   interaction: Interaction<Game>;
   closeOverlay: () => void;
 }) => void;

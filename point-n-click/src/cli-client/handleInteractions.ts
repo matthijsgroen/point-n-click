@@ -5,18 +5,19 @@ import { GameWorld } from "../dsl/world-types";
 import { cls, keypress, stopSkip } from "./utils";
 import { determineTextScope } from "../engine/text/determineTextScope";
 import { renderText } from "./renderText";
-import { runScript } from "./runScript";
 import { testCondition } from "../engine/state/testCondition";
 import { FormattedText } from "../engine/text/types";
+import produce from "immer";
 import { GameModelManager } from "../engine/model/gameModel";
 
 export const handleInteractions = async <Game extends GameWorld>(
   interactions: GameInteraction<Game>[],
-  gameModelManager: GameModelManager<Game>,
-  stateManager: GameStateManager<Game>
+  stateManager: GameStateManager<Game>,
+  modelManager: GameModelManager<Game>
 ) => {
   // prompt: should be default configured, and can be redefined for overlays
   console.log("Wat ga je doen:");
+
   const possibleInteractions = interactions
     .filter((interaction) => testCondition(interaction.condition, stateManager))
     .map((action, key) => ({
@@ -45,7 +46,16 @@ export const handleInteractions = async <Game extends GameWorld>(
   let chosenAction: { action: GameInteraction<Game>; key: string } | undefined;
   stopSkip();
   do {
-    input = await keypress();
+    const input = await Promise.race([
+      keypress(),
+      modelManager.waitForChange(),
+    ]);
+    if (typeof input === "boolean") {
+      stateManager.setPlayState("reloading");
+      return;
+    }
+
+    // input = await keypress();
     if (input === "q") {
       stateManager.setPlayState("quitting");
     }
@@ -60,10 +70,10 @@ export const handleInteractions = async <Game extends GameWorld>(
     );
   } while (!chosenAction);
   cls();
-
-  await runScript<Game>(
-    chosenAction.action.script,
-    gameModelManager,
-    stateManager
+  stateManager.updateState(
+    produce((state) => {
+      state.currentInteraction = chosenAction?.action.label;
+    })
   );
+  stateManager.updateSaveState();
 };

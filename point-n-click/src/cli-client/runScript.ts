@@ -213,14 +213,7 @@ const statementHandler = <
       }
     },
     OpenOverlay: async (statement, gameModelManager, stateManager) => {
-      await handleOverlay(
-        statement.overlayId,
-        gameModelManager,
-        stateManager,
-        statement.onStart.script,
-        statement.onEnd.script,
-        statement.interactions
-      );
+      await handleOverlay(statement.overlayId, gameModelManager, stateManager);
       if (stateManager.isAborting()) {
         return;
       }

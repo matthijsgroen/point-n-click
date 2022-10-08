@@ -33,18 +33,6 @@ const processScript = <Game extends GameWorld>(
       processScript(statement.body, enterScriptScope, setTranslationKey);
       processScript(statement.elseBody, enterScriptScope, setTranslationKey);
     }
-    if (statement.statementType === "OpenOverlay") {
-      const overlayScope = ["overlays", statement.overlayId];
-      processScript(statement.onStart.script, overlayScope, setTranslationKey);
-      processScript(statement.onEnd.script, overlayScope, setTranslationKey);
-      for (const interaction of statement.interactions) {
-        setTranslationKey(
-          ["overlays", statement.overlayId, "interactions", interaction.label],
-          interaction.label
-        );
-        processScript(interaction.script, overlayScope, setTranslationKey);
-      }
-    }
   }
 };
 
@@ -133,6 +121,19 @@ export const exportTranslations =
         );
         setTranslationKey(interactionScope, interaction.label);
         processScript(interaction.script, locationScope, setTranslationKey);
+      }
+    }
+
+    for (const overlay of gameModel.overlays) {
+      const overlayScope = ["overlays", String(overlay.id)];
+      processScript(overlay.onEnter.script, overlayScope, setTranslationKey);
+      processScript(overlay.onLeave.script, overlayScope, setTranslationKey);
+      for (const interaction of overlay.interactions) {
+        setTranslationKey(
+          overlayScope.concat("interactions", interaction.label),
+          interaction.label
+        );
+        processScript(interaction.script, overlayScope, setTranslationKey);
       }
     }
 

@@ -3,7 +3,8 @@ import { GameWorld } from "../../dsl/world-types";
 export type GameState<Game extends GameWorld> = {
   currentLocation: keyof Game["locations"];
   previousLocation?: keyof Game["locations"];
-  overlayStack: string[];
+  currentInteraction?: string;
+  overlayStack: Game["overlays"][];
   settings: {
     cpm: number;
     skipMode: "tillChoice" | "screen" | "off";
@@ -37,7 +38,11 @@ export type GameStateManager<Game extends GameWorld> = {
   updateState: (
     mutation: (currentState: GameState<Game>) => GameState<Game>
   ) => void;
+
   getPlayState: () => PlayState;
   setPlayState: (state: PlayState) => void;
   isAborting: () => boolean;
+
+  updateSaveState: () => void;
+  restoreSaveState: () => void;
 };

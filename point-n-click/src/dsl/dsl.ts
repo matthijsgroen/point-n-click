@@ -10,13 +10,14 @@ import type {
   GameWorld,
   LocationScript,
   EvaluateCondition,
-  ConversationScript as OverlayScript,
+  OverlayScript,
 } from "./world-types";
 
 export const world = <Game extends GameWorld>(settings: Settings<Game>) => {
   let worldModel: GameModel<GameWorld> = {
     settings: settings as Settings<GameWorld>,
     locations: [],
+    overlays: [],
   };
 
   let activeScriptScope: ScriptAST<Game> = [];
@@ -44,6 +45,45 @@ export const world = <Game extends GameWorld>(settings: Settings<Game>) => {
   };
 
   return {
+    defineOverlay: (
+      id: Game["overlays"],
+      handleOverlay: OverlayScript<Game>
+    ) => {
+      const overlayAST: GameOverlay<Game> = {
+        id,
+        onEnter: { script: [] },
+        onLeave: { script: [] },
+        interactions: [],
+      };
+
+      handleOverlay({
+        onEnter: (script) => {
+          const startScript = wrapScript(script);
+          overlayAST.onEnter.script = startScript;
+        },
+        onLeave: (script) => {
+          const endScript = wrapScript(script);
+          overlayAST.onLeave.script = endScript;
+        },
+        interaction: (label, condition, script) => {
+          const interactionScript = wrapScript(script);
+          overlayAST.interactions.push({
+            label,
+            condition,
+            script: interactionScript,
+          });
+        },
+        closeOverlay: () => {
+          activeScriptScope.push({
+            statementType: "CloseOverlay",
+            overlayId: id,
+          });
+        },
+      });
+      worldModel?.overlays.push(
+        overlayAST as unknown as GameOverlay<GameWorld>
+      );
+    },
     defineLocation: <Location extends keyof Game["locations"]>(
       location: Location,
       script: LocationScript<Game, Location>
@@ -86,41 +126,6 @@ export const world = <Game extends GameWorld>(settings: Settings<Game>) => {
       worldModel?.locations.push(
         locationAST as unknown as GameLocation<GameWorld>
       );
-    },
-    overlay: (id: string, handleOverlay: OverlayScript<Game>) => {
-      const overlayAST: GameOverlay<Game> = {
-        statementType: "OpenOverlay",
-        overlayId: id,
-        onStart: { script: [] },
-        onEnd: { script: [] },
-        interactions: [],
-      };
-
-      handleOverlay({
-        onStart: (script) => {
-          const startScript = wrapScript(script);
-          overlayAST.onStart.script = startScript;
-        },
-        onEnd: (script) => {
-          const endScript = wrapScript(script);
-          overlayAST.onEnd.script = endScript;
-        },
-        interaction: (label, condition, script) => {
-          const interactionScript = wrapScript(script);
-          overlayAST.interactions.push({
-            label,
-            condition,
-            script: interactionScript,
-          });
-        },
-        closeOverlay: () => {
-          activeScriptScope.push({
-            statementType: "CloseOverlay",
-            overlayId: id,
-          });
-        },
-      });
-      activeScriptScope.push(overlayAST);
     },
     character: <I extends keyof Game["characters"]>(character: I) => ({
       say: (...sentences: string[]) => {
@@ -204,6 +209,12 @@ export const world = <Game extends GameWorld>(settings: Settings<Game>) => {
       activeScriptScope.push({
         statementType: "Travel",
         destination: String(location),
+      });
+    },
+    openOverlay: (id: Game["overlays"]) => {
+      activeScriptScope.push({
+        statementType: "OpenOverlay",
+        overlayId: id,
       });
     },
     onState,

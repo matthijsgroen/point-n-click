@@ -59,6 +59,9 @@ export const wait = (ms: number) =>
 export const stopSkip = () => {
   skip = false;
 };
+export const startSkip = () => {
+  skip = true;
+};
 
 const keyListener = function (key: string) {
   // ctrl-c ( end of text )

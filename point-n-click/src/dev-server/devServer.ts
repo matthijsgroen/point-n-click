@@ -1,5 +1,4 @@
 import { createWorkerFarm, Parcel } from "@parcel/core";
-import { PackagedBundle } from "@parcel/types";
 import { MemoryFS } from "@parcel/fs";
 import { readFile, writeFile } from "fs/promises";
 import path, { join } from "path";
@@ -40,7 +39,9 @@ const loadTranslationData = async (
 const convertToGameModel = async (
   fileContents: string
 ): Promise<GameModel<GameWorld>> => {
-  const absPath = path.resolve(`./${CACHE_FOLDER}/contents.js`);
+  const absPath = path.resolve(
+    `./${CACHE_FOLDER}/contents-${new Date().getTime()}.js`
+  );
   await writeFile(absPath, fileContents, "utf-8");
 
   const gameModel = await import(absPath);
@@ -83,7 +84,9 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
     }
   });
 
-  await runGame({ color: true }, modelManager);
+  const translationData = await loadTranslationData(options.lang);
+
+  await runGame({ color: true, translationData }, modelManager);
   await subscription.unsubscribe();
   process.exit(0);
 };

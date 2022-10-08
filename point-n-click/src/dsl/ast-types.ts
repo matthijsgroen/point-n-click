@@ -29,9 +29,17 @@ export type GameLocation<Game extends GameWorld> = {
   interactions: GameInteraction<Game>[];
 };
 
+export type GameOverlay<Game extends GameWorld> = {
+  id: Game["overlays"];
+  onEnter: { script: ScriptAST<Game> };
+  onLeave: { script: ScriptAST<Game> };
+  interactions: GameInteraction<Game>[];
+};
+
 export type GameModel<Game extends GameWorld> = {
   settings: Settings<Game>;
   locations: GameLocation<Game>[];
+  overlays: GameOverlay<Game>[];
 };
 
 export type ScriptAST<Game extends GameWorld> = ScriptStatement<Game>[];
@@ -45,25 +53,19 @@ export type ScriptStatement<Game extends GameWorld> =
   | UpdateState<Game, "character">
   | UpdateCharacterName<Game>
   | CharacterSay<Game>
-  | GameOverlay<Game>;
-
-export type TextStatement = { statementType: "Text"; sentences: string[] };
-
-export type GameOverlay<Game extends GameWorld> =
   | OpenGameOverlay<Game>
   | CloseGameOverlay<Game>;
 
+export type TextStatement = { statementType: "Text"; sentences: string[] };
+
 export type OpenGameOverlay<Game extends GameWorld> = {
   statementType: "OpenOverlay";
-  overlayId: string;
-  onStart: { script: ScriptAST<Game> };
-  onEnd: { script: ScriptAST<Game> };
-  interactions: GameInteraction<Game>[];
+  overlayId: Game["overlays"];
 };
 
 export type CloseGameOverlay<Game extends GameWorld> = {
   statementType: "CloseOverlay";
-  overlayId: string;
+  overlayId: Game["overlays"];
 };
 
 export type TravelStatement<Game extends GameWorld> = {
