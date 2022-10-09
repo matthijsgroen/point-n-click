@@ -10,6 +10,9 @@ export type TranslationFile = {
   [key: string]: string | TranslationFile;
 };
 
+export const isLocale = (item: unknown): item is Locale =>
+  !!(typeof item === "string" && item.match(/^\w{2}-\w{2}$/));
+
 const processScript = <Game extends GameWorld>(
   script: ScriptAST<Game>,
   enterScriptScope: string[],
@@ -74,102 +77,95 @@ const mergeTranslations = (
   return result;
 };
 
-export const exportTranslations =
-  (folder: string, locales: Locale[]) =>
-  async <Game extends GameWorld>(gameModel?: GameModel<Game>) => {
-    if (!gameModel) {
-      console.log("No valid game file");
-      exitGame(1);
-      return;
+export const exportTranslations = async <Game extends GameWorld>(
+  folder: string,
+  locales: Locale[],
+  gameModel: GameModel<Game>
+) => {
+  const translationObject: TranslationFile = {};
+  const setTranslationKey = (key: string[], value: string) => {
+    let obj = translationObject;
+    const path = key.slice(0, -1);
+    const tail = key.slice(-1)[0];
+    for (const prop of path) {
+      obj[prop] = obj[prop] || {};
+      obj = obj[prop] as TranslationFile;
     }
+    obj[tail] = value;
+  };
 
-    const translationObject: TranslationFile = {};
-    const setTranslationKey = (key: string[], value: string) => {
-      let obj = translationObject;
-      const path = key.slice(0, -1);
-      const tail = key.slice(-1)[0];
-      for (const prop of path) {
-        obj[prop] = obj[prop] || {};
-        obj = obj[prop] as TranslationFile;
-      }
-      obj[tail] = value;
-    };
+  for (const [character, settings] of Object.entries(
+    gameModel.settings.characterConfigs
+  )) {
+    setTranslationKey(
+      ["characters", character, "defaultName"],
+      settings.defaultName
+    );
+  }
 
-    for (const [character, settings] of Object.entries(
-      gameModel.settings.characterConfigs
-    )) {
-      setTranslationKey(
-        ["characters", character, "defaultName"],
-        settings.defaultName
+  for (const location of gameModel.locations) {
+    const locationScope = ["location", String(location.id)];
+    for (const enterScript of location.onEnter) {
+      processScript(enterScript.script, locationScope, setTranslationKey);
+    }
+    for (const leaveScript of location.onLeave) {
+      processScript(leaveScript.script, locationScope, setTranslationKey);
+    }
+    processScript(location.describe.script, locationScope, setTranslationKey);
+
+    for (const interaction of location.interactions) {
+      const interactionScope = locationScope.concat(
+        "interactions",
+        interaction.label
       );
+      setTranslationKey(interactionScope, interaction.label);
+      processScript(interaction.script, locationScope, setTranslationKey);
     }
+  }
 
-    for (const location of gameModel.locations) {
-      const locationScope = ["location", String(location.id)];
-      for (const enterScript of location.onEnter) {
-        processScript(enterScript.script, locationScope, setTranslationKey);
-      }
-      for (const leaveScript of location.onLeave) {
-        processScript(leaveScript.script, locationScope, setTranslationKey);
-      }
-      processScript(location.describe.script, locationScope, setTranslationKey);
-
-      for (const interaction of location.interactions) {
-        const interactionScope = locationScope.concat(
-          "interactions",
-          interaction.label
-        );
-        setTranslationKey(interactionScope, interaction.label);
-        processScript(interaction.script, locationScope, setTranslationKey);
-      }
+  for (const overlay of gameModel.overlays) {
+    const overlayScope = ["overlays", String(overlay.id)];
+    processScript(overlay.onEnter.script, overlayScope, setTranslationKey);
+    processScript(overlay.onLeave.script, overlayScope, setTranslationKey);
+    for (const interaction of overlay.interactions) {
+      setTranslationKey(
+        overlayScope.concat("interactions", interaction.label),
+        interaction.label
+      );
+      processScript(interaction.script, overlayScope, setTranslationKey);
     }
+  }
 
-    for (const overlay of gameModel.overlays) {
-      const overlayScope = ["overlays", String(overlay.id)];
-      processScript(overlay.onEnter.script, overlayScope, setTranslationKey);
-      processScript(overlay.onLeave.script, overlayScope, setTranslationKey);
-      for (const interaction of overlay.interactions) {
-        setTranslationKey(
-          overlayScope.concat("interactions", interaction.label),
-          interaction.label
-        );
-        processScript(interaction.script, overlayScope, setTranslationKey);
-      }
+  try {
+    await mkdir(folder);
+  } catch (e) {
+    if (
+      "code" in (e as Error) &&
+      (e as Error & { code: string }).code === "EEXIST"
+    ) {
+      // no problem
+    } else {
+      throw e;
     }
+  }
+  for (const locale of locales) {
+    const filePath = join(folder, `${locale}.json`);
+    let existingTranslations: TranslationFile = {};
 
     try {
-      await mkdir(folder);
-    } catch (e) {
-      if (
-        "code" in (e as Error) &&
-        (e as Error & { code: string }).code === "EEXIST"
-      ) {
-        // no problem
-      } else {
-        throw e;
+      const fileData = await readFile(filePath, {
+        encoding: "utf-8",
+      });
+      if (fileData) {
+        existingTranslations = JSON.parse(fileData);
       }
-    }
-    for (const locale of locales) {
-      const filePath = join(folder, `${locale}.json`);
-      let existingTranslations: TranslationFile = {};
+    } catch (e) {}
 
-      try {
-        const fileData = await readFile(filePath, {
-          encoding: "utf-8",
-        });
-        if (fileData) {
-          existingTranslations = JSON.parse(fileData);
-        }
-      } catch (e) {}
+    const mergedTranslations = mergeTranslations(
+      translationObject,
+      existingTranslations
+    );
 
-      const mergedTranslations = mergeTranslations(
-        translationObject,
-        existingTranslations
-      );
-
-      await writeFile(
-        filePath,
-        JSON.stringify(mergedTranslations, undefined, 2)
-      );
-    }
-  };
+    await writeFile(filePath, JSON.stringify(mergedTranslations, undefined, 2));
+  }
+};

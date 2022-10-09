@@ -5,17 +5,18 @@ import { testCondition } from "../engine/state/testCondition";
 import { GameWorld } from "../dsl/world-types";
 import { describeLocation } from "./describeLocation";
 import { handleOverlay } from "./handleOverlay";
-import {
-  displayParserError,
-  displayStateError,
-  getDisplayText,
-} from "../engine/text/processText";
+import { getDisplayText, ParseSyntaxError } from "../engine/text/processText";
 import { getSettings } from "./settings";
 import { resetStyling, setColor } from "./utils";
 import { renderText } from "./renderText";
 import { determineTextScope } from "../engine/text/determineTextScope";
 import { FormattedText } from "../engine/text/types";
 import { GameModelManager } from "../engine/model/gameModel";
+import {
+  displayParserError,
+  displayStateError,
+} from "../engine/errors/displayErrors";
+import { StateError } from "../engine/text/applyState";
 
 type StatementMap<Game extends GameWorld> = {
   [K in ScriptStatement<Game> as K["statementType"]]: (
@@ -55,11 +56,11 @@ const statementHandler = <
           const cpm = stateManager.getState().settings.cpm;
           await renderText(text, cpm, { color });
         } catch (e) {
-          if (e.name === "SyntaxError") {
-            displayParserError(sentence, e);
+          if ((e as ParseSyntaxError).name === "SyntaxError") {
+            displayParserError(sentence, e as ParseSyntaxError);
           }
-          if (e.name === "StateError") {
-            displayStateError(sentence, e);
+          if ((e as StateError).name === "StateError") {
+            displayStateError(sentence, e as StateError);
           }
           stateManager.setPlayState("reloading");
           gameModelManager.setNewModel(undefined);

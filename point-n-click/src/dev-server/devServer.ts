@@ -3,13 +3,20 @@ import { MemoryFS } from "@parcel/fs";
 import { readFile, unlink, writeFile } from "fs/promises";
 import path, { join } from "path";
 import { runGame } from "../cli-client/run";
-import { bold, cls, resetStyling } from "../cli-client/utils";
+import { cls } from "../cli-client/utils";
 import { GameModel } from "../dsl/ast-types";
 import { GameWorld } from "../dsl/world-types";
-import { gameModelManager } from "../engine/model/gameModel";
-import { TranslationFile } from "../export-translations/exportTranslations";
+import { GameModelManager, gameModelManager } from "../engine/model/gameModel";
+import {
+  exportTranslations,
+  isLocale,
+  Locale,
+  TranslationFile,
+} from "../export-translations/exportTranslations";
 import { mkdir } from "./mkdir";
-import sourceMap from "source-map";
+import { displayTypescriptError } from "../engine/errors/displayErrors";
+import { updateSettings } from "../cli-client/settings";
+import { fstat, watch } from "fs";
 
 const CACHE_FOLDER = ".point-n-cache";
 
@@ -33,9 +40,27 @@ const loadTranslationData = async (
       );
       const data = await readFile(translationFilePath, { encoding: "utf-8" });
       translationData = JSON.parse(data) as unknown as TranslationFile;
+
+      updateSettings({ translationData });
     } catch (e) {}
   }
   return translationData;
+};
+
+const watchTranslations = <Game extends GameWorld>(
+  locale: Locale,
+  gameModelManager: GameModelManager<Game>
+): AbortController => {
+  const ac = new AbortController();
+  const { signal } = ac;
+
+  const fileName = join(process.cwd(), "src", "translations", `${locale}.json`);
+  watch(fileName, { signal }, async () => {
+    await loadTranslationData(locale);
+    gameModelManager.setNewModel(gameModelManager.getModel());
+  });
+
+  return ac;
 };
 
 const convertToGameModel = async (
@@ -76,6 +101,9 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
   let jsonModel: GameModel<GameWorld> | undefined = undefined;
   let modelManager = gameModelManager(undefined);
 
+  let watchingTranslation: undefined | string = undefined;
+  let translationWatchController: undefined | AbortController = undefined;
+
   let subscription = await bundler.watch(async (err, event) => {
     if (err) {
       // fatal error
@@ -87,6 +115,24 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
       const gameContentsDSL = await outputFS.readFile(bundle.filePath, "utf-8");
       try {
         jsonModel = await convertToGameModel(gameContentsDSL);
+
+        const defaultLocale = jsonModel.settings.defaultLocale;
+        if (isLocale(options.lang) && options.lang !== defaultLocale) {
+          await exportTranslations(
+            join(process.cwd(), "src", "translations"),
+            [options.lang],
+            jsonModel
+          );
+
+          if (!watchingTranslation) {
+            translationWatchController = watchTranslations(
+              options.lang,
+              modelManager
+            );
+            watchingTranslation = options.lang;
+          }
+        }
+
         modelManager.setNewModel(jsonModel);
       } catch (e) {
         cls();
@@ -95,40 +141,7 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
             `${bundle.filePath}.map`,
             "utf-8"
           );
-          const mapping = new sourceMap.SourceMapConsumer(
-            gameContentsSourceMap
-          );
-          const [line, column] = e.stack
-            .split("\n")[1]
-            .split(":")
-            .slice(-2)
-            .map((num: string) => parseInt(num, 10));
-
-          const result = (await mapping).originalPositionFor({ line, column });
-          console.log(e.message);
-
-          console.log(
-            `  at ${process.cwd()}${result.source}:${result.line}:${
-              result.column
-            }`
-          );
-          console.log("");
-          if (result.source && result.line) {
-            const line = result.line;
-            const originalContents =
-              (await mapping).sourceContentFor(result.source)?.split("\n") ??
-              [];
-
-            const errorLines = originalContents.slice(line - 3, line + 2);
-
-            errorLines.forEach((l, index) => {
-              if (index === 2) {
-                bold();
-              }
-              console.log(`${line - 2 + index} ${index == 2 ? ">" : " "} ${l}`);
-              resetStyling();
-            });
-          }
+          displayTypescriptError(gameContentsSourceMap, e);
         }
         modelManager.setNewModel(undefined);
       }
@@ -143,5 +156,8 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
 
   await runGame({ color: true, translationData }, modelManager);
   await subscription.unsubscribe();
+  if (translationWatchController) {
+    (translationWatchController as AbortController).abort();
+  }
   process.exit(0);
 };

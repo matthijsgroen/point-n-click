@@ -31,25 +31,3 @@ export type ParseSyntaxError = Error & {
   };
   found: string;
 };
-
-export const displayParserError = (text: string, e: ParseSyntaxError) => {
-  resetStyling();
-  console.log(`Could not parse:\n'${text}'`);
-  console.log(
-    `${Array(e.location.start.offset + 1)
-      .fill(" ")
-      .join("")}^`
-  );
-  console.log(e.message);
-  if (e.found === "[") {
-    console.log(
-      "An interpolation was encountered, but it was not closed. (missing ']'?)"
-    );
-  }
-};
-
-export const displayStateError = (text: string, e: StateError) => {
-  resetStyling();
-  console.log(`Could not interpolate:\n'${text}'`);
-  console.log(e.message);
-};
