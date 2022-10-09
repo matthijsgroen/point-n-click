@@ -2,6 +2,7 @@ import { mkdir, writeFile, readFile } from "fs/promises";
 import { join } from "path";
 import { exitGame } from "../cli-client/utils";
 import { GameModel, ScriptAST } from "../dsl/ast-types";
+import { DEFAULT_ACTION_PROMPT } from "../dsl/constants";
 import { GameWorld } from "../dsl/world-types";
 
 export type Locale = `${string}-${string}`;
@@ -94,6 +95,10 @@ export const exportTranslations = async <Game extends GameWorld>(
     obj[tail] = value;
   };
 
+  setTranslationKey(
+    ["settings", "defaultActionPrompt"],
+    gameModel.settings.defaultActionPrompt ?? DEFAULT_ACTION_PROMPT
+  );
   for (const [character, settings] of Object.entries(
     gameModel.settings.characterConfigs
   )) {

@@ -6,6 +6,7 @@ export type Settings<Game extends GameWorld> = {
   defaultLocale: `${string}-${string}`;
   initialState: Partial<GameState<Game>>;
   defaultTextColor?: HexColor;
+  defaultActionPrompt?: string;
   characterConfigs: Record<
     keyof Game["characters"],
     {

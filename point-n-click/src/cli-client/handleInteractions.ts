@@ -9,6 +9,8 @@ import { testCondition } from "../engine/state/testCondition";
 import { FormattedText } from "../engine/text/types";
 import produce from "immer";
 import { GameModelManager } from "../engine/model/gameModel";
+import { getTranslationText } from "../engine/text/getTranslationText";
+import { DEFAULT_ACTION_PROMPT } from "../dsl/constants";
 
 export const handleInteractions = async <Game extends GameWorld>(
   interactions: GameInteraction<Game>[],
@@ -16,7 +18,11 @@ export const handleInteractions = async <Game extends GameWorld>(
   modelManager: GameModelManager<Game>
 ) => {
   // prompt: should be default configured, and can be redefined for overlays
-  console.log("Wat ga je doen:");
+  console.log(
+    getTranslationText(["settings"], "defaultActionPrompt") ??
+      modelManager.getModel().settings.defaultActionPrompt ??
+      DEFAULT_ACTION_PROMPT
+  );
 
   const possibleInteractions = interactions
     .filter((interaction) => testCondition(interaction.condition, stateManager))
