@@ -60,6 +60,12 @@ export const runGame = async <Game extends GameWorld>(
   while (stateManager.getPlayState() !== "quitting") {
     await runLocation(gameModelManager, stateManager);
     if (stateManager.getPlayState() === "reloading") {
+      let model = gameModelManager.getModel();
+      while (!gameModelManager.hasModel()) {
+        await gameModelManager.waitForChange();
+        model = gameModelManager.getModel();
+      }
+
       cls();
       stateManager.setPlayState("playing");
       startSkip();

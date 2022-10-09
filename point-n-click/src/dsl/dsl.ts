@@ -14,8 +14,8 @@ import type {
 } from "./world-types";
 
 export const world = <Game extends GameWorld>(settings: Settings<Game>) => {
-  let worldModel: GameModel<GameWorld> = {
-    settings: settings as Settings<GameWorld>,
+  let worldModel: GameModel<Game> = {
+    settings: settings as Settings<Game>,
     locations: [],
     overlays: [],
   };
@@ -80,9 +80,7 @@ export const world = <Game extends GameWorld>(settings: Settings<Game>) => {
           });
         },
       });
-      worldModel?.overlays.push(
-        overlayAST as unknown as GameOverlay<GameWorld>
-      );
+      worldModel?.overlays.push(overlayAST as unknown as GameOverlay<Game>);
     },
     defineLocation: <Location extends keyof Game["locations"]>(
       location: Location,
@@ -123,9 +121,7 @@ export const world = <Game extends GameWorld>(settings: Settings<Game>) => {
           });
         },
       });
-      worldModel?.locations.push(
-        locationAST as unknown as GameLocation<GameWorld>
-      );
+      worldModel?.locations.push(locationAST as unknown as GameLocation<Game>);
     },
     character: <I extends keyof Game["characters"]>(character: I) => ({
       say: (...sentences: string[]) => {

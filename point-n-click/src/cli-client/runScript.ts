@@ -5,7 +5,11 @@ import { testCondition } from "../engine/state/testCondition";
 import { GameWorld } from "../dsl/world-types";
 import { describeLocation } from "./describeLocation";
 import { handleOverlay } from "./handleOverlay";
-import { getDisplayText } from "../engine/text/processText";
+import {
+  displayParserError,
+  displayStateError,
+  getDisplayText,
+} from "../engine/text/processText";
 import { getSettings } from "./settings";
 import { resetStyling, setColor } from "./utils";
 import { renderText } from "./renderText";
@@ -41,14 +45,26 @@ const statementHandler = <
       const textScope = determineTextScope(stateManager, "text");
 
       for (const sentence of statement.sentences) {
-        const text = getDisplayText(
-          sentence,
-          stateManager,
-          textScope,
-          textScope
-        );
-        const cpm = stateManager.getState().settings.cpm;
-        await renderText(text, cpm, { color });
+        try {
+          const text = getDisplayText(
+            sentence,
+            stateManager,
+            textScope,
+            textScope
+          );
+          const cpm = stateManager.getState().settings.cpm;
+          await renderText(text, cpm, { color });
+        } catch (e) {
+          if (e.name === "SyntaxError") {
+            displayParserError(sentence, e);
+          }
+          if (e.name === "StateError") {
+            displayStateError(sentence, e);
+          }
+          stateManager.setPlayState("reloading");
+          gameModelManager.setNewModel(undefined);
+          return;
+        }
       }
 
       if (color) {

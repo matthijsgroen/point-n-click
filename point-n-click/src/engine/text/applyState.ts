@@ -2,6 +2,11 @@ import { GameWorld } from "../../dsl/world-types";
 import { GameStateManager } from "../state/types";
 import { FormattedText, ParsedText } from "./types";
 
+export type StateError = Error & {
+  name: "StateError";
+  stateKey: string;
+};
+
 export const applyState = <Game extends GameWorld>(
   text: ParsedText,
   stateManager: GameStateManager<Game>,
@@ -26,11 +31,19 @@ export const applyState = <Game extends GameWorld>(
           : statePath;
 
       const state = stateManager.getState();
+      const error = new Error(`STATE NOT FOUND '${element.value}'`);
+      (error as StateError).name = "StateError";
+      (error as StateError).stateKey = element.value;
+
       let value = `STATE NOT FOUND '${element.value}'`;
 
       if (resolveStatePath[0] === "character") {
         const character = resolveStatePath[1] as keyof Game["characters"];
         const property = resolveStatePath[2];
+
+        if (!state.characters[character]) {
+          throw error;
+        }
         if (property === "defaultName") {
           value = state.characters[character].defaultName;
         }
@@ -40,6 +53,10 @@ export const applyState = <Game extends GameWorld>(
             state.characters[character].defaultName;
         }
       }
+      if (value === `STATE NOT FOUND '${element.value}'`) {
+        throw error;
+      }
+
       result.push({
         type: "text",
         text: value,

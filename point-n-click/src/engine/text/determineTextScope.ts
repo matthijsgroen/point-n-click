@@ -7,7 +7,7 @@ export const determineTextScope = <Game extends GameWorld>(
 ): string[] => {
   const overlay = stateManager.getState().overlayStack.at(-1);
   if (overlay) {
-    return ["overlays", overlay, entry];
+    return ["overlays", String(overlay), entry];
   }
   const location = String(stateManager.getState().currentLocation);
   return ["location", location, entry];

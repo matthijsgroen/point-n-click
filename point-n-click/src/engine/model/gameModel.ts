@@ -15,6 +15,7 @@ const emptyGameModel = <Game extends GameWorld>(): GameModel<Game> => ({
     characterConfigs: {} as Settings<Game>["characterConfigs"],
   },
   locations: [],
+  overlays: [],
 });
 
 export const gameModelManager = <Game extends GameWorld>(
