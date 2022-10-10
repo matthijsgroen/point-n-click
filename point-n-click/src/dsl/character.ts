@@ -11,6 +11,7 @@ export type CharacterDSL<
 > = {
   say: (...sentences: string[]) => void;
   setName: (newName: string) => void;
+  setTranslatableName: (newName: string) => void;
   clearCustomName: () => void;
 } & ObjectStateDSL<Game, "character", I>;
 
@@ -38,6 +39,15 @@ export const characterDSLFunctions = <Game extends GameWorld>(
         statementType: "UpdateCharacterName",
         character,
         newName,
+        translatable: false,
+      });
+    },
+    setTranslatableName: (newName) => {
+      addToActiveScript({
+        statementType: "UpdateCharacterName",
+        character,
+        newName,
+        translatable: true,
       });
     },
     clearCustomName: () => {
@@ -45,6 +55,7 @@ export const characterDSLFunctions = <Game extends GameWorld>(
         statementType: "UpdateCharacterName",
         character,
         newName: null,
+        translatable: false,
       });
     },
     ...objectStateManagement(addToActiveScript, "character", character),

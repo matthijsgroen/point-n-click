@@ -17,6 +17,7 @@ import {
   displayStateError,
 } from "../engine/errors/displayErrors";
 import { StateError } from "../engine/text/applyState";
+import { getTranslationText } from "../engine/text/getTranslationText";
 
 type StatementMap<Game extends GameWorld> = {
   [K in ScriptStatement<Game> as K["statementType"]]: (
@@ -155,13 +156,23 @@ const statementHandler = <
       );
     },
     UpdateCharacterName: (
-      { character, newName },
+      { character, newName, translatable },
       _gameModelManager,
       stateManager
     ) => {
       stateManager.updateState(
         produce((draft) => {
-          (draft as GameState<Game>).characters[character].name = newName;
+          if (translatable && newName) {
+            const translatedName =
+              getTranslationText(
+                ["characters", String(character), "names"],
+                newName
+              ) ?? null;
+            (draft as GameState<Game>).characters[character].name =
+              translatedName;
+          } else {
+            (draft as GameState<Game>).characters[character].name = newName;
+          }
         })
       );
     },

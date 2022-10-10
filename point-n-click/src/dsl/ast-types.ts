@@ -113,6 +113,7 @@ export type UpdateValue<
 
 export type UpdateCharacterName<Game extends GameWorld> = {
   statementType: `UpdateCharacterName`;
+  translatable: boolean;
   character: keyof Game["characters"];
   newName: string | null;
 };

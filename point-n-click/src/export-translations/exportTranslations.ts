@@ -1,6 +1,5 @@
 import { mkdir, writeFile, readFile } from "fs/promises";
 import { join } from "path";
-import { exitGame } from "../cli-client/utils";
 import { GameModel, ScriptAST } from "../dsl/ast-types";
 import { DEFAULT_ACTION_PROMPT } from "../dsl/constants";
 import { GameWorld } from "../dsl/world-types";
@@ -32,6 +31,16 @@ const processScript = <Game extends GameWorld>(
           sentence
         );
       }
+    }
+    if (
+      statement.statementType === "UpdateCharacterName" &&
+      statement.translatable &&
+      statement.newName
+    ) {
+      setTranslationKey(
+        ["characters", String(statement.character), "names", statement.newName],
+        statement.newName
+      );
     }
     if (statement.statementType === "Condition") {
       processScript(statement.body, enterScriptScope, setTranslationKey);
