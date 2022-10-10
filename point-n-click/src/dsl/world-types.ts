@@ -3,6 +3,7 @@ import { StateCondition } from "./ast-types";
 export type WorldObjectSettings = {
   states?: unknown;
   flags?: unknown;
+  values?: unknown;
   counters?: unknown;
 };
 

@@ -7,6 +7,8 @@ import {
   OrCondition,
   GameObjectStateCondition,
   GameObjectFlagCondition,
+  NumberComparator,
+  GameObjectValueCondition,
 } from "./ast-types";
 import { GameWorld } from "./world-types";
 
@@ -46,6 +48,20 @@ export const dslStateConditions = <Game extends GameWorld>() => {
       item,
       flag,
     });
+  const hasValue =
+    <I extends "item" | "character" | "location">(key: I) =>
+    <K extends keyof Game[`${I}s`]>(
+      item: K,
+      name: Game[`${I}s`][K]["values"],
+      comparator: NumberComparator,
+      value: number
+    ): GameObjectValueCondition<Game, I> => ({
+      op: `${key}ValueCompare`,
+      item,
+      name,
+      comparator,
+      value,
+    });
 
   return {
     isItemState: isState("item"),
@@ -54,6 +70,9 @@ export const dslStateConditions = <Game extends GameWorld>() => {
     hasCharacterFlag: hasFlag("character"),
     hasLocationFlag: hasFlag("location"),
     hasItemFlag: hasFlag("item"),
+    hasCharacterValue: hasValue("character"),
+    hasLocationValue: hasValue("location"),
+    hasItemValue: hasValue("item"),
     not,
     and,
     or,

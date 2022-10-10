@@ -94,6 +94,13 @@ export type UpdateState<
       stateItem: keyof Game[`${ItemType}s`];
       flag: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["flags"];
       value: boolean;
+    }
+  | {
+      statementType: `Update${Capitalize<ItemType>}Value`;
+      stateItem: keyof Game[`${ItemType}s`];
+      name: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["values"];
+      transactionType: "set" | "increase" | "decrease";
+      value: number;
     };
 
 export type UpdateCharacterName<Game extends GameWorld> = {
@@ -115,6 +122,9 @@ export type StateCondition<Game extends GameWorld> =
   | GameObjectFlagCondition<Game, "item">
   | GameObjectFlagCondition<Game, "location">
   | GameObjectFlagCondition<Game, "character">
+  | GameObjectValueCondition<Game, "item">
+  | GameObjectValueCondition<Game, "location">
+  | GameObjectValueCondition<Game, "character">
   | TrueCondition
   | FalseCondition
   | NegateCondition<Game>
@@ -151,6 +161,24 @@ export type GameObjectFlagCondition<
   op: `${ItemType}FlagSet`;
   item: keyof Game[`${ItemType}s`];
   flag: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["flags"];
+};
+
+export type NumberComparator =
+  | "equal"
+  | "lessThanOrEqual"
+  | "lessThan"
+  | "moreThan"
+  | "moreThanOrEqual";
+
+export type GameObjectValueCondition<
+  Game extends GameWorld,
+  ItemType extends "item" | "location" | "character"
+> = {
+  op: `${ItemType}ValueCompare`;
+  item: keyof Game[`${ItemType}s`];
+  name: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["values"];
+  comparator: NumberComparator;
+  value: number;
 };
 
 export type TrueCondition = {

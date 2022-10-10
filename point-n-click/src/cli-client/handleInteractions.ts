@@ -17,7 +17,6 @@ export const handleInteractions = async <Game extends GameWorld>(
   stateManager: GameStateManager<Game>,
   modelManager: GameModelManager<Game>
 ) => {
-  // prompt: should be default configured, and can be redefined for overlays
   console.log(
     getTranslationText(["settings"], "defaultActionPrompt") ??
       modelManager.getModel().settings.defaultActionPrompt ??

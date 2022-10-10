@@ -93,6 +93,7 @@ const statementHandler = <
             (draft as GameState<Game>).items[stateItem] = {
               state: newState,
               flags: {},
+              values: {},
             };
           }
         })
@@ -112,6 +113,40 @@ const statementHandler = <
             (draft as GameState<Game>).items[stateItem] = {
               state: "unknown",
               flags: { [String(flag)]: value },
+              values: {},
+            };
+          }
+        })
+      );
+    },
+    UpdateItemValue: (
+      { stateItem, value, name, transactionType },
+      _gameModelManager,
+      stateManager
+    ) => {
+      stateManager.updateState(
+        produce((draft) => {
+          const item = (draft as GameState<Game>).items[stateItem];
+          const prevValue = item ? item.values[String(name)] : 0;
+
+          const nextValue = (() => {
+            switch (transactionType) {
+              case "set":
+                return value;
+              case "decrease":
+                return prevValue - value;
+              case "increase":
+                return prevValue + value;
+            }
+          })();
+
+          if (item) {
+            item.values[String(name)] = nextValue;
+          } else {
+            (draft as GameState<Game>).items[stateItem] = {
+              state: "unknown",
+              flags: {},
+              values: { [String(name)]: nextValue },
             };
           }
         })
@@ -137,6 +172,31 @@ const statementHandler = <
         produce((draft) => {
           (draft as GameState<Game>).characters[stateItem].flags[String(flag)] =
             value;
+        })
+      );
+    },
+    UpdateCharacterValue: (
+      { stateItem, value, name, transactionType },
+      _gameModelManager,
+      stateManager
+    ) => {
+      stateManager.updateState(
+        produce((draft) => {
+          const item = (draft as GameState<Game>).characters[stateItem];
+          const prevValue = item ? item.values[String(name)] : 0;
+
+          const nextValue = (() => {
+            switch (transactionType) {
+              case "set":
+                return value;
+              case "decrease":
+                return prevValue - value;
+              case "increase":
+                return prevValue + value;
+            }
+          })();
+
+          item.values[String(name)] = nextValue;
         })
       );
     },
@@ -171,6 +231,31 @@ const statementHandler = <
         produce((draft) => {
           (draft as GameState<Game>).locations[stateItem].flags[String(flag)] =
             value;
+        })
+      );
+    },
+    UpdateLocationValue: (
+      { stateItem, value, name, transactionType },
+      _gameModelManager,
+      stateManager
+    ) => {
+      stateManager.updateState(
+        produce((draft) => {
+          const item = (draft as GameState<Game>).locations[stateItem];
+          const prevValue = item ? item.values[String(name)] : 0;
+
+          const nextValue = (() => {
+            switch (transactionType) {
+              case "set":
+                return value;
+              case "decrease":
+                return prevValue - value;
+              case "increase":
+                return prevValue + value;
+            }
+          })();
+
+          item.values[String(name)] = nextValue;
         })
       );
     },

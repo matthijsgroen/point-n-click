@@ -153,6 +153,33 @@ export const world = <Game extends GameWorld>(settings: Settings<Game>) => {
           value,
         });
       },
+      setValue: (name: Game["characters"][I]["values"], value: number) => {
+        activeScriptScope.push({
+          statementType: "UpdateCharacterValue",
+          stateItem: character,
+          name,
+          transactionType: "set",
+          value,
+        });
+      },
+      increaseValue: (name: Game["characters"][I]["values"], value: number) => {
+        activeScriptScope.push({
+          statementType: "UpdateCharacterValue",
+          stateItem: character,
+          transactionType: "increase",
+          name,
+          value,
+        });
+      },
+      decreaseValue: (name: Game["characters"][I]["values"], value: number) => {
+        activeScriptScope.push({
+          statementType: "UpdateCharacterValue",
+          stateItem: character,
+          transactionType: "decrease",
+          name,
+          value,
+        });
+      },
       clearCustomName: () => {
         activeScriptScope.push({
           statementType: "UpdateCharacterName",
@@ -177,6 +204,33 @@ export const world = <Game extends GameWorld>(settings: Settings<Game>) => {
           value,
         });
       },
+      setValue: (name: Game["items"][I]["values"], value: number) => {
+        activeScriptScope.push({
+          statementType: "UpdateItemValue",
+          stateItem: item,
+          name,
+          transactionType: "set",
+          value,
+        });
+      },
+      increaseValue: (name: Game["items"][I]["values"], value: number) => {
+        activeScriptScope.push({
+          statementType: "UpdateItemValue",
+          stateItem: item,
+          transactionType: "increase",
+          name,
+          value,
+        });
+      },
+      decreaseValue: (name: Game["items"][I]["values"], value: number) => {
+        activeScriptScope.push({
+          statementType: "UpdateItemValue",
+          stateItem: item,
+          transactionType: "decrease",
+          name,
+          value,
+        });
+      },
     }),
     location: <I extends keyof Game["locations"]>(location: I) => ({
       setState: (newState: Game["locations"][I]["states"]) => {
@@ -191,6 +245,33 @@ export const world = <Game extends GameWorld>(settings: Settings<Game>) => {
           statementType: "UpdateLocationFlag",
           stateItem: location,
           flag,
+          value,
+        });
+      },
+      setValue: (name: Game["locations"][I]["values"], value: number) => {
+        activeScriptScope.push({
+          statementType: "UpdateLocationValue",
+          stateItem: location,
+          name,
+          transactionType: "set",
+          value,
+        });
+      },
+      increaseValue: (name: Game["locations"][I]["values"], value: number) => {
+        activeScriptScope.push({
+          statementType: "UpdateLocationValue",
+          stateItem: location,
+          transactionType: "increase",
+          name,
+          value,
+        });
+      },
+      decreaseValue: (name: Game["locations"][I]["values"], value: number) => {
+        activeScriptScope.push({
+          statementType: "UpdateLocationValue",
+          stateItem: location,
+          transactionType: "decrease",
+          name,
           value,
         });
       },
