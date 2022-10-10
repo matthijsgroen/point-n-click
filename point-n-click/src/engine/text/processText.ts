@@ -4,10 +4,17 @@ import { getTranslationText } from "./getTranslationText";
 import { parse } from "./parser";
 import { FormattedText, ParsedText } from "./types";
 import { applyState, StateError } from "./applyState";
-import { resetStyling } from "../../cli-client/utils";
 
 const parseText = (text: string): ParsedText => {
-  return parse(text);
+  try {
+    return parse(text);
+  } catch (e) {
+    if ((e as ParseSyntaxError).name === "SyntaxError") {
+      (e as ParseSyntaxError).text = text;
+    }
+
+    throw e;
+  }
 };
 
 export const getDisplayText = <Game extends GameWorld>(
@@ -30,4 +37,5 @@ export type ParseSyntaxError = Error & {
     };
   };
   found: string;
+  text: string;
 };

@@ -3,9 +3,9 @@ import { StateError } from "../text/applyState";
 import { ParseSyntaxError } from "../text/processText";
 import sourceMap from "source-map";
 
-export const displayParserError = (text: string, e: ParseSyntaxError) => {
+export const displayParserError = (e: ParseSyntaxError) => {
   resetStyling();
-  console.log(`Could not parse:\n'${text}'`);
+  console.log(`Could not parse:\n'${e.text}'`);
   console.log(
     `${Array(e.location.start.offset + 1)
       .fill(" ")

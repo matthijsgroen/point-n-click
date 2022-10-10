@@ -57,7 +57,7 @@ const watchTranslations = <Game extends GameWorld>(
   const fileName = join(process.cwd(), "src", "translations", `${locale}.json`);
   watch(fileName, { signal }, async () => {
     await loadTranslationData(locale);
-    gameModelManager.setNewModel(gameModelManager.getModel());
+    gameModelManager.restoreModel();
   });
 
   return ac;

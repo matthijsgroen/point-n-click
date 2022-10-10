@@ -24,12 +24,12 @@ export const describeLocation = async <Game extends GameWorld>(
     const enterScript = locationData?.onEnter.find(
       (item) => item.from === previousLocation
     );
+    stateManager.updateState((state) => ({
+      ...state,
+      previousLocation: currentLocation,
+    }));
     if (enterScript) {
       await runScript<Game>(enterScript.script, gameModelManager, stateManager);
-      stateManager.updateState((state) => ({
-        ...state,
-        previousLocation: currentLocation,
-      }));
     }
   }
 

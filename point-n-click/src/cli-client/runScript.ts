@@ -57,13 +57,13 @@ const statementHandler = <
           await renderText(text, cpm, { color });
         } catch (e) {
           if ((e as ParseSyntaxError).name === "SyntaxError") {
-            displayParserError(sentence, e as ParseSyntaxError);
+            displayParserError(e as ParseSyntaxError);
           }
           if ((e as StateError).name === "StateError") {
             displayStateError(sentence, e as StateError);
           }
           stateManager.setPlayState("reloading");
-          gameModelManager.setNewModel(undefined);
+          gameModelManager.backupModel();
           return;
         }
       }

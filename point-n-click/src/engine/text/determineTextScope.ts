@@ -9,6 +9,6 @@ export const determineTextScope = <Game extends GameWorld>(
   if (overlay) {
     return ["overlays", String(overlay), entry];
   }
-  const location = String(stateManager.getState().currentLocation);
+  const location = String(stateManager.getState().previousLocation);
   return ["location", location, entry];
 };
