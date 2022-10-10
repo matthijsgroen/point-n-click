@@ -4,8 +4,12 @@ import type {
   GameModel,
   ScriptAST,
   Settings,
+  ScriptStatement,
 } from "./ast-types";
-import { dslStateConditions } from "./dsl-conditions";
+import { characterDSLFunctions, CharacterInterface } from "./character";
+import { ConditionSet, dslStateConditions } from "./dsl-conditions";
+import { itemDSLFunctions, ItemInterface } from "./item";
+import { locationDSLFunctions, LocationInterface } from "./location";
 import type {
   GameWorld,
   LocationScript,
@@ -13,7 +17,30 @@ import type {
   OverlayScript,
 } from "./world-types";
 
-export const world = <Game extends GameWorld>(settings: Settings<Game>) => {
+type GameWorldDSL<Game extends GameWorld> = {
+  defineOverlay: (
+    id: Game["overlays"],
+    handleOverlay: OverlayScript<Game>
+  ) => void;
+  defineLocation: <Location extends keyof Game["locations"]>(
+    location: Location,
+    script: LocationScript<Game, Location>
+  ) => void;
+
+  text: (...sentences: string[]) => void;
+  openOverlay: (id: Game["overlays"]) => void;
+
+  onState: EvaluateCondition<Game>;
+
+  __exportWorld: () => GameModel<Game>;
+} & CharacterInterface<Game> &
+  ItemInterface<Game> &
+  LocationInterface<Game> &
+  ConditionSet<Game>;
+
+export const world = <Game extends GameWorld>(
+  settings: Settings<Game>
+): GameWorldDSL<Game> => {
   let worldModel: GameModel<Game> = {
     settings: settings as Settings<Game>,
     locations: [],
@@ -42,6 +69,10 @@ export const world = <Game extends GameWorld>(settings: Settings<Game>) => {
       body,
       elseBody,
     });
+  };
+
+  const addToActiveScript = (statement: ScriptStatement<Game>) => {
+    activeScriptScope.push(statement);
   };
 
   return {
@@ -123,169 +154,14 @@ export const world = <Game extends GameWorld>(settings: Settings<Game>) => {
       });
       worldModel?.locations.push(locationAST as unknown as GameLocation<Game>);
     },
-    character: <I extends keyof Game["characters"]>(character: I) => ({
-      say: (...sentences: string[]) => {
-        activeScriptScope.push({
-          statementType: "CharacterSay",
-          character,
-          sentences,
-        });
-      },
-      setName: (newName: string) => {
-        activeScriptScope.push({
-          statementType: "UpdateCharacterName",
-          character,
-          newName,
-        });
-      },
-      setState: (newState: Game["characters"][I]["states"]) => {
-        activeScriptScope.push({
-          statementType: "UpdateCharacterState",
-          stateItem: character,
-          newState,
-        });
-      },
-      setFlag: (flag: Game["characters"][I]["flags"], value: boolean) => {
-        activeScriptScope.push({
-          statementType: "UpdateCharacterFlag",
-          stateItem: character,
-          flag,
-          value,
-        });
-      },
-      setValue: (name: Game["characters"][I]["values"], value: number) => {
-        activeScriptScope.push({
-          statementType: "UpdateCharacterValue",
-          stateItem: character,
-          name,
-          transactionType: "set",
-          value,
-        });
-      },
-      increaseValue: (name: Game["characters"][I]["values"], value: number) => {
-        activeScriptScope.push({
-          statementType: "UpdateCharacterValue",
-          stateItem: character,
-          transactionType: "increase",
-          name,
-          value,
-        });
-      },
-      decreaseValue: (name: Game["characters"][I]["values"], value: number) => {
-        activeScriptScope.push({
-          statementType: "UpdateCharacterValue",
-          stateItem: character,
-          transactionType: "decrease",
-          name,
-          value,
-        });
-      },
-      clearCustomName: () => {
-        activeScriptScope.push({
-          statementType: "UpdateCharacterName",
-          character,
-          newName: null,
-        });
-      },
-    }),
-    item: <I extends keyof Game["items"]>(item: I) => ({
-      setState: (newState: Game["items"][I]["states"]) => {
-        activeScriptScope.push({
-          statementType: "UpdateItemState",
-          stateItem: item,
-          newState,
-        });
-      },
-      setFlag: (flag: Game["items"][I]["flags"], value: boolean) => {
-        activeScriptScope.push({
-          statementType: "UpdateItemFlag",
-          stateItem: item,
-          flag,
-          value,
-        });
-      },
-      setValue: (name: Game["items"][I]["values"], value: number) => {
-        activeScriptScope.push({
-          statementType: "UpdateItemValue",
-          stateItem: item,
-          name,
-          transactionType: "set",
-          value,
-        });
-      },
-      increaseValue: (name: Game["items"][I]["values"], value: number) => {
-        activeScriptScope.push({
-          statementType: "UpdateItemValue",
-          stateItem: item,
-          transactionType: "increase",
-          name,
-          value,
-        });
-      },
-      decreaseValue: (name: Game["items"][I]["values"], value: number) => {
-        activeScriptScope.push({
-          statementType: "UpdateItemValue",
-          stateItem: item,
-          transactionType: "decrease",
-          name,
-          value,
-        });
-      },
-    }),
-    location: <I extends keyof Game["locations"]>(location: I) => ({
-      setState: (newState: Game["locations"][I]["states"]) => {
-        activeScriptScope.push({
-          statementType: "UpdateLocationState",
-          stateItem: location,
-          newState,
-        });
-      },
-      setFlag: (flag: Game["locations"][I]["flags"], value: boolean) => {
-        activeScriptScope.push({
-          statementType: "UpdateLocationFlag",
-          stateItem: location,
-          flag,
-          value,
-        });
-      },
-      setValue: (name: Game["locations"][I]["values"], value: number) => {
-        activeScriptScope.push({
-          statementType: "UpdateLocationValue",
-          stateItem: location,
-          name,
-          transactionType: "set",
-          value,
-        });
-      },
-      increaseValue: (name: Game["locations"][I]["values"], value: number) => {
-        activeScriptScope.push({
-          statementType: "UpdateLocationValue",
-          stateItem: location,
-          transactionType: "increase",
-          name,
-          value,
-        });
-      },
-      decreaseValue: (name: Game["locations"][I]["values"], value: number) => {
-        activeScriptScope.push({
-          statementType: "UpdateLocationValue",
-          stateItem: location,
-          transactionType: "decrease",
-          name,
-          value,
-        });
-      },
-    }),
+    ...characterDSLFunctions(addToActiveScript),
+    ...itemDSLFunctions(addToActiveScript),
+    ...locationDSLFunctions(addToActiveScript),
+
     text: (...sentences: string[]) => {
       activeScriptScope.push({
         statementType: "Text",
         sentences,
-      });
-    },
-    travel: (location: keyof Game["locations"]) => {
-      activeScriptScope.push({
-        statementType: "Travel",
-        destination: String(location),
       });
     },
     openOverlay: (id: Game["overlays"]) => {

@@ -49,9 +49,11 @@ export type ScriptStatement<Game extends GameWorld> =
   | TextStatement
   | TravelStatement<Game>
   | ConditionStatement<Game>
-  | UpdateState<Game, "item">
-  | UpdateState<Game, "location">
-  | UpdateState<Game, "character">
+  | UpdateState<Game, StateObject>
+  | UpdateValue<Game, StateObject>
+  | UpdateFlag<Game, "location">
+  | UpdateFlag<Game, "item">
+  | UpdateFlag<Game, "character">
   | UpdateCharacterName<Game>
   | CharacterSay<Game>
   | OpenGameOverlay<Game>
@@ -80,28 +82,34 @@ export type ConditionStatement<Game extends GameWorld> = {
   elseBody: ScriptAST<Game>;
 };
 
+export type StateObject = "item" | "location" | "character";
 export type UpdateState<
   Game extends GameWorld,
-  ItemType extends "item" | "location" | "character"
-> =
-  | {
-      statementType: `Update${Capitalize<ItemType>}State`;
-      stateItem: keyof Game[`${ItemType}s`];
-      newState: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["states"];
-    }
-  | {
-      statementType: `Update${Capitalize<ItemType>}Flag`;
-      stateItem: keyof Game[`${ItemType}s`];
-      flag: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["flags"];
-      value: boolean;
-    }
-  | {
-      statementType: `Update${Capitalize<ItemType>}Value`;
-      stateItem: keyof Game[`${ItemType}s`];
-      name: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["values"];
-      transactionType: "set" | "increase" | "decrease";
-      value: number;
-    };
+  ItemType extends StateObject
+> = {
+  statementType: `UpdateGameObjectState`;
+  objectType: ItemType;
+  stateItem: keyof Game[`${ItemType}s`];
+  newState: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["states"];
+};
+export type UpdateFlag<Game extends GameWorld, ItemType extends StateObject> = {
+  statementType: `UpdateGameObjectFlag`;
+  objectType: ItemType;
+  stateItem: keyof Game[`${ItemType}s`];
+  flag: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["flags"];
+  value: boolean;
+};
+export type UpdateValue<
+  Game extends GameWorld,
+  ItemType extends StateObject
+> = {
+  statementType: `UpdateGameObjectValue`;
+  objectType: ItemType;
+  stateItem: keyof Game[`${ItemType}s`];
+  name: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["values"];
+  transactionType: "set" | "increase" | "decrease";
+  value: number;
+};
 
 export type UpdateCharacterName<Game extends GameWorld> = {
   statementType: `UpdateCharacterName`;
@@ -150,15 +158,18 @@ export type GameObjectStateCondition<
   Game extends GameWorld,
   ItemType extends "item" | "location" | "character"
 > = {
-  op: `${ItemType}Equals`;
+  op: "StateEquals";
+  objectType: ItemType;
   item: keyof Game[`${ItemType}s`];
   state: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["states"] | "unknown";
 };
+
 export type GameObjectFlagCondition<
   Game extends GameWorld,
   ItemType extends "item" | "location" | "character"
 > = {
-  op: `${ItemType}FlagSet`;
+  op: "IsFlagSet";
+  objectType: ItemType;
   item: keyof Game[`${ItemType}s`];
   flag: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["flags"];
 };
@@ -174,7 +185,8 @@ export type GameObjectValueCondition<
   Game extends GameWorld,
   ItemType extends "item" | "location" | "character"
 > = {
-  op: `${ItemType}ValueCompare`;
+  op: "ValueCompare";
+  objectType: ItemType;
   item: keyof Game[`${ItemType}s`];
   name: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["values"];
   comparator: NumberComparator;

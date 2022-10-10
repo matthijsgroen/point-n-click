@@ -79,17 +79,17 @@ const statementHandler = <
         currentLocation: destination,
       }));
     },
-    UpdateItemState: (
-      { stateItem, newState },
+    UpdateGameObjectState: (
+      { stateItem, newState, objectType },
       _gameModelManager,
       stateManager
     ) => {
       stateManager.updateState(
         produce((draft) => {
-          const item = (draft as GameState<Game>).items[stateItem];
+          const item = (draft as GameState<Game>)[`${objectType}s`][stateItem];
           if (item) {
             item.state = newState;
-          } else {
+          } else if (objectType === "item") {
             (draft as GameState<Game>).items[stateItem] = {
               state: newState,
               flags: {},
@@ -99,17 +99,17 @@ const statementHandler = <
         })
       );
     },
-    UpdateItemFlag: (
-      { stateItem, flag, value },
+    UpdateGameObjectFlag: (
+      { stateItem, flag, value, objectType },
       _gameModelManager,
       stateManager
     ) => {
       stateManager.updateState(
         produce((draft) => {
-          const item = (draft as GameState<Game>).items[stateItem];
+          const item = (draft as GameState<Game>)[`${objectType}s`][stateItem];
           if (item) {
             item.flags[String(flag)] = value;
-          } else {
+          } else if (objectType === "item") {
             (draft as GameState<Game>).items[stateItem] = {
               state: "unknown",
               flags: { [String(flag)]: value },
@@ -119,14 +119,14 @@ const statementHandler = <
         })
       );
     },
-    UpdateItemValue: (
-      { stateItem, value, name, transactionType },
+    UpdateGameObjectValue: (
+      { stateItem, value, name, transactionType, objectType },
       _gameModelManager,
       stateManager
     ) => {
       stateManager.updateState(
         produce((draft) => {
-          const item = (draft as GameState<Game>).items[stateItem];
+          const item = (draft as GameState<Game>)[`${objectType}s`][stateItem];
           const prevValue = item ? item.values[String(name)] : 0;
 
           const nextValue = (() => {
@@ -143,60 +143,14 @@ const statementHandler = <
           if (item) {
             item.values[String(name)] = nextValue;
           } else {
-            (draft as GameState<Game>).items[stateItem] = {
-              state: "unknown",
-              flags: {},
-              values: { [String(name)]: nextValue },
-            };
-          }
-        })
-      );
-    },
-    UpdateCharacterState: (
-      { stateItem, newState },
-      _gameModelManager,
-      stateManager
-    ) => {
-      stateManager.updateState(
-        produce((draft) => {
-          (draft as GameState<Game>).characters[stateItem].state = newState;
-        })
-      );
-    },
-    UpdateCharacterFlag: (
-      { stateItem, flag, value },
-      _gameModelManager,
-      stateManager
-    ) => {
-      stateManager.updateState(
-        produce((draft) => {
-          (draft as GameState<Game>).characters[stateItem].flags[String(flag)] =
-            value;
-        })
-      );
-    },
-    UpdateCharacterValue: (
-      { stateItem, value, name, transactionType },
-      _gameModelManager,
-      stateManager
-    ) => {
-      stateManager.updateState(
-        produce((draft) => {
-          const item = (draft as GameState<Game>).characters[stateItem];
-          const prevValue = item ? item.values[String(name)] : 0;
-
-          const nextValue = (() => {
-            switch (transactionType) {
-              case "set":
-                return value;
-              case "decrease":
-                return prevValue - value;
-              case "increase":
-                return prevValue + value;
+            if (objectType === "item") {
+              (draft as GameState<Game>).items[stateItem] = {
+                state: "unknown",
+                flags: {},
+                values: { [String(name)]: nextValue },
+              };
             }
-          })();
-
-          item.values[String(name)] = nextValue;
+          }
         })
       );
     },
@@ -208,54 +162,6 @@ const statementHandler = <
       stateManager.updateState(
         produce((draft) => {
           (draft as GameState<Game>).characters[character].name = newName;
-        })
-      );
-    },
-    UpdateLocationState: (
-      { stateItem, newState },
-      _gameModelManager,
-      stateManager
-    ) => {
-      stateManager.updateState(
-        produce((draft) => {
-          (draft as GameState<Game>).locations[stateItem].state = newState;
-        })
-      );
-    },
-    UpdateLocationFlag: (
-      { stateItem, flag, value },
-      _gameModelManager,
-      stateManager
-    ) => {
-      stateManager.updateState(
-        produce((draft) => {
-          (draft as GameState<Game>).locations[stateItem].flags[String(flag)] =
-            value;
-        })
-      );
-    },
-    UpdateLocationValue: (
-      { stateItem, value, name, transactionType },
-      _gameModelManager,
-      stateManager
-    ) => {
-      stateManager.updateState(
-        produce((draft) => {
-          const item = (draft as GameState<Game>).locations[stateItem];
-          const prevValue = item ? item.values[String(name)] : 0;
-
-          const nextValue = (() => {
-            switch (transactionType) {
-              case "set":
-                return value;
-              case "decrease":
-                return prevValue - value;
-              case "increase":
-                return prevValue + value;
-            }
-          })();
-
-          item.values[String(name)] = nextValue;
         })
       );
     },

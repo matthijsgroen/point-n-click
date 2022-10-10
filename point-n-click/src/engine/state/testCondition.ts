@@ -34,68 +34,26 @@ export const testCondition = <Game extends GameWorld>(
   if (condition.op === "negate") {
     return !testCondition(condition.condition, stateManager);
   }
-  if (condition.op === "itemEquals") {
-    const item = condition.item;
-    const expectedState = condition.state;
-    const actualState = stateManager.getState().items[item]?.state ?? "unknown";
-    return expectedState === actualState;
-  }
-  if (condition.op === "characterEquals") {
+  if (condition.op === "StateEquals") {
     const item = condition.item;
     const expectedState = condition.state;
     const actualState =
-      stateManager.getState().characters[item]?.state ?? "unknown";
+      stateManager.getState()[`${condition.objectType}s`][item]?.state ??
+      "unknown";
     return expectedState === actualState;
   }
-  if (condition.op === "locationEquals") {
-    const item = condition.item;
-    const expectedState = condition.state;
-    const actualState =
-      stateManager.getState().locations[item]?.state ?? "unknown";
-    return expectedState === actualState;
-  }
-  if (condition.op === "characterFlagSet") {
+  if (condition.op === "IsFlagSet") {
     return (
-      stateManager.getState().characters[condition.item]?.flags[
-        String(condition.flag)
-      ] === true
+      stateManager.getState()[`${condition.objectType}s`][condition.item]
+        ?.flags[String(condition.flag)] === true
     );
   }
-  if (condition.op === "locationFlagSet") {
-    return (
-      stateManager.getState().locations[condition.item]?.flags[
-        String(condition.flag)
-      ] === true
-    );
-  }
-  if (condition.op === "itemFlagSet") {
-    return (
-      stateManager.getState().items[condition.item]?.flags[
-        String(condition.flag)
-      ] === true
-    );
-  }
-  if (condition.op === "characterValueCompare") {
+  if (condition.op === "ValueCompare") {
     const comp = condition.comparator;
-    const stateValue =
-      stateManager.getState().characters[condition.item].values[
-        String(condition.name)
-      ] ?? 0;
-    return numberCompare(stateValue, comp, condition.value);
-  }
-  if (condition.op === "locationValueCompare") {
-    const comp = condition.comparator;
-    const stateValue =
-      stateManager.getState().locations[condition.item].values[
-        String(condition.name)
-      ] ?? 0;
-    return numberCompare(stateValue, comp, condition.value);
-  }
-  if (condition.op === "itemValueCompare") {
-    const comp = condition.comparator;
-    const stateItem = stateManager.getState().items[condition.item];
-    const stateValue = stateItem
-      ? stateItem.values[String(condition.name)] ?? 0
+    const stateObject =
+      stateManager.getState()[`${condition.objectType}s`][condition.item];
+    const stateValue = stateObject
+      ? stateObject.values[String(condition.name)] ?? 0
       : 0;
     return numberCompare(stateValue, comp, condition.value);
   }
