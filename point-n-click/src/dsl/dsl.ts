@@ -38,6 +38,17 @@ type GameWorldDSL<Game extends GameWorld> = {
   LocationInterface<Game> &
   ConditionSet<Game>;
 
+export type GameDefinition<Game extends GameWorld> = Game;
+
+/**
+ * This is the starting point of your adventure.
+ *
+ * `world` converts a model of a game world into
+ * a domain specific language to define your game's content.
+ *
+ * @param settings
+ * @returns
+ */
 export const world = <Game extends GameWorld>(
   settings: Settings<Game>
 ): GameWorldDSL<Game> => {
@@ -159,13 +170,13 @@ export const world = <Game extends GameWorld>(
     ...locationDSLFunctions(addToActiveScript),
 
     text: (...sentences: string[]) => {
-      activeScriptScope.push({
+      addToActiveScript({
         statementType: "Text",
         sentences,
       });
     },
     openOverlay: (id: Game["overlays"]) => {
-      activeScriptScope.push({
+      addToActiveScript({
         statementType: "OpenOverlay",
         overlayId: id,
       });
@@ -175,7 +186,3 @@ export const world = <Game extends GameWorld>(
     __exportWorld: () => worldModel,
   };
 };
-
-export type GameConverter = <Game extends GameWorld>(
-  model: GameModel<Game> | undefined
-) => void;

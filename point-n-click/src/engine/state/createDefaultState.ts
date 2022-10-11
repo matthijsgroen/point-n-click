@@ -20,7 +20,7 @@ export const createDefaultState = <Game extends GameWorld>(
       [characterId]: {
         state: "unknown",
         flags: {},
-        values: {},
+        counters: {},
         name: null,
         defaultName: settings.defaultName,
       },
@@ -33,7 +33,7 @@ export const createDefaultState = <Game extends GameWorld>(
         [currentLocation.id]: {
           state: "unknown",
           flags: {},
-          values: {},
+          counters: {},
         },
       };
     },

@@ -1,7 +1,7 @@
 import {
   GameObjectFlagCondition,
   GameObjectStateCondition,
-  GameObjectValueCondition,
+  GameObjectCounterCondition,
   ScriptStatement,
   StateObject,
 } from "./ast-types";
@@ -14,9 +14,9 @@ export type ObjectStateDSL<
 > = {
   setState: (newState: Game[`${T}s`][I]["states"] | "unknown") => void;
   setFlag: (flag: Game[`${T}s`][I]["flags"], value: boolean) => void;
-  setValue: (flag: Game[`${T}s`][I]["values"], value: number) => void;
-  increaseValue: (flag: Game[`${T}s`][I]["values"], value: number) => void;
-  decreaseValue: (flag: Game[`${T}s`][I]["values"], value: number) => void;
+  setCounter: (flag: Game[`${T}s`][I]["counters"], value: number) => void;
+  increaseCounter: (flag: Game[`${T}s`][I]["counters"], value: number) => void;
+  decreaseCounter: (flag: Game[`${T}s`][I]["counters"], value: number) => void;
 
   hasState: (
     state: Game[`${T}s`][I]["states"] | "unknown"
@@ -24,12 +24,12 @@ export type ObjectStateDSL<
   hasFlag: (
     flag: Game[`${T}s`][I]["flags"]
   ) => GameObjectFlagCondition<Game, T>;
-  hasValue: (valueName: Game[`${T}s`][I]["values"]) => {
-    equals: (value: number) => GameObjectValueCondition<Game, T>;
-    lessThan: (value: number) => GameObjectValueCondition<Game, T>;
-    lessThanEquals: (value: number) => GameObjectValueCondition<Game, T>;
-    moreThan: (value: number) => GameObjectValueCondition<Game, T>;
-    moreThanEquals: (value: number) => GameObjectValueCondition<Game, T>;
+  hasCounter: (counterName: Game[`${T}s`][I]["counters"]) => {
+    equals: (value: number) => GameObjectCounterCondition<Game, T>;
+    lessThan: (value: number) => GameObjectCounterCondition<Game, T>;
+    lessThanEquals: (value: number) => GameObjectCounterCondition<Game, T>;
+    moreThan: (value: number) => GameObjectCounterCondition<Game, T>;
+    moreThanEquals: (value: number) => GameObjectCounterCondition<Game, T>;
   };
 };
 
@@ -52,16 +52,16 @@ export const objectStateManagement = <
   },
   setFlag: (flag, value) => {
     addToActiveScript({
-      statementType: `UpdateGameObjectFlag`,
+      statementType: "UpdateGameObjectFlag",
       objectType,
       stateItem: item,
       flag,
       value,
     });
   },
-  setValue: (name, value) => {
+  setCounter: (name, value) => {
     addToActiveScript({
-      statementType: `UpdateGameObjectValue`,
+      statementType: "UpdateGameObjectCounter",
       objectType,
       stateItem: item,
       name,
@@ -69,9 +69,9 @@ export const objectStateManagement = <
       value,
     });
   },
-  increaseValue: (name, value) => {
+  increaseCounter: (name, value) => {
     addToActiveScript({
-      statementType: "UpdateGameObjectValue",
+      statementType: "UpdateGameObjectCounter",
       objectType,
       stateItem: item,
       transactionType: "increase",
@@ -79,9 +79,9 @@ export const objectStateManagement = <
       value,
     });
   },
-  decreaseValue: (name, value) => {
+  decreaseCounter: (name, value) => {
     addToActiveScript({
-      statementType: "UpdateGameObjectValue",
+      statementType: "UpdateGameObjectCounter",
       objectType,
       stateItem: item,
       transactionType: "decrease",
@@ -101,9 +101,9 @@ export const objectStateManagement = <
     item,
     flag,
   }),
-  hasValue: (valueName) => ({
+  hasCounter: (valueName) => ({
     equals: (value) => ({
-      op: "ValueCompare",
+      op: "CounterCompare",
       comparator: "equal",
       objectType,
       item,
@@ -111,7 +111,7 @@ export const objectStateManagement = <
       value,
     }),
     lessThan: (value) => ({
-      op: "ValueCompare",
+      op: "CounterCompare",
       comparator: "lessThan",
       objectType,
       item,
@@ -119,7 +119,7 @@ export const objectStateManagement = <
       value,
     }),
     lessThanEquals: (value) => ({
-      op: "ValueCompare",
+      op: "CounterCompare",
       comparator: "lessThanOrEqual",
       objectType,
       item,
@@ -127,7 +127,7 @@ export const objectStateManagement = <
       value,
     }),
     moreThan: (value) => ({
-      op: "ValueCompare",
+      op: "CounterCompare",
       comparator: "moreThan",
       objectType,
       item,
@@ -135,7 +135,7 @@ export const objectStateManagement = <
       value,
     }),
     moreThanEquals: (value) => ({
-      op: "ValueCompare",
+      op: "CounterCompare",
       comparator: "moreThanOrEqual",
       objectType,
       item,

@@ -11,7 +11,7 @@ export type ItemDSL<
 > = ObjectStateDSL<Game, "item", I>;
 
 export type ItemInterface<Game extends GameWorld> = {
-  item: <I extends keyof Game["items"]>(character: I) => ItemDSL<Game, I>;
+  item: <I extends keyof Game["items"]>(item: I) => ItemDSL<Game, I>;
 };
 
 export const itemDSLFunctions = <Game extends GameWorld>(

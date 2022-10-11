@@ -13,14 +13,14 @@ export type GameState<Game extends GameWorld> = {
     [K in keyof Game["items"]]?: {
       state: Game["items"][K]["states"] | "unknown";
       flags: Record<string, boolean>;
-      values: Record<string, number>;
+      counters: Record<string, number>;
     };
   };
   characters: {
     [K in keyof Game["characters"]]: {
       state: Game["characters"][K]["states"] | "unknown";
       flags: Record<string, boolean>;
-      values: Record<string, number>;
+      counters: Record<string, number>;
       name: string | null;
       defaultName: string;
     };
@@ -29,7 +29,7 @@ export type GameState<Game extends GameWorld> = {
     [K in keyof Game["locations"]]: {
       state: Game["locations"][K]["states"] | "unknown";
       flags: Record<string, boolean>;
-      values: Record<string, number>;
+      counters: Record<string, number>;
     };
   };
 };

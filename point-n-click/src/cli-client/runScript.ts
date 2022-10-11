@@ -94,7 +94,7 @@ const statementHandler = <
             (draft as GameState<Game>).items[stateItem] = {
               state: newState,
               flags: {},
-              values: {},
+              counters: {},
             };
           }
         })
@@ -114,13 +114,13 @@ const statementHandler = <
             (draft as GameState<Game>).items[stateItem] = {
               state: "unknown",
               flags: { [String(flag)]: value },
-              values: {},
+              counters: {},
             };
           }
         })
       );
     },
-    UpdateGameObjectValue: (
+    UpdateGameObjectCounter: (
       { stateItem, value, name, transactionType, objectType },
       _gameModelManager,
       stateManager
@@ -128,7 +128,7 @@ const statementHandler = <
       stateManager.updateState(
         produce((draft) => {
           const item = (draft as GameState<Game>)[`${objectType}s`][stateItem];
-          const prevValue = item ? item.values[String(name)] : 0;
+          const prevValue = item ? item.counters[String(name)] : 0;
 
           const nextValue = (() => {
             switch (transactionType) {
@@ -142,13 +142,13 @@ const statementHandler = <
           })();
 
           if (item) {
-            item.values[String(name)] = nextValue;
+            item.counters[String(name)] = nextValue;
           } else {
             if (objectType === "item") {
               (draft as GameState<Game>).items[stateItem] = {
                 state: "unknown",
                 flags: {},
-                values: { [String(name)]: nextValue },
+                counters: { [String(name)]: nextValue },
               };
             }
           }

@@ -52,9 +52,9 @@ export const applyState = <Game extends GameWorld>(
             state.characters[character].name ||
             state.characters[character].defaultName;
         }
-        if (property === "values") {
+        if (property === "counters") {
           const valueKey = resolveStatePath[3];
-          value = String(state.characters[character].values[valueKey] ?? 0);
+          value = String(state.characters[character].counters[valueKey] ?? 0);
         }
       }
       if (value === `STATE NOT FOUND '${element.value}'`) {

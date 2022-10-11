@@ -48,12 +48,12 @@ export const testCondition = <Game extends GameWorld>(
         ?.flags[String(condition.flag)] === true
     );
   }
-  if (condition.op === "ValueCompare") {
+  if (condition.op === "CounterCompare") {
     const comp = condition.comparator;
     const stateObject =
       stateManager.getState()[`${condition.objectType}s`][condition.item];
     const stateValue = stateObject
-      ? stateObject.values[String(condition.name)] ?? 0
+      ? stateObject.counters[String(condition.name)] ?? 0
       : 0;
     return numberCompare(stateValue, comp, condition.value);
   }
