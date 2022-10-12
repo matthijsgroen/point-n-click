@@ -56,21 +56,21 @@ const mergeTranslations = (
   const newKeys = Object.keys(newTranslations);
   const existingKeys = Object.keys(existingTranslations);
 
-  const removedKeys = existingKeys.filter((k) => !newKeys.includes(k));
+  let removedKeys = existingKeys.filter((k) => !newKeys.includes(k));
   const addedKeys = newKeys.filter((k) => !existingKeys.includes(k));
   const keptKeys = newKeys.filter((k) => existingKeys.includes(k));
 
   const result: TranslationFile = {};
 
-  for (const removedKey of removedKeys) {
-    if (removedKey.startsWith("DELETED ")) {
-      result[removedKey] = existingTranslations[removedKey];
-    } else {
-      result[`DELETED ${removedKey}`] = existingTranslations[removedKey];
-    }
-  }
   for (const addedKey of addedKeys) {
-    result[addedKey] = newTranslations[addedKey];
+    const previouslyRemovedKey = `DELETED ${addedKey}`;
+    if (existingTranslations[previouslyRemovedKey]) {
+      result[addedKey] = existingTranslations[previouslyRemovedKey];
+
+      removedKeys = removedKeys.filter((key) => key !== previouslyRemovedKey);
+    } else {
+      result[addedKey] = newTranslations[addedKey];
+    }
   }
   for (const keptKey of keptKeys) {
     const value = newTranslations[keptKey];
@@ -81,6 +81,16 @@ const mergeTranslations = (
         newTranslations[keptKey] as TranslationFile,
         existingTranslations[keptKey] as TranslationFile
       );
+    }
+  }
+  for (const removedKey of removedKeys) {
+    if (removedKey.startsWith("DELETED ")) {
+      result[removedKey] = existingTranslations[removedKey];
+    } else {
+      if (removedKey !== existingTranslations[removedKey]) {
+        // only keep translation if it was actually translated
+        result[`DELETED ${removedKey}`] = existingTranslations[removedKey];
+      }
     }
   }
 
