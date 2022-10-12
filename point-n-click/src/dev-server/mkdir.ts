@@ -2,7 +2,7 @@ import { mkdir as fsMkdir } from "fs/promises";
 
 export const mkdir = async (folder: string) => {
   try {
-    await fsMkdir(folder);
+    await fsMkdir(folder, { recursive: true });
   } catch (e) {
     if (
       "code" in (e as Error) &&

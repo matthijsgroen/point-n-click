@@ -13,14 +13,13 @@ import {
   exportTranslations,
   Locale,
 } from "../export-translations/exportTranslations";
+import { CACHE_FOLDER } from "./constants";
 import { loadTranslationData } from "./loadTranslationData";
 import { mkdir } from "./mkdir";
 
 type ServerOptions = {
   lang: string;
 };
-
-const CACHE_FOLDER = ".point-n-cache";
 
 const watchTranslations = <Game extends GameWorld>(
   locale: Locale,
