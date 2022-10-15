@@ -1,4 +1,4 @@
 .parcel-cache
 node_modules
 dist
-src/content
+web-client/public/assets/contents.json
