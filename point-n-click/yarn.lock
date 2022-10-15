@@ -751,6 +751,16 @@
     chrome-trace-event "^1.0.2"
     nullthrows "^1.1.1"
 
+"@point-n-click/state@*":
+  version "1.0.0-alpha.0"
+  resolved "https://registry.yarnpkg.com/@point-n-click/state/-/state-1.0.0-alpha.0.tgz#417f78e362fac78031a513088449dd6a7ed606ce"
+  integrity sha512-8yB5Ah9O7mQJ3SUPV2JyfCyLX0vvKnjMhzTRE61NPsLI5+1iA6LtDDtWcwvyNO96lcltE6XjJ75obvUBHc+w9A==
+
+"@point-n-click/types@^1.0.0-alpha.1":
+  version "1.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@point-n-click/types/-/types-1.0.0-alpha.1.tgz#63cf5ae159330266124990f590780b817179f3f6"
+  integrity sha512-iIYWWZfq60TMQD9JbGlv7+wKKQBXQxCk3O7cWE96NUuiGxnpvVmTbVS91oRpo86UNM3ZLoLQZAor92bRAJhYDQ==
+
 "@swc/helpers@^0.4.2":
   version "0.4.11"
   resolved "https://registry.yarnpkg.com/@swc/helpers/-/helpers-0.4.11.tgz#db23a376761b3d31c26502122f349a21b592c8de"
