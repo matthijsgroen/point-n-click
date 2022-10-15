@@ -1,8 +1,8 @@
+import { GameModel } from "@point-n-click/state";
+import { GameWorld, ScriptAST } from "@point-n-click/types";
 import { mkdir, writeFile, readFile } from "fs/promises";
 import { join } from "path";
-import { GameModel, ScriptAST } from "../dsl/ast-types";
 import { DEFAULT_ACTION_PROMPT } from "../dsl/constants";
-import { GameWorld } from "../dsl/world-types";
 
 export type Locale = `${string}-${string}`;
 

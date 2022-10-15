@@ -1,4 +1,4 @@
-import { HexColor } from "../engine/hexColor";
+import { HexColor } from "@point-n-click/state";
 
 export const cls = () => process.stdout.write("\x1Bc");
 

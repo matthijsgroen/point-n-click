@@ -1,5 +1,5 @@
-import { GameWorld } from "../../dsl/world-types";
-import { GameStateManager } from "../state/types";
+import { GameStateManager } from "@point-n-click/state";
+import { GameWorld } from "@point-n-click/types";
 
 export const determineTextScope = <Game extends GameWorld>(
   stateManager: GameStateManager<Game>,

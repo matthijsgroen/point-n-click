@@ -1,27 +1,49 @@
-import { GameState } from "../engine/state/types";
-import { HexColor } from "../engine/hexColor";
-import { GameWorld } from "./world-types";
+import { StateCondition } from "./conditions";
+import { StateObject } from "./state";
+import { GameWorld } from "./world";
 
-export type Settings<Game extends GameWorld> = {
-  defaultLocale: `${string}-${string}`;
-  initialState: Partial<GameState<Game>>;
-  defaultTextColor?: HexColor;
-  defaultActionPrompt?: string;
-  characterConfigs: Record<
-    keyof Game["characters"],
-    {
-      defaultName: string;
-      textColor?: HexColor;
-    }
-  >;
-};
+export type Script = () => void;
+
+export type LocationScript<
+  Game extends GameWorld,
+  Location extends keyof Game["locations"]
+> = (events: {
+  onEnter: (
+    from: Exclude<keyof Game["locations"], Location>,
+    script: Script
+  ) => void;
+  onLeave: (
+    from: Exclude<keyof Game["locations"], Location>,
+    script: Script
+  ) => void;
+  describe: (script: () => void) => void;
+  interaction: Interaction<Game>;
+}) => void;
+
+export type OverlayScript<Game extends GameWorld> = (events: {
+  onEnter: (script: Script) => void;
+  onLeave: (script: Script) => void;
+  interaction: Interaction<Game>;
+  closeOverlay: () => void;
+}) => void;
+
+export type EvaluateCondition<Game extends GameWorld> = (
+  condition: StateCondition<Game>,
+  script: Script,
+  elseScript?: Script
+) => void;
+
+export type Interaction<Game extends GameWorld> = (
+  text: string,
+  condition: StateCondition<Game>,
+  script: Script
+) => void;
 
 export type GameInteraction<Game extends GameWorld> = {
   label: string;
   condition: StateCondition<Game>;
   script: ScriptAST<Game>;
 };
-
 export type GameLocation<Game extends GameWorld> = {
   id: keyof Game["locations"];
   onEnter: { from: keyof Game["locations"]; script: ScriptAST<Game> }[];
@@ -29,20 +51,12 @@ export type GameLocation<Game extends GameWorld> = {
   describe: { script: ScriptAST<Game> };
   interactions: GameInteraction<Game>[];
 };
-
 export type GameOverlay<Game extends GameWorld> = {
   id: Game["overlays"];
   onEnter: { script: ScriptAST<Game> };
   onLeave: { script: ScriptAST<Game> };
   interactions: GameInteraction<Game>[];
 };
-
-export type GameModel<Game extends GameWorld> = {
-  settings: Settings<Game>;
-  locations: GameLocation<Game>[];
-  overlays: GameOverlay<Game>[];
-};
-
 export type ScriptAST<Game extends GameWorld> = ScriptStatement<Game>[];
 
 export type ScriptStatement<Game extends GameWorld> =
@@ -73,6 +87,7 @@ export type TravelStatement<Game extends GameWorld> = {
   statementType: "Travel";
   destination: keyof Game["locations"];
 };
+
 export type ConditionStatement<Game extends GameWorld> = {
   statementType: "Condition";
   condition: StateCondition<Game>;
@@ -80,7 +95,6 @@ export type ConditionStatement<Game extends GameWorld> = {
   elseBody: ScriptAST<Game>;
 };
 
-export type StateObject = "item" | "location" | "character";
 export type UpdateState<
   Game extends GameWorld,
   ItemType extends StateObject = StateObject
@@ -90,6 +104,7 @@ export type UpdateState<
   stateItem: keyof Game[`${ItemType}s`];
   newState: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["states"];
 };
+
 export type UpdateFlag<
   Game extends GameWorld,
   ItemType extends StateObject = StateObject
@@ -100,6 +115,7 @@ export type UpdateFlag<
   flag: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["flags"];
   value: boolean;
 };
+
 export type UpdateCounter<
   Game extends GameWorld,
   ItemType extends StateObject = StateObject
@@ -123,82 +139,4 @@ export type CharacterSay<Game extends GameWorld> = {
   statementType: "CharacterSay";
   character: keyof Game["characters"];
   sentences: string[];
-};
-
-export type StateCondition<Game extends GameWorld> =
-  | GameObjectStateCondition<Game, "character">
-  | GameObjectStateCondition<Game, "item">
-  | GameObjectStateCondition<Game, "location">
-  | GameObjectFlagCondition<Game, "character">
-  | GameObjectFlagCondition<Game, "item">
-  | GameObjectFlagCondition<Game, "location">
-  | GameObjectCounterCondition<Game, "character">
-  | GameObjectCounterCondition<Game, "item">
-  | GameObjectCounterCondition<Game, "location">
-  | TrueCondition
-  | FalseCondition
-  | NegateCondition<Game>
-  | AndCondition<Game>
-  | OrCondition<Game>;
-
-export type NegateCondition<Game extends GameWorld> = {
-  op: "negate";
-  condition: StateCondition<Game>;
-};
-
-export type AndCondition<Game extends GameWorld> = {
-  op: "and";
-  conditions: StateCondition<Game>[];
-};
-
-export type OrCondition<Game extends GameWorld> = {
-  op: "or";
-  conditions: StateCondition<Game>[];
-};
-
-export type GameObjectStateCondition<
-  Game extends GameWorld,
-  ItemType extends StateObject
-> = {
-  op: "StateEquals";
-  objectType: ItemType;
-  item: keyof Game[`${ItemType}s`];
-  state: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["states"] | "unknown";
-};
-
-export type GameObjectFlagCondition<
-  Game extends GameWorld,
-  ItemType extends StateObject
-> = {
-  op: "IsFlagSet";
-  objectType: ItemType;
-  item: keyof Game[`${ItemType}s`];
-  flag: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["flags"];
-};
-
-export type NumberComparator =
-  | "equal"
-  | "lessThanOrEqual"
-  | "lessThan"
-  | "moreThan"
-  | "moreThanOrEqual";
-
-export type GameObjectCounterCondition<
-  Game extends GameWorld,
-  ItemType extends StateObject
-> = {
-  op: "CounterCompare";
-  objectType: ItemType;
-  item: keyof Game[`${ItemType}s`];
-  name: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["counters"];
-  comparator: NumberComparator;
-  value: number;
-};
-
-export type TrueCondition = {
-  op: "true";
-};
-
-export type FalseCondition = {
-  op: "false";
 };

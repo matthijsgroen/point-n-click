@@ -1,5 +1,5 @@
-import { GameStateManager } from "../engine/state/types";
-import { GameWorld } from "../dsl/world-types";
+import { GameWorld } from "@point-n-click/types";
+import { GameStateManager } from "@point-n-click/state";
 import { handleInteractions } from "./handleInteractions";
 import { runScript } from "./runScript";
 import { GameModelManager } from "../engine/model/gameModel";

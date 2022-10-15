@@ -1,11 +1,11 @@
 import {
-  GameObjectFlagCondition,
+  GameWorld,
+  StateObject,
   GameObjectStateCondition,
+  GameObjectFlagCondition,
   GameObjectCounterCondition,
   ScriptStatement,
-  StateObject,
-} from "./ast-types";
-import { GameWorld } from "./world-types";
+} from "@point-n-click/types";
 
 export type ObjectStateDSL<
   Game extends GameWorld,

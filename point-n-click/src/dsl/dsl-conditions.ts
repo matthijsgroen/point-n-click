@@ -1,12 +1,12 @@
 import {
-  TrueCondition,
-  FalseCondition,
-  StateCondition,
-  NegateCondition,
   AndCondition,
+  FalseCondition,
+  GameWorld,
+  NegateCondition,
   OrCondition,
-} from "./ast-types";
-import { GameWorld } from "./world-types";
+  StateCondition,
+  TrueCondition,
+} from "@point-n-click/types";
 
 const always = (): TrueCondition => ({ op: "true" });
 const never = (): FalseCondition => ({ op: "false" });

@@ -1,9 +1,9 @@
-import { GameStateManager } from "../state/types";
-import { GameWorld } from "../../dsl/world-types";
+import { GameStateManager } from "../../../../state/src/types";
 import { getTranslationText } from "./getTranslationText";
 import { parse } from "./parser";
 import { FormattedText, ParsedText } from "./types";
 import { applyState, StateError } from "./applyState";
+import { GameWorld } from "@point-n-click/types";
 
 const parseText = (text: string): ParsedText => {
   try {

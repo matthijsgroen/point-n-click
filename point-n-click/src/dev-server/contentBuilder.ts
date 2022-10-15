@@ -1,11 +1,10 @@
 import Parcel, { createWorkerFarm } from "@parcel/core";
 import { MemoryFS } from "@parcel/fs";
+import { GameModel } from "@point-n-click/state";
+import { GameWorld } from "@point-n-click/types";
 import { watch } from "fs";
 import { unlink, writeFile } from "fs/promises";
 import path, { join } from "path";
-import { cls } from "../cli-client/utils";
-import { GameModel } from "../dsl/ast-types";
-import { GameWorld } from "../dsl/world-types";
 import { displayTypescriptError } from "../engine/errors/displayErrors";
 import { GameModelManager } from "../engine/model/gameModel";
 import {
@@ -109,18 +108,18 @@ export const startContentBuilder = async (
 
         modelManager.setNewModel(jsonModel);
       } catch (e) {
-        cls();
         if (e instanceof TypeError) {
           const gameContentsSourceMap = await outputFS.readFile(
             `${bundle.filePath}.map`,
             "utf-8"
           );
           displayTypescriptError(gameContentsSourceMap, e);
+          modelManager.setNewModel(undefined);
+        } else {
+          throw e;
         }
-        modelManager.setNewModel(undefined);
       }
     } else if (event && event.type === "buildFailure") {
-      cls();
       console.log(event.diagnostics);
       modelManager.setNewModel(undefined);
     }

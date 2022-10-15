@@ -1,13 +1,12 @@
+import produce from "immer";
+import { GameInteraction, GameWorld } from "@point-n-click/types";
+import { GameStateManager } from "@point-n-click/state";
 import { getDisplayText } from "../engine/text/processText";
-import { GameInteraction, GameModel } from "../dsl/ast-types";
-import { GameStateManager } from "../engine/state/types";
-import { GameWorld } from "../dsl/world-types";
 import { cls, keypress, stopSkip } from "./utils";
 import { determineTextScope } from "../engine/text/determineTextScope";
 import { renderText } from "./renderText";
-import { testCondition } from "../engine/state/testCondition";
+import { testCondition } from "../../../state/src/testCondition";
 import { FormattedText } from "../engine/text/types";
-import produce from "immer";
 import { GameModelManager } from "../engine/model/gameModel";
 import { getTranslationText } from "../engine/text/getTranslationText";
 import { DEFAULT_ACTION_PROMPT } from "../dsl/constants";

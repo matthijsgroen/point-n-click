@@ -1,6 +1,5 @@
-import { GameModel } from "../dsl/ast-types";
-import { GameStateManager } from "../engine/state/types";
-import { GameWorld } from "../dsl/world-types";
+import { GameWorld } from "@point-n-click/types";
+import { GameStateManager } from "@point-n-click/state";
 import { runScript } from "./runScript";
 import { exitGame } from "./utils";
 import { GameModelManager } from "../engine/model/gameModel";

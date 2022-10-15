@@ -1,9 +1,8 @@
-import { ScriptStatement } from "./ast-types";
+import { GameWorld, ScriptStatement } from "@point-n-click/types";
 import {
   ObjectStateDSL,
   objectStateManagement,
 } from "./object-state-conditions";
-import { GameWorld } from "./world-types";
 
 export type LocationDSL<
   Game extends GameWorld,

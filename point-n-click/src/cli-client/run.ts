@@ -1,17 +1,10 @@
-import { GameModel } from "../dsl/ast-types";
-import { GameStateManager, GameState, PlayState } from "../engine/state/types";
-import { GameWorld } from "../dsl/world-types";
-import { createDefaultState } from "../engine/state/createDefaultState";
-import { CLISettings, updateSettings } from "./settings";
-import {
-  cls,
-  enableKeyPresses,
-  exitGame,
-  startSkip,
-  stopKeyPresses,
-} from "./utils";
-import { runLocation } from "./runLocation";
+import { GameWorld } from "@point-n-click/types";
+import { GameState, GameStateManager, PlayState } from "@point-n-click/state";
 import { GameModelManager } from "../engine/model/gameModel";
+import { createDefaultState } from "../../../state/src/createDefaultState";
+import { CLISettings, updateSettings } from "./settings";
+import { cls, enableKeyPresses, startSkip, stopKeyPresses } from "./utils";
+import { runLocation } from "./runLocation";
 
 export const runGame = async <Game extends GameWorld>(
   { color = true, translationData }: CLISettings,

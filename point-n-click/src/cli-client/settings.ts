@@ -1,4 +1,3 @@
-import { Settings } from "../dsl/ast-types";
 import { TranslationFile } from "../export-translations/exportTranslations";
 
 export type CLISettings = {

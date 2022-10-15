@@ -1,6 +1,5 @@
-import { GameModel } from "../../dsl/ast-types";
-import { GameState } from "./types";
-import { GameWorld } from "../../dsl/world-types";
+import { GameWorld } from "@point-n-click/types";
+import { GameModel, GameState } from "./types";
 
 export const createDefaultState = <Game extends GameWorld>(
   gameModel: GameModel<Game>

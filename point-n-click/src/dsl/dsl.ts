@@ -1,21 +1,18 @@
-import type {
+import {
+  GameWorld,
+  OverlayScript,
+  LocationScript,
+  EvaluateCondition,
+  ScriptAST,
+  ScriptStatement,
   GameOverlay,
   GameLocation,
-  GameModel,
-  ScriptAST,
-  Settings,
-  ScriptStatement,
-} from "./ast-types";
+} from "@point-n-click/types";
+import { GameModel, Settings } from "@point-n-click/state";
 import { characterDSLFunctions, CharacterInterface } from "./character";
 import { ConditionSet, dslStateConditions } from "./dsl-conditions";
 import { itemDSLFunctions, ItemInterface } from "./item";
 import { locationDSLFunctions, LocationInterface } from "./location";
-import type {
-  GameWorld,
-  LocationScript,
-  EvaluateCondition,
-  OverlayScript,
-} from "./world-types";
 
 type GameWorldDSL<Game extends GameWorld> = {
   defineOverlay: (

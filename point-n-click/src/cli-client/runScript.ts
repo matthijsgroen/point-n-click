@@ -1,8 +1,6 @@
 import produce from "immer";
-import { ScriptAST, ScriptStatement } from "../dsl/ast-types";
-import { GameState, GameStateManager } from "../engine/state/types";
-import { testCondition } from "../engine/state/testCondition";
-import { GameWorld } from "../dsl/world-types";
+import { GameWorld, ScriptStatement, ScriptAST } from "@point-n-click/types";
+import { testCondition } from "../../../state/src/testCondition";
 import { describeLocation } from "./describeLocation";
 import { handleOverlay } from "./handleOverlay";
 import { getDisplayText, ParseSyntaxError } from "../engine/text/processText";
@@ -18,6 +16,7 @@ import {
 } from "../engine/errors/displayErrors";
 import { StateError } from "../engine/text/applyState";
 import { getTranslationText } from "../engine/text/getTranslationText";
+import { GameState, GameStateManager } from "@point-n-click/state";
 
 type StatementMap<Game extends GameWorld> = {
   [K in ScriptStatement<Game> as K["statementType"]]: (

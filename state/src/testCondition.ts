@@ -1,6 +1,9 @@
-import { NumberComparator, StateCondition } from "../../dsl/ast-types";
+import {
+  GameWorld,
+  NumberComparator,
+  StateCondition,
+} from "@point-n-click/types";
 import { GameStateManager } from "./types";
-import { GameWorld } from "../../dsl/world-types";
 
 const numberCompare = (
   a: number,

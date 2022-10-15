@@ -1,4 +1,5 @@
-import { GameWorld } from "../../dsl/world-types";
+import { GameLocation, GameOverlay, GameWorld } from "@point-n-click/types";
+import { HexColor } from "./hexColor";
 
 export type GameState<Game extends GameWorld> = {
   currentLocation: keyof Game["locations"];
@@ -48,4 +49,24 @@ export type GameStateManager<Game extends GameWorld> = {
 
   updateSaveState: () => void;
   restoreSaveState: () => void;
+};
+
+export type Settings<Game extends GameWorld> = {
+  defaultLocale: `${string}-${string}`;
+  initialState: Partial<GameState<Game>>;
+  defaultTextColor?: HexColor;
+  defaultActionPrompt?: string;
+  characterConfigs: Record<
+    keyof Game["characters"],
+    {
+      defaultName: string;
+      textColor?: HexColor;
+    }
+  >;
+};
+
+export type GameModel<Game extends GameWorld> = {
+  settings: Settings<Game>;
+  locations: GameLocation<Game>[];
+  overlays: GameOverlay<Game>[];
 };
