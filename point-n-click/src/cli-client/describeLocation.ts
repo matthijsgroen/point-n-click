@@ -1,21 +1,22 @@
 import { GameWorld } from "@point-n-click/types";
 import { GameStateManager } from "@point-n-click/state";
-import { runScript } from "./runScript";
-import { exitGame } from "./utils";
+import { DisplayInfo, runScript } from "../engine/runScript";
 import { GameModelManager } from "../engine/model/gameModel";
 
-export const describeLocation = async <Game extends GameWorld>(
+export const describeLocation = <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
   stateManager: GameStateManager<Game>
-) => {
+): DisplayInfo<Game>[] => {
   const currentLocation = stateManager.getState().currentLocation;
   const locationData = gameModelManager
     .getModel()
     .locations.find((l) => l.id === currentLocation);
 
+  const result: DisplayInfo<Game>[] = [];
+
   if (!locationData) {
+    // TODO: Return this as displayInfo 'Error'
     console.log(`Location not found: ${String(currentLocation)}`);
-    exitGame(1);
   }
 
   const previousLocation = stateManager.getState().previousLocation;
@@ -28,13 +29,13 @@ export const describeLocation = async <Game extends GameWorld>(
       previousLocation: currentLocation,
     }));
     if (enterScript) {
-      await runScript<Game>(enterScript.script, gameModelManager, stateManager);
+      result.push(...runScript<Game>(enterScript.script, stateManager));
     }
   }
 
-  await runScript<Game>(
-    locationData?.describe.script || [],
-    gameModelManager,
-    stateManager
+  result.push(
+    ...runScript<Game>(locationData?.describe.script || [], stateManager)
   );
+
+  return result;
 };

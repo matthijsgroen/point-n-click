@@ -1,7 +1,7 @@
 import { GameWorld } from "@point-n-click/types";
 import { GameStateManager } from "@point-n-click/state";
 import { handleInteractions } from "./handleInteractions";
-import { runScript } from "./runScript";
+import { runScript } from "../engine/runScript";
 import { GameModelManager } from "../engine/model/gameModel";
 
 export const handleOverlay = async <Game extends GameWorld>(

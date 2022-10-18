@@ -2,9 +2,10 @@ import { GameWorld } from "@point-n-click/types";
 import { GameStateManager } from "@point-n-click/state";
 import { describeLocation } from "./describeLocation";
 import { handleInteractions } from "./handleInteractions";
-import { runScript } from "./runScript";
+import { DisplayInfo, runScript } from "../engine/runScript";
 import { GameModelManager } from "../engine/model/gameModel";
 import { handleOverlay } from "./handleOverlay";
+import { renderScreen } from "./renderScreen";
 
 export const runLocation = async <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
@@ -23,6 +24,8 @@ export const runLocation = async <Game extends GameWorld>(
       await handleOverlay(currentOverlayId, gameModelManager, stateManager);
     }
 
+    const displayInfo: DisplayInfo<Game>[] = [];
+
     const currentInteraction = stateManager.getState().currentInteraction;
     if (currentInteraction) {
       const interactionData = locationData.interactions.find(
@@ -34,18 +37,18 @@ export const runLocation = async <Game extends GameWorld>(
           currentInteraction: undefined,
         }));
 
-        await runScript<Game>(
-          interactionData.script,
-          gameModelManager,
-          stateManager
+        displayInfo.push(
+          ...runScript<Game>(interactionData.script, stateManager)
         );
       }
     } else {
-      await describeLocation(gameModelManager, stateManager);
+      displayInfo.push(...describeLocation(gameModelManager, stateManager));
     }
     if (stateManager.isAborting()) {
       return;
     }
+
+    await renderScreen(displayInfo, gameModelManager);
 
     if (stateManager.getState().currentLocation === currentLocation) {
       await handleInteractions(
@@ -63,7 +66,8 @@ export const runLocation = async <Game extends GameWorld>(
     (item) => item.to === newLocation
   );
   if (exitScript) {
-    await runScript<Game>(exitScript.script, gameModelManager, stateManager);
+    // FIXME:
+    runScript<Game>(exitScript.script, stateManager);
     return;
   }
 };

@@ -1,29 +1,50 @@
 import produce from "immer";
 import { GameWorld, ScriptStatement, ScriptAST } from "@point-n-click/types";
-import { testCondition } from "../../../state/src/testCondition";
-import { describeLocation } from "./describeLocation";
-import { handleOverlay } from "./handleOverlay";
-import { getDisplayText, ParseSyntaxError } from "../engine/text/processText";
-import { getSettings } from "./settings";
-import { resetStyling, setColor } from "./utils";
-import { renderText } from "./renderText";
-import { determineTextScope } from "../engine/text/determineTextScope";
-import { FormattedText } from "../engine/text/types";
-import { GameModelManager } from "../engine/model/gameModel";
 import {
-  displayParserError,
-  displayStateError,
-} from "../engine/errors/displayErrors";
-import { StateError } from "../engine/text/applyState";
-import { getTranslationText } from "../engine/text/getTranslationText";
-import { GameState, GameStateManager } from "@point-n-click/state";
+  GameState,
+  GameStateManager,
+  testCondition,
+} from "@point-n-click/state";
+import { getDisplayText, ParseSyntaxError } from "./text/processText";
+import { determineTextScope } from "./text/determineTextScope";
+import { FormattedText } from "./text/types";
+import {
+  DisplayErrorText,
+  formatParserError,
+  formatStateError,
+} from "./errors/displayErrors";
+import { StateError } from "./text/applyState";
+import { getTranslationText } from "./text/getTranslationText";
+
+type DisplayNarratorText = {
+  type: "narrator";
+  cpm: number;
+  text: FormattedText[];
+};
+
+type CharacterText<Game extends GameWorld> = {
+  type: "character";
+  character: keyof Game["characters"];
+  cpm: number;
+  text: FormattedText[];
+  displayName?: string;
+};
+
+export type DisplayInfo<Game extends GameWorld> =
+  | DisplayErrorText
+  | DisplayNarratorText
+  | CharacterText<Game>;
+
+type StatementHandler<
+  Game extends GameWorld,
+  K extends ScriptStatement<Game>
+> = (
+  statement: K,
+  stateManager: GameStateManager<Game>
+) => DisplayInfo<Game>[] | null;
 
 type StatementMap<Game extends GameWorld> = {
-  [K in ScriptStatement<Game> as K["statementType"]]: (
-    statement: K,
-    gameModelManager: GameModelManager<Game>,
-    stateManager: GameStateManager<Game>
-  ) => Promise<void> | void;
+  [K in ScriptStatement<Game> as K["statementType"]]: StatementHandler<Game, K>;
 };
 
 const statementHandler = <
@@ -31,19 +52,17 @@ const statementHandler = <
   K extends ScriptStatement<Game>
 >(
   statementType: K["statementType"]
-): ((
-  statement: K,
-  gameModelManager: GameModelManager<Game>,
-  stateManager: GameStateManager<Game>
-) => Promise<void> | void) => {
+): StatementHandler<Game, K> => {
   const statementMap: StatementMap<Game> = {
-    Text: async (statement, gameModelManager, stateManager) => {
-      const useColor = getSettings().color;
-      const color = useColor
-        ? gameModelManager.getModel().settings.defaultTextColor
-        : undefined;
-
+    Text: (statement, stateManager) => {
       const textScope = determineTextScope(stateManager, "text");
+
+      const cpm = stateManager.getState().settings.cpm;
+      const result: DisplayNarratorText = {
+        type: "narrator",
+        cpm,
+        text: [],
+      };
 
       for (const sentence of statement.sentences) {
         try {
@@ -53,35 +72,30 @@ const statementHandler = <
             textScope,
             textScope
           );
-          const cpm = stateManager.getState().settings.cpm;
-          await renderText(text, cpm, { color });
+          result.text.push(text);
         } catch (e) {
+          // stateManager.setPlayState("reloading");
+          // gameModelManager.backupModel();
           if ((e as ParseSyntaxError).name === "SyntaxError") {
-            displayParserError(e as ParseSyntaxError);
+            return [result, formatParserError(e as ParseSyntaxError)];
           }
           if ((e as StateError).name === "StateError") {
-            displayStateError(sentence, e as StateError);
+            return [result, formatStateError(sentence, e as StateError)];
           }
-          stateManager.setPlayState("reloading");
-          gameModelManager.backupModel();
-          return;
+          break;
         }
       }
-
-      if (color) {
-        resetStyling();
-      }
-      console.log("");
+      return [result];
     },
-    Travel: ({ destination }, _gameModelManager, stateManager) => {
+    Travel: ({ destination }, stateManager) => {
       stateManager.updateState((state) => ({
         ...state,
         currentLocation: destination,
       }));
+      return null;
     },
     UpdateGameObjectState: (
       { stateItem, newState, objectType },
-      _gameModelManager,
       stateManager
     ) => {
       stateManager.updateState(
@@ -98,10 +112,10 @@ const statementHandler = <
           }
         })
       );
+      return null;
     },
     UpdateGameObjectFlag: (
       { stateItem, flag, value, objectType },
-      _gameModelManager,
       stateManager
     ) => {
       stateManager.updateState(
@@ -118,10 +132,10 @@ const statementHandler = <
           }
         })
       );
+      return null;
     },
     UpdateGameObjectCounter: (
       { stateItem, value, name, transactionType, objectType },
-      _gameModelManager,
       stateManager
     ) => {
       stateManager.updateState(
@@ -153,10 +167,10 @@ const statementHandler = <
           }
         })
       );
+      return null;
     },
     UpdateCharacterName: (
       { character, newName, translatable },
-      _gameModelManager,
       stateManager
     ) => {
       stateManager.updateState(
@@ -174,72 +188,53 @@ const statementHandler = <
           }
         })
       );
+      return null;
     },
-    CharacterSay: async (
-      { character, sentences },
-      gameModelManager,
-      stateManager
-    ) => {
+    CharacterSay: ({ character, sentences }, stateManager) => {
       const name =
-        stateManager.getState().characters[character]?.name ??
-        gameModelManager.getModel().settings.characterConfigs[character]
-          .defaultName;
-
-      const useColor = getSettings().color;
-      const color = useColor
-        ? gameModelManager.getModel().settings.characterConfigs[character]
-            .textColor
-        : undefined;
+        stateManager.getState().characters[character]?.name ?? undefined;
 
       const textScope = determineTextScope(stateManager, String(character));
 
-      for (const index in sentences) {
-        let text: FormattedText = [];
-        if (Number(index) === 0) {
-          text.push({ type: "text", text: `${name}: "` });
-        } else {
-          text.push({ type: "text", text: "  " });
-        }
+      const cpm = stateManager.getState().settings.cpm;
+      const result: CharacterText<Game> = {
+        type: "character",
+        cpm,
+        character,
+        displayName: name,
+        text: [],
+      };
 
-        text.push(
-          ...getDisplayText(sentences[index], stateManager, textScope, [
+      for (const index in sentences) {
+        result.text.push(
+          getDisplayText(sentences[index], stateManager, textScope, [
             "character",
             String(character),
           ])
         );
-
-        if (Number(index) === sentences.length - 1) {
-          text.push({ type: "text", text: '"' });
-        }
-        const cpm = stateManager.getState().settings.cpm;
-        await renderText(text, cpm, { color });
       }
-      console.log("");
-      if (useColor && color) {
-        resetStyling();
-      }
+      return [result];
     },
-    Condition: async (
-      { condition, body, elseBody },
-      gameModelManager,
-      stateManager
-    ) => {
+    Condition: ({ condition, body, elseBody }, stateManager) => {
       if (testCondition(condition, stateManager)) {
-        await runScript(body, gameModelManager, stateManager);
+        return runScript(body, stateManager);
       } else {
-        await runScript(elseBody, gameModelManager, stateManager);
+        return runScript(elseBody, stateManager);
       }
     },
-    OpenOverlay: async (statement, gameModelManager, stateManager) => {
-      await handleOverlay(statement.overlayId, gameModelManager, stateManager);
-      if (stateManager.isAborting()) {
-        return;
-      }
-      if (stateManager.getState().overlayStack.length === 0) {
-        await describeLocation(gameModelManager, stateManager);
-      }
+    OpenOverlay: (/*statement, gameModelManager, stateManager*/) => {
+      // FIXME: Needs new implementation.
+
+      // await handleOverlay(statement.overlayId, gameModelManager, stateManager);
+      // if (stateManager.isAborting()) {
+      //   return;
+      // }
+      // if (stateManager.getState().overlayStack.length === 0) {
+      //   await describeLocation(gameModelManager, stateManager);
+      // }
+      return null;
     },
-    CloseOverlay: ({ overlayId }, _gameModelManager, stateManager) => {
+    CloseOverlay: ({ overlayId }, stateManager) => {
       stateManager.updateState(
         produce((draft) => {
           draft.overlayStack = draft.overlayStack.filter(
@@ -247,28 +242,32 @@ const statementHandler = <
           );
         })
       );
+      return null;
     },
   };
 
   return statementMap[statementType] as (
     statement: K,
-    gameModelManager: GameModelManager<Game>,
     stateManager: GameStateManager<Game>
-  ) => Promise<void> | void;
+  ) => DisplayInfo<Game>[];
 };
 
-export const runScript = async <Game extends GameWorld>(
+export const runScript = <Game extends GameWorld>(
   script: ScriptAST<Game>,
-  gameModelManager: GameModelManager<Game>,
   stateManager: GameStateManager<Game>
-) => {
+): DisplayInfo<Game>[] => {
+  const result: DisplayInfo<Game>[] = [];
   for (const statement of script) {
     if (stateManager.isAborting()) {
-      return;
+      return result;
     }
     const handler = statementHandler<Game, ScriptStatement<Game>>(
       statement.statementType
     );
-    await handler(statement, gameModelManager, stateManager);
+    const statementResult = handler(statement, stateManager);
+    if (statementResult !== null) {
+      result.push(...statementResult);
+    }
   }
+  return result;
 };

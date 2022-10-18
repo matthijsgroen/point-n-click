@@ -19,4 +19,5 @@ type ParsedTextElement = Text | TextFormatting<ParsedText> | StateText;
 export type ParsedText = ParsedTextElement[];
 
 type FormattedTextElement = Text | TextFormatting<FormattedText>;
+
 export type FormattedText = FormattedTextElement[];

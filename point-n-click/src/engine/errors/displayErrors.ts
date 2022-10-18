@@ -2,28 +2,57 @@ import { bold, resetStyling } from "../../cli-client/utils";
 import { StateError } from "../text/applyState";
 import { ParseSyntaxError } from "../text/processText";
 import sourceMap from "source-map";
+import { FormattedText } from "../text/types";
 
-export const displayParserError = (e: ParseSyntaxError) => {
-  resetStyling();
-  console.log(`Could not parse:\n'${e.text}'`);
-  console.log(
-    `${Array(e.location.start.offset + 1)
-      .fill(" ")
-      .join("")}^`
-  );
-  console.log(e.message);
-  if (e.found === "[") {
-    console.log(
-      "An interpolation was encountered, but it was not closed. (missing ']'?)"
-    );
-  }
+export type DisplayErrorText = {
+  type: "error";
+  message: FormattedText[];
 };
 
-export const displayStateError = (text: string, e: StateError) => {
-  resetStyling();
-  console.log(`Could not interpolate:\n'${text}'`);
-  console.log(e.message);
-};
+export const formatParserError = (e: ParseSyntaxError): DisplayErrorText => ({
+  type: "error",
+  message: [
+    [
+      { type: "text", text: "Could not parse:" },
+      { type: "text", text: `"${e.text}"` },
+    ],
+    [
+      {
+        type: "formatting",
+        format: "b",
+        value: null,
+        contents: [
+          {
+            type: "text",
+            text: `${Array(e.location.start.offset + 1)
+              .fill(" ")
+              .join("")}^`,
+          },
+        ],
+      },
+    ],
+    [{ type: "text", text: e.message }],
+    e.found === "["
+      ? [
+          {
+            type: "text",
+            text: "An interpolation was encountered, but it was not closed. (missing ']'?)",
+          },
+        ]
+      : [],
+  ],
+});
+
+export const formatStateError = (
+  text: string,
+  e: StateError
+): DisplayErrorText => ({
+  type: "error",
+  message: [
+    [{ type: "text", text: `Could not interpolate:\n'${text}'` }],
+    [{ type: "text", text: e.message }],
+  ],
+});
 
 export const displayTypescriptError = async (
   gameContentsSourceMap: string,
