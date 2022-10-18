@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import Parcel, { createWorkerFarm } from "@parcel/core";
 import { MemoryFS } from "@parcel/fs";
 import { GameModel } from "@point-n-click/state";

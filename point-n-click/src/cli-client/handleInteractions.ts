@@ -32,16 +32,15 @@ export const handleInteractions = async <Game extends GameWorld>(
   const textScope = determineTextScope(stateManager, "interactions");
 
   for (const interaction of possibleInteractions) {
-    let text: FormattedText = [];
-    text.push({ type: "text", text: `${interaction.key}) ` });
-    text.push(
+    let text: FormattedText = [
+      { type: "text", text: `${interaction.key}) ` },
       ...getDisplayText(
         interaction.action.label,
         stateManager,
         textScope,
         textScope
-      )
-    );
+      ),
+    ];
     const cpm = stateManager.getState().settings.cpm;
     await renderText(text, cpm, {});
   }

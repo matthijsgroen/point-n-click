@@ -16,14 +16,14 @@ import {
 import { StateError } from "./text/applyState";
 import { getTranslationText } from "./text/getTranslationText";
 
-type DisplayNarratorText = {
-  type: "narrator";
+type NarratorText = {
+  type: "narratorText";
   cpm: number;
   text: FormattedText[];
 };
 
 type CharacterText<Game extends GameWorld> = {
-  type: "character";
+  type: "characterText";
   character: keyof Game["characters"];
   cpm: number;
   text: FormattedText[];
@@ -32,7 +32,7 @@ type CharacterText<Game extends GameWorld> = {
 
 export type DisplayInfo<Game extends GameWorld> =
   | DisplayErrorText
-  | DisplayNarratorText
+  | NarratorText
   | CharacterText<Game>;
 
 type StatementHandler<
@@ -58,8 +58,8 @@ const statementHandler = <
       const textScope = determineTextScope(stateManager, "text");
 
       const cpm = stateManager.getState().settings.cpm;
-      const result: DisplayNarratorText = {
-        type: "narrator",
+      const result: NarratorText = {
+        type: "narratorText",
         cpm,
         text: [],
       };
@@ -198,7 +198,7 @@ const statementHandler = <
 
       const cpm = stateManager.getState().settings.cpm;
       const result: CharacterText<Game> = {
-        type: "character",
+        type: "characterText",
         cpm,
         character,
         displayName: name,
@@ -222,16 +222,11 @@ const statementHandler = <
         return runScript(elseBody, stateManager);
       }
     },
-    OpenOverlay: (/*statement, gameModelManager, stateManager*/) => {
-      // FIXME: Needs new implementation.
-
-      // await handleOverlay(statement.overlayId, gameModelManager, stateManager);
-      // if (stateManager.isAborting()) {
-      //   return;
-      // }
-      // if (stateManager.getState().overlayStack.length === 0) {
-      //   await describeLocation(gameModelManager, stateManager);
-      // }
+    OpenOverlay: (statement, stateManager) => {
+      stateManager.updateState((state) => ({
+        ...state,
+        overlayStack: state.overlayStack.concat(statement.overlayId),
+      }));
       return null;
     },
     CloseOverlay: ({ overlayId }, stateManager) => {

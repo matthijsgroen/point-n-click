@@ -18,13 +18,13 @@ export const renderScreen = async <Game extends GameWorld>(
     : undefined;
 
   for (const displayItem of info) {
-    if (displayItem.type === "narrator") {
+    if (displayItem.type === "narratorText") {
       for (const sentence of displayItem.text) {
         await renderText(sentence, displayItem.cpm, { color: textColor });
       }
       console.log("");
       resetStyling();
-    } else if (displayItem.type === "character") {
+    } else if (displayItem.type === "characterText") {
       const name =
         displayItem.displayName ??
         gameModelManager.getModel().settings.characterConfigs[
@@ -53,7 +53,7 @@ export const renderScreen = async <Game extends GameWorld>(
       }
       console.log("");
       resetStyling();
-    } else {
+    } else if (displayItem.type === "error") {
       stateManager.setPlayState("reloading");
       gameModelManager.backupModel();
 

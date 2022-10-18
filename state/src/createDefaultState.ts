@@ -4,7 +4,7 @@ import { GameModel, GameState } from "./types";
 export const createDefaultState = <Game extends GameWorld>(
   gameModel: GameModel<Game>
 ): GameState<Game> => ({
-  currentLocation: gameModel.locations[0].id,
+  currentLocation: gameModel.locations[0]?.id,
   overlayStack: [],
   settings: {
     cpm: 3000,
