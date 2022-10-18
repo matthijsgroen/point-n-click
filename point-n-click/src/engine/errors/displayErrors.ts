@@ -12,10 +12,8 @@ export type DisplayErrorText = {
 export const formatParserError = (e: ParseSyntaxError): DisplayErrorText => ({
   type: "error",
   message: [
-    [
-      { type: "text", text: "Could not parse:" },
-      { type: "text", text: `"${e.text}"` },
-    ],
+    [{ type: "text", text: "Could not parse:" }],
+    [{ type: "text", text: `"${e.text}"` }],
     [
       {
         type: "formatting",

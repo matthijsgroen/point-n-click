@@ -1,3 +1,4 @@
+import { GameStateManager } from "@point-n-click/state";
 import { GameWorld } from "@point-n-click/types";
 import { GameModelManager } from "../engine/model/gameModel";
 import { DisplayInfo } from "../engine/runScript";
@@ -8,7 +9,8 @@ import { resetStyling } from "./utils";
 
 export const renderScreen = async <Game extends GameWorld>(
   info: DisplayInfo<Game>[],
-  gameModelManager: GameModelManager<Game>
+  gameModelManager: GameModelManager<Game>,
+  stateManager: GameStateManager<Game>
 ): Promise<void> => {
   const useColor = getSettings().color;
   const textColor = useColor
@@ -52,7 +54,13 @@ export const renderScreen = async <Game extends GameWorld>(
       console.log("");
       resetStyling();
     } else {
-      console.log(displayItem);
+      stateManager.setPlayState("reloading");
+      gameModelManager.backupModel();
+
+      for (const sentence of displayItem.message) {
+        await renderText(sentence, Infinity, {});
+      }
+      return;
     }
   }
 };
