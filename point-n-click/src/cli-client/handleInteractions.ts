@@ -46,7 +46,6 @@ export const handleInteractions = async <Game extends GameWorld>(
     await renderText(text, cpm, {});
   }
 
-  let input: string | undefined;
   let chosenAction: { action: GameInteraction<Game>; key: string } | undefined;
   stopSkip();
   do {

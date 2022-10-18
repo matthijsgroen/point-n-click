@@ -48,7 +48,7 @@ export const runLocation = async <Game extends GameWorld>(
       return;
     }
 
-    await renderScreen(displayInfo, gameModelManager);
+    await renderScreen(displayInfo, gameModelManager, stateManager);
 
     if (stateManager.getState().currentLocation === currentLocation) {
       await handleInteractions(
@@ -60,14 +60,5 @@ export const runLocation = async <Game extends GameWorld>(
     if (stateManager.isAborting()) {
       return;
     }
-  }
-  const newLocation = stateManager.getState().currentLocation;
-  const exitScript = locationData.onLeave.find(
-    (item) => item.to === newLocation
-  );
-  if (exitScript) {
-    // FIXME:
-    runScript<Game>(exitScript.script, stateManager);
-    return;
   }
 };

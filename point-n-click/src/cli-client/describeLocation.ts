@@ -20,7 +20,20 @@ export const describeLocation = <Game extends GameWorld>(
   }
 
   const previousLocation = stateManager.getState().previousLocation;
+
   if (currentLocation !== previousLocation) {
+    const previousLocationData = gameModelManager
+      .getModel()
+      .locations.find((l) => l.id === previousLocation);
+    if (previousLocationData) {
+      const exitScript = previousLocationData.onLeave.find(
+        (item) => item.to === currentLocation
+      );
+      if (exitScript) {
+        result.push(...runScript<Game>(exitScript.script, stateManager));
+      }
+    }
+
     const enterScript = locationData?.onEnter.find(
       (item) => item.from === previousLocation
     );
