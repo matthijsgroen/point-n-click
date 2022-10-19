@@ -1,4 +1,4 @@
-import { FormattedText } from "../engine/text/types";
+import { FormattedText } from "@point-n-click/engine";
 import { getSettings } from "./settings";
 import { wait, resetStyling, setStyling, TextStyling } from "./utils";
 

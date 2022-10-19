@@ -1,8 +1,10 @@
+import {
+  DisplayInfo,
+  FormattedText,
+  GameModelManager,
+} from "@point-n-click/engine";
 import { GameStateManager } from "@point-n-click/state";
 import { GameWorld } from "@point-n-click/types";
-import { GameModelManager } from "../engine/model/gameModel";
-import { DisplayInfo } from "../engine/content/runScript";
-import { FormattedText } from "../engine/text/types";
 import { renderText } from "./renderText";
 import { getSettings } from "./settings";
 import { resetStyling } from "./utils";

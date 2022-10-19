@@ -1,5 +1,5 @@
+import { gameModelManager } from "@point-n-click/engine";
 import { runGame } from "../cli-client/run";
-import { gameModelManager } from "../engine/model/gameModel";
 import { startContentBuilder } from "./contentBuilder";
 import { loadTranslationData } from "./loadTranslationData";
 

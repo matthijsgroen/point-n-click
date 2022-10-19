@@ -1,10 +1,12 @@
 import { GameWorld } from "@point-n-click/types";
+import {
+  GameModelManager,
+  getDisplayInfo,
+  getCurrentOverlay,
+} from "@point-n-click/engine";
 import { GameStateManager } from "@point-n-click/state";
 import { handleInteractions } from "./handleInteractions";
-import { GameModelManager } from "../engine/model/gameModel";
 import { renderScreen } from "./renderScreen";
-import { getDisplayInfo } from "../engine/content/getDisplayInfo";
-import { getCurrentOverlay } from "../engine/content/getOverlay";
 
 export const runLocation = async <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,

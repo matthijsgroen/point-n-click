@@ -1,12 +1,12 @@
 /// <reference types="node" />
 import Parcel, { createWorkerFarm } from "@parcel/core";
 import { MemoryFS } from "@parcel/fs";
+import { GameModelManager } from "@point-n-click/engine";
 import { GameModel } from "@point-n-click/state";
 import { GameWorld } from "@point-n-click/types";
 import { watch } from "fs";
 import { unlink, writeFile } from "fs/promises";
 import path, { join } from "path";
-import { GameModelManager } from "../engine/model/gameModel";
 import {
   isLocale,
   exportTranslations,

@@ -1,15 +1,16 @@
 import produce from "immer";
 import { GameInteraction, GameWorld } from "@point-n-click/types";
-import { GameStateManager } from "@point-n-click/state";
-import { getDisplayText } from "../engine/text/processText";
+import { GameStateManager, testCondition } from "@point-n-click/state";
 import { cls, keypress, stopSkip } from "./utils";
-import { determineTextScope } from "../engine/text/determineTextScope";
 import { renderText } from "./renderText";
-import { testCondition } from "../../../state/src/testCondition";
-import { FormattedText } from "../engine/text/types";
-import { GameModelManager } from "../engine/model/gameModel";
-import { getTranslationText } from "../engine/text/getTranslationText";
-import { DEFAULT_ACTION_PROMPT } from "../dsl/constants";
+import {
+  FormattedText,
+  GameModelManager,
+  getTranslationText,
+  determineTextScope,
+  getDisplayText,
+} from "@point-n-click/engine";
+import { DEFAULT_ACTION_PROMPT } from "./constants";
 
 export const handleInteractions = async <Game extends GameWorld>(
   interactions: GameInteraction<Game>[],

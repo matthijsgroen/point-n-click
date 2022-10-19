@@ -1,11 +1,18 @@
 import { GameWorld } from "@point-n-click/types";
-import { GameState, GameStateManager, PlayState } from "@point-n-click/state";
-import { GameModelManager } from "../engine/model/gameModel";
-import { createDefaultState } from "../../../state/src/createDefaultState";
+import {
+  createDefaultState,
+  GameState,
+  GameStateManager,
+  PlayState,
+} from "@point-n-click/state";
 import { CLISettings, updateSettings } from "./settings";
 import { cls, enableKeyPresses, startSkip, stopKeyPresses } from "./utils";
 import { runLocation } from "./runLocation";
-import { TranslationSettings, updateTranslation } from "../engine/translations";
+import {
+  TranslationSettings,
+  updateTranslation,
+  GameModelManager,
+} from "@point-n-click/engine";
 
 export const runGame = async <Game extends GameWorld>(
   { color = true, translationData }: CLISettings & TranslationSettings,

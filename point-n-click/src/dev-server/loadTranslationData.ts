@@ -1,6 +1,6 @@
 import { readFile } from "fs/promises";
 import { join } from "path";
-import { TranslationFile, updateTranslation } from "../engine/translations";
+import { TranslationFile, updateTranslation } from "@point-n-click/engine";
 
 export const loadTranslationData = async (
   locale?: string

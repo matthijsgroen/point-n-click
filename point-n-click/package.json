@@ -35,6 +35,7 @@
   "dependencies": {
     "@parcel/core": "^2.7.0",
     "@parcel/fs": "^2.7.0",
+    "@point-n-click/engine": "^1.0.0-alpha.0",
     "@point-n-click/state": "^1.0.0-alpha.0",
     "@point-n-click/types": "^1.0.0-alpha.1",
     "@tanstack/react-query": "^4.10.3",

@@ -6,7 +6,7 @@ export const getCurrentOverlay = <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
   stateManager: GameStateManager<Game>
 ): GameOverlay<Game> | undefined => {
-  const overlayId = stateManager.getState().overlayStack.slice(-1)[0];
+  const overlayId = stateManager.getState().overlayStack.at(-1);
   if (!overlayId) {
     return undefined;
   }

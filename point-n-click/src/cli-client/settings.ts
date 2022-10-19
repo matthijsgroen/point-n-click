@@ -1,4 +1,4 @@
-import { settings } from "../engine/settings";
+import { settings } from "@point-n-click/engine";
 
 export type CLISettings = {
   /**
