@@ -1,7 +1,7 @@
 import { GameWorld } from "@point-n-click/types";
 import { GameStateManager } from "@point-n-click/state";
 import { DisplayInfo, runScript } from "./runScript";
-import { GameModelManager } from "./model/gameModel";
+import { GameModelManager } from "../model/gameModel";
 
 export const describeLocation = <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,

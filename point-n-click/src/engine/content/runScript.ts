@@ -5,16 +5,16 @@ import {
   GameStateManager,
   testCondition,
 } from "@point-n-click/state";
-import { getDisplayText, ParseSyntaxError } from "./text/processText";
-import { determineTextScope } from "./text/determineTextScope";
-import { FormattedText } from "./text/types";
+import { getDisplayText, ParseSyntaxError } from "../text/processText";
+import { determineTextScope } from "../text/determineTextScope";
+import { FormattedText } from "../text/types";
 import {
   DisplayErrorText,
   formatParserError,
   formatStateError,
-} from "./errors/formatErrors";
-import { StateError } from "./text/applyState";
-import { getTranslationText } from "./text/getTranslationText";
+} from "../errors/formatErrors";
+import { StateError } from "../text/applyState";
+import { getTranslationText } from "../text/getTranslationText";
 
 type NarratorText = {
   type: "narratorText";
