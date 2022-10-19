@@ -1,4 +1,4 @@
-import { TranslationFile } from "../export-translations/exportTranslations";
+import { settings } from "../engine/settings";
 
 export type CLISettings = {
   /**
@@ -6,16 +6,9 @@ export type CLISettings = {
    * @default true
    */
   color?: boolean;
-
-  /**
-   * Translation file to use
-   */
-  translationData?: TranslationFile;
 };
 
-let settings: CLISettings = { color: true };
+const cliSettings = settings<CLISettings>({ color: true });
 
-export const getSettings = () => settings;
-export const updateSettings = (updates: Partial<CLISettings>) => {
-  settings = { ...settings, ...updates };
-};
+export const getSettings = cliSettings.get;
+export const updateSettings = cliSettings.update;

@@ -1,9 +1,9 @@
-import { GameStateManager } from "../../../../state/src/types";
+import { GameWorld } from "@point-n-click/types";
+import { GameStateManager } from "@point-n-click/state";
 import { getTranslationText } from "./getTranslationText";
 import { parse } from "./parser";
 import { FormattedText, ParsedText } from "./types";
-import { applyState, StateError } from "./applyState";
-import { GameWorld } from "@point-n-click/types";
+import { applyState } from "./applyState";
 
 const parseText = (text: string): ParsedText => {
   try {
@@ -24,9 +24,7 @@ export const getDisplayText = <Game extends GameWorld>(
   stateScope: string[]
 ): FormattedText => {
   const renderSentence = getTranslationText(textScope, sentence) || sentence;
-  // 1: Parse text
   const parsedText = parseText(renderSentence);
-  // 2: Apply state
   return applyState(parsedText, stateManager, stateScope);
 };
 

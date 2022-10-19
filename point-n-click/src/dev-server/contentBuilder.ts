@@ -6,7 +6,6 @@ import { GameWorld } from "@point-n-click/types";
 import { watch } from "fs";
 import { unlink, writeFile } from "fs/promises";
 import path, { join } from "path";
-import { displayTypescriptError } from "../engine/errors/displayErrors";
 import { GameModelManager } from "../engine/model/gameModel";
 import {
   isLocale,
@@ -14,6 +13,7 @@ import {
   Locale,
 } from "../export-translations/exportTranslations";
 import { CACHE_FOLDER } from "./constants";
+import { displayTypescriptError } from "./displayTypescriptError";
 import { loadTranslationData } from "./loadTranslationData";
 import { mkdir } from "./mkdir";
 

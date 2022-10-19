@@ -5,12 +5,14 @@ import { createDefaultState } from "../../../state/src/createDefaultState";
 import { CLISettings, updateSettings } from "./settings";
 import { cls, enableKeyPresses, startSkip, stopKeyPresses } from "./utils";
 import { runLocation } from "./runLocation";
+import { TranslationSettings, updateTranslation } from "../engine/translations";
 
 export const runGame = async <Game extends GameWorld>(
-  { color = true, translationData }: CLISettings,
+  { color = true, translationData }: CLISettings & TranslationSettings,
   gameModelManager: GameModelManager<Game>
 ) => {
-  updateSettings({ color, translationData });
+  updateSettings({ color });
+  updateTranslation({ translationData });
 
   let model = gameModelManager.getModel();
   while (!gameModelManager.hasModel()) {

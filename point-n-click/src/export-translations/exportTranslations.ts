@@ -3,12 +3,9 @@ import { GameWorld, ScriptAST } from "@point-n-click/types";
 import { mkdir, writeFile, readFile } from "fs/promises";
 import { join } from "path";
 import { DEFAULT_ACTION_PROMPT } from "../dsl/constants";
+import { TranslationFile } from "../engine/translations";
 
 export type Locale = `${string}-${string}`;
-
-export type TranslationFile = {
-  [key: string]: string | TranslationFile;
-};
 
 export const isLocale = (item: unknown): item is Locale =>
   !!(typeof item === "string" && item.match(/^\w{2}-\w{2}$/));

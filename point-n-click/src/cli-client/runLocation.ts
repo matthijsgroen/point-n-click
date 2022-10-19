@@ -1,6 +1,6 @@
 import { GameWorld } from "@point-n-click/types";
 import { GameStateManager } from "@point-n-click/state";
-import { describeLocation } from "./describeLocation";
+import { describeLocation } from "../engine/describeLocation";
 import { handleInteractions } from "./handleInteractions";
 import { DisplayInfo, runScript } from "../engine/runScript";
 import { GameModelManager } from "../engine/model/gameModel";
@@ -75,6 +75,10 @@ export const runLocation = async <Game extends GameWorld>(
     }
 
     await renderScreen(displayInfo, gameModelManager, stateManager);
+
+    if (stateManager.isAborting()) {
+      return;
+    }
 
     currentOverlayData = getCurrentOverlay();
     if (stateManager.getState().currentLocation === currentLocation) {

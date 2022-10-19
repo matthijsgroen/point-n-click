@@ -1,7 +1,6 @@
 import { readFile } from "fs/promises";
 import { join } from "path";
-import { updateSettings } from "../cli-client/settings";
-import { TranslationFile } from "../export-translations/exportTranslations";
+import { TranslationFile, updateTranslation } from "../engine/translations";
 
 export const loadTranslationData = async (
   locale?: string
@@ -20,7 +19,7 @@ export const loadTranslationData = async (
       const data = await readFile(translationFilePath, { encoding: "utf-8" });
       translationData = JSON.parse(data) as unknown as TranslationFile;
 
-      updateSettings({ translationData });
+      updateTranslation({ translationData });
     } catch (e) {}
   }
   return translationData;

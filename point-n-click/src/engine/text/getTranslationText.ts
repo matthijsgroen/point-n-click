@@ -1,10 +1,10 @@
-import { getSettings } from "../../cli-client/settings";
+import { getTranslation } from "../translations";
 
 export const getTranslationText = (
   scope: string[],
   key: string
 ): string | undefined => {
-  const translationData = getSettings().translationData;
+  const translationData = getTranslation().translationData;
   if (!translationData) return undefined;
   let t = translationData;
   for (const k of scope) {

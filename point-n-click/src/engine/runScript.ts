@@ -12,7 +12,7 @@ import {
   DisplayErrorText,
   formatParserError,
   formatStateError,
-} from "./errors/displayErrors";
+} from "./errors/formatErrors";
 import { StateError } from "./text/applyState";
 import { getTranslationText } from "./text/getTranslationText";
 
