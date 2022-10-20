@@ -1,9 +1,8 @@
-import { TranslationFile } from "@point-n-click/engine";
-import { GameModel } from "@point-n-click/state";
 import { GameWorld, ScriptAST } from "@point-n-click/types";
+import { GameModel } from "@point-n-click/state";
+import { TranslationFile, DEFAULT_ACTION_PROMPT } from "@point-n-click/engine";
 import { mkdir, writeFile, readFile } from "fs/promises";
 import { join } from "path";
-import { DEFAULT_ACTION_PROMPT } from "../cli-client/constants";
 
 export type Locale = `${string}-${string}`;
 

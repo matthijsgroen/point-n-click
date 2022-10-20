@@ -27,10 +27,7 @@ export const runGame = async <Game extends GameWorld>(
     model = gameModelManager.getModel();
   }
 
-  let gameState: GameState<Game> = {
-    ...createDefaultState(model),
-    ...model.settings.initialState,
-  };
+  let gameState: GameState<Game> = createDefaultState(model);
   let savePoint = gameState;
   if (color === false) {
     gameState.settings.cpm = Infinity;

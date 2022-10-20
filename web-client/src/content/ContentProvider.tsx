@@ -1,9 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
-import React, { createContext, PropsWithChildren } from "react";
-import { GameModel } from "@point-n-click/state";
+import React, {
+  createContext,
+  Dispatch,
+  MutableRefObject,
+  PropsWithChildren,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  GameModel,
+  GameState,
+  createDefaultState,
+  GameStateManager,
+} from "@point-n-click/state";
 import { GameWorld } from "@point-n-click/types";
+import { gameModelManager, GameModelManager } from "@point-n-click/engine";
 
-const GameContentContext = createContext<GameModel<GameWorld>>({
+const defaultModel: GameModel<GameWorld> = {
   settings: {
     defaultLocale: "en-US",
     initialState: {},
@@ -12,7 +28,52 @@ const GameContentContext = createContext<GameModel<GameWorld>>({
   },
   locations: [],
   overlays: [],
+};
+
+const modelManager = gameModelManager(undefined);
+
+const GameContentContext =
+  createContext<GameModelManager<GameWorld>>(modelManager);
+
+const GameStateContext = createContext<{
+  stateRef: MutableRefObject<GameState<GameWorld> | undefined>;
+  gameSavePointState: GameState<GameWorld> | undefined;
+}>({
+  stateRef: { current: createDefaultState(defaultModel) },
+  gameSavePointState: createDefaultState(defaultModel),
 });
+
+export const useGameContent = (): GameModelManager<GameWorld> =>
+  useContext(GameContentContext);
+
+export type UpdateGameState<World extends GameWorld> = Dispatch<
+  SetStateAction<GameState<World>>
+>;
+
+export const useGameState = (): GameStateManager<GameWorld> => {
+  const gameState = useContext(GameStateContext);
+
+  return {
+    getState: (): GameState<GameWorld> =>
+      gameState.stateRef.current as GameState<GameWorld>,
+    updateState: (action) => {
+      if (typeof action === "function") {
+        if (gameState.stateRef.current) {
+          gameState.stateRef.current = action(gameState.stateRef.current);
+        }
+      } else {
+        gameState.stateRef.current = action;
+      }
+    },
+    getPlayState: () => "playing",
+    setPlayState: () => {},
+    isAborting: () => false,
+    updateSaveState: () => {},
+    restoreSaveState: () => {
+      gameState.stateRef.current = gameState.gameSavePointState;
+    },
+  };
+};
 
 export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const { isLoading, data } = useQuery(
@@ -23,14 +84,36 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
     }
   );
 
-  // Add state management here as well.
+  const gameStateRef = useRef<GameState<GameWorld>>();
 
-  if (isLoading || !data) {
+  const [gameSavePointState, setGameSavePointState] = useState<
+    GameState<GameWorld> | undefined
+  >(undefined);
+
+  useEffect(() => {
+    if (data && !gameStateRef.current) {
+      const startState = createDefaultState(data);
+      gameStateRef.current = startState;
+      modelManager.setNewModel(data);
+      setGameSavePointState(gameStateRef.current);
+    }
+  }, [data]);
+
+  if (isLoading || !data || !gameStateRef.current) {
     return <div>Loading...</div>;
   }
+  gameStateRef.current = gameSavePointState;
+
   return (
-    <GameContentContext.Provider value={data}>
-      {children}
+    <GameContentContext.Provider value={modelManager}>
+      <GameStateContext.Provider
+        value={{
+          stateRef: gameStateRef,
+          gameSavePointState,
+        }}
+      >
+        {children}
+      </GameStateContext.Provider>
     </GameContentContext.Provider>
   );
 };

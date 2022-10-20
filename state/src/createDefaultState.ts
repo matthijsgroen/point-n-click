@@ -38,4 +38,5 @@ export const createDefaultState = <Game extends GameWorld>(
     },
     {}
   ) as GameState<Game>["locations"],
+  ...gameModel.settings.initialState,
 });

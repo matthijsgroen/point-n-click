@@ -3,6 +3,10 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import reportWebVitals from "./reportWebVitals";
+import { registerTheme } from "./themes/theme-manager/ThemeProvider";
+import { terminalTheme } from "./themes/cli-theme/TerminalTheme";
+
+registerTheme(terminalTheme);
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement

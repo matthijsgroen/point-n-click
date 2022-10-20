@@ -2,7 +2,7 @@ import { GameWorld } from "@point-n-click/types";
 import {
   GameModelManager,
   getDisplayInfo,
-  getCurrentOverlay,
+  getInteractions,
 } from "@point-n-click/engine";
 import { GameStateManager } from "@point-n-click/state";
 import { handleInteractions } from "./handleInteractions";
@@ -35,18 +35,9 @@ export const runLocation = async <Game extends GameWorld>(
       return;
     }
 
-    const currentOverlayData = getCurrentOverlay(
-      gameModelManager,
-      stateManager
-    );
     if (stateManager.getState().currentLocation === currentLocation) {
-      await handleInteractions(
-        (currentOverlayData
-          ? currentOverlayData.interactions
-          : locationData.interactions) ?? [],
-        stateManager,
-        gameModelManager
-      );
+      const interactions = getInteractions(gameModelManager, stateManager);
+      await handleInteractions(interactions, stateManager, gameModelManager);
     }
     if (stateManager.isAborting()) {
       return;

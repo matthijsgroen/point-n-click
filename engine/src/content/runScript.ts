@@ -192,7 +192,8 @@ const statementHandler = <
     },
     CharacterSay: ({ character, sentences }, stateManager) => {
       const name =
-        stateManager.getState().characters[character]?.name ?? undefined;
+        stateManager.getState().characters[character]?.name ??
+        stateManager.getState().characters[character]?.defaultName;
 
       const textScope = determineTextScope(stateManager, String(character));
 

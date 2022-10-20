@@ -1,52 +1,45 @@
 import produce from "immer";
-import { GameInteraction, GameWorld } from "@point-n-click/types";
-import { GameStateManager, testCondition } from "@point-n-click/state";
+import { GameWorld } from "@point-n-click/types";
+import { GameStateManager } from "@point-n-click/state";
 import { cls, keypress, stopSkip } from "./utils";
 import { renderText } from "./renderText";
 import {
   FormattedText,
   GameModelManager,
-  getTranslationText,
-  determineTextScope,
-  getDisplayText,
+  Interactions,
 } from "@point-n-click/engine";
-import { DEFAULT_ACTION_PROMPT } from "./constants";
+
+type TextInteraction = {
+  label: FormattedText;
+  id: string;
+  key: string;
+};
 
 export const handleInteractions = async <Game extends GameWorld>(
-  interactions: GameInteraction<Game>[],
+  interactions: Interactions,
   stateManager: GameStateManager<Game>,
   modelManager: GameModelManager<Game>
 ) => {
-  console.log(
-    getTranslationText(["settings"], "defaultActionPrompt") ??
-      modelManager.getModel().settings.defaultActionPrompt ??
-      DEFAULT_ACTION_PROMPT
+  console.log(interactions.prompt);
+
+  const textInteractions = interactions.actions.map<TextInteraction>(
+    ({ label, id }, key) => ({
+      label,
+      id,
+      key: `${key + 1}`,
+    })
   );
 
-  const possibleInteractions = interactions
-    .filter((interaction) => testCondition(interaction.condition, stateManager))
-    .map((action, key) => ({
-      action,
-      key: `${key + 1}`,
-    }));
-
-  const textScope = determineTextScope(stateManager, "interactions");
-
-  for (const interaction of possibleInteractions) {
+  for (const interaction of textInteractions) {
     let text: FormattedText = [
       { type: "text", text: `${interaction.key}) ` },
-      ...getDisplayText(
-        interaction.action.label,
-        stateManager,
-        textScope,
-        textScope
-      ),
+      ...interaction.label,
     ];
     const cpm = stateManager.getState().settings.cpm;
     await renderText(text, cpm, {});
   }
 
-  let chosenAction: { action: GameInteraction<Game>; key: string } | undefined;
+  let chosenAction: TextInteraction | undefined;
   stopSkip();
   do {
     const input = await Promise.race([
@@ -68,14 +61,14 @@ export const handleInteractions = async <Game extends GameWorld>(
     if (stateManager.isAborting()) {
       return;
     }
-    chosenAction = possibleInteractions.find(
+    chosenAction = textInteractions.find(
       (interaction) => interaction.key === input
     );
   } while (!chosenAction);
   cls();
   stateManager.updateState(
     produce((state) => {
-      state.currentInteraction = chosenAction?.action.label;
+      state.currentInteraction = chosenAction?.id;
     })
   );
   stateManager.updateSaveState();
