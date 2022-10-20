@@ -48,9 +48,14 @@ export const TerminalText: React.FC<{
       >
         {item.text.map((textLine, index, list) => (
           <React.Fragment key={index}>
-            {index === 0 ? `${item.displayName}: "` : "&nbsp;&nbsp;"}
+            {index === 0 ? (
+              `${item.displayName}: "`
+            ) : (
+              <span style={{ paddingLeft: "2ch" }}></span>
+            )}
             {formatText(textLine)}
             {index === list.length - 1 ? '"' : ""}
+            <br />
           </React.Fragment>
         ))}
       </p>
