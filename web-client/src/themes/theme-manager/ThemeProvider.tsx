@@ -3,10 +3,24 @@ import React, { useCallback } from "react";
 import { useGameContent, useGameState } from "../../content/ContentProvider";
 import { Theme } from "./types";
 
-const themeList: Theme[] = [];
+type RegisteredTheme<Settings extends Record<string, unknown>> = {
+  theme: Theme<Settings>;
+  settings: Settings;
+  id: string;
+};
 
-export const registerTheme = (theme: Theme) => {
-  themeList.push(theme);
+const themeList: RegisteredTheme<Record<string, unknown>>[] = [];
+
+export const registerTheme = <Settings extends Record<string, unknown>>(
+  id: string,
+  theme: Theme<Settings>,
+  settings: Partial<Settings>
+) => {
+  themeList.push({
+    id,
+    theme: theme as Theme<Record<string, unknown>>,
+    settings,
+  });
 };
 
 export const ThemeProvider: React.FC = () => {
@@ -18,7 +32,11 @@ export const ThemeProvider: React.FC = () => {
   const interactions = getInteractions(content, gameStateManager);
 
   const activeTheme = themeList[0];
-  const Theme = activeTheme.render;
+  const Theme = activeTheme.theme.render;
+  const renderSettings: typeof activeTheme.theme.defaultSettings = {
+    ...activeTheme.theme.defaultSettings,
+    ...activeTheme.settings,
+  };
 
   const handleInteraction = useCallback(
     (id: string) => {
@@ -36,6 +54,8 @@ export const ThemeProvider: React.FC = () => {
       contents={displayInfo}
       interactions={interactions}
       onInteraction={handleInteraction}
+      settings={renderSettings}
+      gameModelManager={content}
     />
   );
 };

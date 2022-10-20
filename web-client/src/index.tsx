@@ -6,7 +6,8 @@ import reportWebVitals from "./reportWebVitals";
 import { registerTheme } from "./themes/theme-manager/ThemeProvider";
 import { terminalTheme } from "./themes/cli-theme/TerminalTheme";
 
-registerTheme(terminalTheme);
+registerTheme("terminal", terminalTheme, { color: true });
+registerTheme("terminalBW", terminalTheme, { color: false });
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement

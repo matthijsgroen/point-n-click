@@ -1,14 +1,27 @@
-import { DisplayInfo } from "@point-n-click/engine";
+import { DisplayInfo, GameModelManager } from "@point-n-click/engine";
 import { GameWorld } from "@point-n-click/types";
 import React from "react";
+import { Settings } from "../types";
 import { formatText } from "./formatText";
 
-export const TerminalText: React.FC<{ item: DisplayInfo<GameWorld> }> = ({
-  item,
-}) => {
+export const TerminalText: React.FC<{
+  item: DisplayInfo<GameWorld>;
+  gameModelManager: GameModelManager<GameWorld>;
+  settings: Settings;
+}> = ({ item, gameModelManager, settings }) => {
   if (item.type === "narratorText") {
     return (
-      <p>
+      <p
+        style={
+          settings.color
+            ? {
+                color: `#${
+                  gameModelManager.getModel().settings.defaultTextColor
+                }`,
+              }
+            : {}
+        }
+      >
         {item.text.map((formattedText, key) => (
           <React.Fragment key={key}>
             {formatText(formattedText)}
@@ -20,7 +33,19 @@ export const TerminalText: React.FC<{ item: DisplayInfo<GameWorld> }> = ({
   }
   if (item.type === "characterText") {
     return (
-      <p>
+      <p
+        style={
+          settings.color
+            ? {
+                color: `#${
+                  gameModelManager.getModel().settings.characterConfigs[
+                    item.character
+                  ].textColor
+                }`,
+              }
+            : {}
+        }
+      >
         {item.text.map((textLine, index, list) => (
           <React.Fragment key={index}>
             {index === 0 ? `${item.displayName}: "` : "&nbsp;&nbsp;"}
