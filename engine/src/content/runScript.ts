@@ -194,7 +194,6 @@ const statementHandler = <
       const name =
         stateManager.getState().characters[character]?.name ??
         stateManager.getState().characters[character]?.defaultName;
-      console.log(stateManager.getState().characters[character]);
 
       const textScope = determineTextScope(stateManager, String(character));
 
