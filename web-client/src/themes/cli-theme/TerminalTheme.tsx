@@ -1,6 +1,10 @@
 import { Theme, ThemeRenderer } from "../theme-manager/types";
 
-const TerminalTheme: ThemeRenderer = ({ contents, interactions }) => {
+const TerminalTheme: ThemeRenderer = ({
+  contents,
+  interactions,
+  onInteraction,
+}) => {
   return (
     <div>
       {contents.map((item, index) => (
@@ -8,7 +12,15 @@ const TerminalTheme: ThemeRenderer = ({ contents, interactions }) => {
       ))}
       <p>{JSON.stringify(interactions.prompt)}</p>
       {interactions.actions.map((item, index) => (
-        <p key={index}>{JSON.stringify(item)}</p>
+        <p key={index}>
+          <button
+            onClick={() => {
+              onInteraction(item.id);
+            }}
+          >
+            {JSON.stringify(item)}
+          </button>
+        </p>
       ))}
     </div>
   );

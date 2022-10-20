@@ -2,6 +2,7 @@ import { GameStateManager } from "@point-n-click/state";
 import { GameWorld } from "@point-n-click/types";
 import { GameModelManager } from "../model/gameModel";
 import { describeLocation } from "./describeLocation";
+import { getCurrentLocation } from "./getLocation";
 import { getCurrentOverlay } from "./getOverlay";
 import { DisplayInfo, runScript } from "./runScript";
 
@@ -11,11 +12,7 @@ export const getDisplayInfo = <Game extends GameWorld>(
 ): DisplayInfo<Game>[] => {
   const displayInfo: DisplayInfo<Game>[] = [];
 
-  const currentLocation = stateManager.getState().currentLocation;
-  const locationData = gameModelManager
-    .getModel()
-    .locations.find((l) => l.id === currentLocation);
-
+  const locationData = getCurrentLocation(gameModelManager, stateManager);
   if (!locationData) {
     return displayInfo;
   }
@@ -56,6 +53,14 @@ export const getDisplayInfo = <Game extends GameWorld>(
         }
       }
       currentOverlayData = newOverlayData;
+
+      const newLocationData = getCurrentLocation(
+        gameModelManager,
+        stateManager
+      );
+      if (newLocationData !== locationData) {
+        displayInfo.push(...describeLocation(gameModelManager, stateManager));
+      }
     }
   } else {
     displayInfo.push(...describeLocation(gameModelManager, stateManager));

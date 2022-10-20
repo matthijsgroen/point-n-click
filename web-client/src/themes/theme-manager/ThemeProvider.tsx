@@ -1,5 +1,5 @@
 import { getDisplayInfo, getInteractions } from "@point-n-click/engine";
-import React from "react";
+import React, { useCallback } from "react";
 import { useGameContent, useGameState } from "../../content/ContentProvider";
 import { Theme } from "./types";
 
@@ -10,9 +10,6 @@ export const registerTheme = (theme: Theme) => {
 };
 
 export const ThemeProvider: React.FC = () => {
-  const activeTheme = themeList[0];
-  const Theme = activeTheme.render;
-
   const content = useGameContent();
   const gameStateManager = useGameState();
   gameStateManager.restoreSaveState();
@@ -20,5 +17,25 @@ export const ThemeProvider: React.FC = () => {
   const displayInfo = getDisplayInfo(content, gameStateManager);
   const interactions = getInteractions(content, gameStateManager);
 
-  return <Theme contents={displayInfo} interactions={interactions} />;
+  const activeTheme = themeList[0];
+  const Theme = activeTheme.render;
+
+  const handleInteraction = useCallback(
+    (id: string) => {
+      gameStateManager.updateState((state) => ({
+        ...state,
+        currentInteraction: id,
+      }));
+      gameStateManager.updateSaveState();
+    },
+    [gameStateManager]
+  );
+
+  return (
+    <Theme
+      contents={displayInfo}
+      interactions={interactions}
+      onInteraction={handleInteraction}
+    />
+  );
 };

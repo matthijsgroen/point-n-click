@@ -7,6 +7,7 @@ import { DEFAULT_ACTION_PROMPT } from "./constants";
 import { getDisplayText } from "../text/processText";
 import { FormattedText } from "../text/types";
 import { determineTextScope } from "../text/determineTextScope";
+import { getCurrentLocation } from "./getLocation";
 
 export type InteractionAction = {
   label: FormattedText;
@@ -25,10 +26,7 @@ export const getInteractions = <Game extends GameWorld>(
   const currentOverlayData = getCurrentOverlay(gameModelManager, stateManager);
 
   const textScope = determineTextScope(stateManager, "interactions");
-  const currentLocation = stateManager.getState().currentLocation;
-  const locationData = gameModelManager
-    .getModel()
-    .locations.find((l) => l.id === currentLocation);
+  const locationData = getCurrentLocation(gameModelManager, stateManager);
 
   const interactions = currentOverlayData
     ? currentOverlayData.interactions

@@ -37,10 +37,14 @@ const GameContentContext =
 
 const GameStateContext = createContext<{
   stateRef: MutableRefObject<GameState<GameWorld> | undefined>;
+  updateSavePointState: Dispatch<
+    SetStateAction<GameState<GameWorld> | undefined>
+  >;
   gameSavePointState: GameState<GameWorld> | undefined;
 }>({
   stateRef: { current: createDefaultState(defaultModel) },
   gameSavePointState: createDefaultState(defaultModel),
+  updateSavePointState: () => {},
 });
 
 export const useGameContent = (): GameModelManager<GameWorld> =>
@@ -68,7 +72,9 @@ export const useGameState = (): GameStateManager<GameWorld> => {
     getPlayState: () => "playing",
     setPlayState: () => {},
     isAborting: () => false,
-    updateSaveState: () => {},
+    updateSaveState: () => {
+      gameState.updateSavePointState(gameState.stateRef.current);
+    },
     restoreSaveState: () => {
       gameState.stateRef.current = gameState.gameSavePointState;
     },
@@ -110,6 +116,7 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
         value={{
           stateRef: gameStateRef,
           gameSavePointState,
+          updateSavePointState: setGameSavePointState,
         }}
       >
         {children}

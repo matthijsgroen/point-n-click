@@ -22,7 +22,7 @@ export const runLocation = async <Game extends GameWorld>(
     return;
   }
 
-  while (stateManager.getState().currentLocation === currentLocation) {
+  while (!stateManager.isAborting()) {
     const displayInfo = getDisplayInfo(gameModelManager, stateManager);
 
     if (stateManager.isAborting()) {
@@ -35,12 +35,7 @@ export const runLocation = async <Game extends GameWorld>(
       return;
     }
 
-    if (stateManager.getState().currentLocation === currentLocation) {
-      const interactions = getInteractions(gameModelManager, stateManager);
-      await handleInteractions(interactions, stateManager, gameModelManager);
-    }
-    if (stateManager.isAborting()) {
-      return;
-    }
+    const interactions = getInteractions(gameModelManager, stateManager);
+    await handleInteractions(interactions, stateManager, gameModelManager);
   }
 };
