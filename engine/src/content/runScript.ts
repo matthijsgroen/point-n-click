@@ -180,7 +180,7 @@ const statementHandler = <
               getTranslationText(
                 ["characters", String(character), "names"],
                 newName
-              ) ?? null;
+              ) ?? newName;
             (draft as GameState<Game>).characters[character].name =
               translatedName;
           } else {
@@ -194,6 +194,7 @@ const statementHandler = <
       const name =
         stateManager.getState().characters[character]?.name ??
         stateManager.getState().characters[character]?.defaultName;
+      console.log(stateManager.getState().characters[character]);
 
       const textScope = determineTextScope(stateManager, String(character));
 
