@@ -1,0 +1,29 @@
+{
+  "name": "@point-n-click/themes",
+  "description": "Themes API",
+  "version": "1.0.0-alpha.0",
+  "source": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": "Matthijs Groen",
+  "license": "MIT",
+  "scripts": {
+    "build": "parcel build",
+    "watch": "parcel watch",
+    "prepublish": "parcel build"
+  },
+  "files": [
+    "dist/"
+  ],
+  "dependencies": {
+    "@types/react": "^18.0.21"
+  },
+  "devDependencies": {
+    "@parcel/packager-ts": "2.7.0",
+    "@parcel/transformer-typescript-types": "2.7.0",
+    "@point-n-click/types": "^1.0.0-alpha.1",
+    "@point-n-click/engine": "^1.0.0-alpha.0",
+    "parcel": "^2.7.0",
+    "typescript": "~4.7.3"
+  }
+}
