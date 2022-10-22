@@ -1580,6 +1580,13 @@
   resolved "https://registry.yarnpkg.com/@point-n-click/state/-/state-1.0.0-alpha.0.tgz#417f78e362fac78031a513088449dd6a7ed606ce"
   integrity sha512-8yB5Ah9O7mQJ3SUPV2JyfCyLX0vvKnjMhzTRE61NPsLI5+1iA6LtDDtWcwvyNO96lcltE6XjJ75obvUBHc+w9A==
 
+"@point-n-click/themes@^1.0.0-alpha.0":
+  version "1.0.0-alpha.0"
+  resolved "https://registry.yarnpkg.com/@point-n-click/themes/-/themes-1.0.0-alpha.0.tgz#8ef6137b31c15ee575b143ca1ebfb03b2a8e617f"
+  integrity sha512-84rapjCbZPxh2J0yqf2eARpV0jRflSe7acwkxOcpTMxzvzc4388yuaezkbQLyVm6AoMjU1PKrD6lNvNdTRF/cA==
+  dependencies:
+    "@types/react" "^18.0.21"
+
 "@point-n-click/types@^1.0.0-alpha.1":
   version "1.0.0-alpha.1"
   resolved "https://registry.yarnpkg.com/@point-n-click/types/-/types-1.0.0-alpha.1.tgz#63cf5ae159330266124990f590780b817179f3f6"

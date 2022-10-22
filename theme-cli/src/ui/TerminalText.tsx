@@ -3,30 +3,32 @@ import { GameWorld } from "@point-n-click/types";
 import React from "react";
 import { Settings } from "../types";
 import { formatText } from "./formatText";
+import styles from "./TerminalText.module.css";
 
 export const TerminalText: React.FC<{
   item: DisplayInfo<GameWorld>;
   gameModelManager: GameModelManager<GameWorld>;
   settings: Settings;
-}> = ({ item, gameModelManager, settings }) => {
+  displayCursor?: boolean;
+}> = ({ item, gameModelManager, settings, displayCursor = false }) => {
   if (item.type === "narratorText") {
     return (
       <p
+        className={`${styles.lines} ${displayCursor ? styles.cursor : ""}`}
         style={
           settings.color
-            ? {
-                color: `#${
+            ? ({
+                "--color": `#${
                   gameModelManager.getModel().settings.defaultTextColor
                 }`,
-              }
-            : {}
+              } as React.CSSProperties)
+            : undefined
         }
       >
         {item.text.map((formattedText, key) => (
-          <React.Fragment key={key}>
+          <span className={styles.line} key={key}>
             {formatText(formattedText)}
-            <br />
-          </React.Fragment>
+          </span>
         ))}
       </p>
     );
@@ -34,20 +36,21 @@ export const TerminalText: React.FC<{
   if (item.type === "characterText") {
     return (
       <p
+        className={`${styles.lines} ${displayCursor ? styles.cursor : ""}`}
         style={
           settings.color
-            ? {
-                color: `#${
+            ? ({
+                "--color": `#${
                   gameModelManager.getModel().settings.characterConfigs[
                     item.character
                   ].textColor
                 }`,
-              }
-            : {}
+              } as React.CSSProperties)
+            : undefined
         }
       >
         {item.text.map((textLine, index, list) => (
-          <React.Fragment key={index}>
+          <span className={styles.line} key={index}>
             {index === 0 ? (
               `${item.displayName}: "`
             ) : (
@@ -55,8 +58,7 @@ export const TerminalText: React.FC<{
             )}
             {formatText(textLine)}
             {index === list.length - 1 ? '"' : ""}
-            <br />
-          </React.Fragment>
+          </span>
         ))}
       </p>
     );

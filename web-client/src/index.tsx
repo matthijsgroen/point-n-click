@@ -4,9 +4,9 @@ import App from "./App";
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import reportWebVitals from "./reportWebVitals";
 import { registerTheme } from "./themes/theme-manager/ThemeProvider";
-import { terminalTheme } from "./themes/cli-theme/TerminalTheme";
+import terminalTheme from "@point-n-click/theme-cli";
 
-registerTheme("terminal", terminalTheme, { color: true });
+// registerTheme("terminal", terminalTheme, { color: true });
 registerTheme("terminalBW", terminalTheme, { color: false });
 
 const root = ReactDOM.createRoot(

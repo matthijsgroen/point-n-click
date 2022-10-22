@@ -1,0 +1,38 @@
+.lines span.line {
+  display: block;
+  width: fit-content;
+  transition: opacity 2s;
+  opacity: 0.9;
+
+  color: var(--color, #fff);
+}
+
+.cursor span.line:last-of-type {
+  opacity: 1;
+
+  color: transparent;
+  background-clip: text;
+  background-color: var(--color, #fff);
+
+  background-image: linear-gradient(
+    to right,
+    #fff0 0%,
+    #fff0 60%,
+    #ffff 95%,
+    #ffff 100%
+  );
+}
+
+.cursor span.line:last-of-type::after {
+  content: "🀫";
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  from,
+  to {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
