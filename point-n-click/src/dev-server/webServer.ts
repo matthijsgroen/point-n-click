@@ -1,11 +1,12 @@
-import { GameModelManager } from "@point-n-click/engine";
+import { GameModelManager, getTranslation } from "@point-n-click/engine";
 import { GameWorld } from "@point-n-click/types";
 import express from "express";
 import { getContentFolder } from "@point-n-click/web-client";
+import { join } from "path";
 
 export const startWebserver = async (
   modelManager: GameModelManager<GameWorld>,
-  port: number = 3456
+  { port = 3456, lang }: { port?: number; lang?: string } = {}
 ) => {
   const app = express();
   let serverStartResolver: () => void = () => {};
@@ -16,6 +17,9 @@ export const startWebserver = async (
   app.get("/assets/contents.json", function (_req, res) {
     res.json(modelManager.getModel());
   });
+
+  const translationFilePath = join(process.cwd(), "src", "translations");
+  app.use("/assets/lang/", express.static(translationFilePath));
 
   app.use(express.static(getContentFolder()));
 

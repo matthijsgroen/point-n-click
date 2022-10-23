@@ -15,7 +15,7 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
     options,
     modelManager
   );
-  const stopServer = await startWebserver(modelManager);
+  const stopServer = await startWebserver(modelManager, { lang: options.lang });
 
   const translationData = await loadTranslationData(options.lang);
 

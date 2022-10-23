@@ -10,6 +10,7 @@ export type ThemeRenderer<Settings extends Record<string, unknown>> = FC<{
   settings: Settings;
   contents: DisplayInfo<GameWorld>[];
   interactions: Interactions;
+  skipToStep: number;
   gameModelManager: GameModelManager<GameWorld>;
   onInteraction: (interactionId: string) => void;
 }>;

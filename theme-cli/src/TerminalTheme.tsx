@@ -147,16 +147,19 @@ const sliceCharacters = (
 };
 
 const useTypedContents = (
-  contents: DisplayInfo<GameWorld>[]
+  contents: DisplayInfo<GameWorld>[],
+  skipToStep: number
 ): { contents: DisplayInfo<GameWorld>[]; complete: boolean } => {
-  const [charactersShown, setCharactersShown] = useState(0);
   const count = countCharacters(contents);
+  const [charactersShown, setCharactersShown] = useState(
+    skipToStep === 0 ? 0 : count
+  );
   const contentRef = useRef(contents);
   const shown = contentRef.current === contents ? charactersShown : 0;
 
   useEffect(() => {
     if (contentRef.current !== contents) {
-      setCharactersShown(0);
+      setCharactersShown(skipToStep === 0 ? 0 : count);
       contentRef.current = contents;
     }
     if (charactersShown < count) {
@@ -185,11 +188,14 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
   interactions,
   gameModelManager,
   settings,
+  skipToStep,
   onInteraction,
 }) => {
   const convertedContents = usePreformattedCharacters(contents);
-  const { contents: typedContents, complete } =
-    useTypedContents(convertedContents);
+  const { contents: typedContents, complete } = useTypedContents(
+    convertedContents,
+    skipToStep
+  );
 
   return (
     <div className={styles.display}>

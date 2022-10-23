@@ -17,7 +17,13 @@ import {
   GameStateManager,
 } from "@point-n-click/state";
 import { GameWorld } from "@point-n-click/types";
-import { gameModelManager, GameModelManager } from "@point-n-click/engine";
+import {
+  gameModelManager,
+  GameModelManager,
+  updateTranslation,
+  TranslationFile,
+} from "@point-n-click/engine";
+import { setClientSettings } from "../settings";
 
 const defaultModel: GameModel<GameWorld> = {
   settings: {
@@ -96,6 +102,13 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
       return data.json();
     }
   );
+  const { data: languageData } = useQuery(
+    ["languageContent"],
+    async (): Promise<TranslationFile> => {
+      const data = await fetch("/assets/lang/nl-NL.json");
+      return data.json();
+    }
+  );
 
   const gameStateRef = useRef<GameState<GameWorld>>();
 
@@ -104,12 +117,23 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
   >(undefined);
 
   useEffect(() => {
+    if (languageData) {
+      updateTranslation({ translationData: languageData });
+      if (data) {
+        setClientSettings({ skipMode: true });
+        modelManager.setNewModel(data);
+      }
+    }
+  }, [data, languageData]);
+
+  useEffect(() => {
     if (data && !gameStateRef.current) {
       const startState = createDefaultState(data);
       gameStateRef.current = startState;
       modelManager.setNewModel(data);
       setGameSavePointState(gameStateRef.current);
     } else {
+      setClientSettings({ skipMode: true });
       modelManager.setNewModel(data);
     }
   }, [data]);
