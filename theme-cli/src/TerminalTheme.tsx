@@ -225,7 +225,6 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
 
 export const terminalTheme: Theme<Settings> = {
   name: "Terminal",
-  package: "@point-n-click/theme-cli",
   author: "Matthijs Groen",
   version: "0.0.1",
   render: TerminalTheme,

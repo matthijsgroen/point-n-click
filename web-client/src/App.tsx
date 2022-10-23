@@ -1,7 +1,7 @@
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ContentProvider } from "./content/ContentProvider";
-import { ThemeProvider } from "./themes/theme-manager/ThemeProvider";
+import { ThemeProvider } from "./content/ThemeProvider";
 
 const queryClient = new QueryClient();
 

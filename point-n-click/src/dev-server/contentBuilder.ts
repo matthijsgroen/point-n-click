@@ -73,6 +73,7 @@ export const startContentBuilder = async (
   let contentBundler = new Parcel({
     entries: fileName,
     defaultConfig: "@parcel/config-default",
+
     workerFarm,
     outputFS,
   });
@@ -80,6 +81,7 @@ export const startContentBuilder = async (
 
   let subscription = await contentBundler.watch(async (err, event) => {
     if (err) {
+      console.log("Fatal error in build");
       // fatal error
       throw err;
     }
@@ -117,6 +119,7 @@ export const startContentBuilder = async (
           displayTypescriptError(gameContentsSourceMap, e);
           modelManager.setNewModel(undefined);
         } else {
+          console.log("Fatal error in import");
           throw e;
         }
       }

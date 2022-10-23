@@ -65,8 +65,14 @@ export type Settings<Game extends GameWorld> = {
   >;
 };
 
+export type RegisteredTheme = {
+  themePackage: string;
+  settings: unknown;
+};
+
 export type GameModel<Game extends GameWorld> = {
   settings: Settings<Game>;
   locations: GameLocation<Game>[];
   overlays: GameOverlay<Game>[];
+  themes: RegisteredTheme[];
 };

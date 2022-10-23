@@ -3,10 +3,10 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import reportWebVitals from "./reportWebVitals";
-import { registerTheme } from "./themes/theme-manager/ThemeProvider";
+import { registerTheme } from "./content/ThemeProvider";
 import terminalTheme from "@point-n-click/theme-cli";
 
-// registerTheme("terminal", terminalTheme, { color: true });
+registerTheme("terminal", terminalTheme, { color: true });
 registerTheme("terminalBW", terminalTheme, { color: false });
 
 const root = ReactDOM.createRoot(

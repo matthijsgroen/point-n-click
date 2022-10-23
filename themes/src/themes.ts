@@ -18,7 +18,6 @@ export type Theme<Settings extends Record<string, unknown>> = {
   name: string;
   version: string;
   author: string;
-  package: string;
   render: ThemeRenderer<Settings>;
   defaultSettings: Settings;
   // Will be extended with other render functions, like menu's

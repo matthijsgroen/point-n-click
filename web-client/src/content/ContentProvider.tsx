@@ -23,11 +23,11 @@ const defaultModel: GameModel<GameWorld> = {
   settings: {
     defaultLocale: "en-US",
     initialState: {},
-
     characterConfigs: {},
   },
   locations: [],
   overlays: [],
+  themes: [],
 };
 
 const modelManager = gameModelManager(undefined);
@@ -47,8 +47,15 @@ const GameStateContext = createContext<{
   updateSavePointState: () => {},
 });
 
-export const useGameContent = (): GameModelManager<GameWorld> =>
-  useContext(GameContentContext);
+export const useGameContent = (): GameModelManager<GameWorld> => {
+  const [, rerender] = useState(0);
+  const modelManager = useContext(GameContentContext);
+  modelManager.waitForChange().then(() => {
+    rerender((value) => (value + 1) % 10);
+  });
+
+  return modelManager;
+};
 
 export type UpdateGameState<World extends GameWorld> = Dispatch<
   SetStateAction<GameState<World>>
@@ -102,6 +109,8 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
       gameStateRef.current = startState;
       modelManager.setNewModel(data);
       setGameSavePointState(gameStateRef.current);
+    } else {
+      modelManager.setNewModel(data);
     }
   }, [data]);
 

@@ -53,6 +53,7 @@ export const world = <Game extends GameWorld>(
     settings: settings as Settings<Game>,
     locations: [],
     overlays: [],
+    themes: [],
   };
 
   let activeScriptScope: ScriptAST<Game> = [];

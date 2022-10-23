@@ -1,7 +1,14 @@
 {
   "name": "@point-n-click/web-client",
   "version": "0.1.0",
-  "private": true,
+  "main": "index.js",
+  "types": "index.d.ts",
+  "proxy": "http://localhost:3456",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "build/"
+  ],
   "dependencies": {
     "@point-n-click/state": "^1.0.0-alpha.0",
     "@point-n-click/types": "^1.0.0-alpha.1",

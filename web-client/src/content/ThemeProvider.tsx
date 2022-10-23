@@ -1,6 +1,6 @@
 import { getDisplayInfo, getInteractions } from "@point-n-click/engine";
 import React, { useCallback } from "react";
-import { useGameContent, useGameState } from "../../content/ContentProvider";
+import { useGameContent, useGameState } from "./ContentProvider";
 import { Theme } from "@point-n-click/themes";
 
 type RegisteredTheme<Settings extends Record<string, unknown>> = {
