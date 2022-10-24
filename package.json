@@ -3,6 +3,10 @@
   "workspaces": [
     "packages/*"
   ],
+  "scripts": {
+    "build": "nx run-many --target=build",
+    "watch": "nx run-many --target=watch --parallel=4"
+  },
   "devDependencies": {
     "nx": "15.0.1"
   },
