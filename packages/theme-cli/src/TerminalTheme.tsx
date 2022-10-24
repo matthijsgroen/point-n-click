@@ -8,6 +8,7 @@ import { DisplayInfo, FormattedText } from "@point-n-click/engine";
 import { GameWorld } from "@point-n-click/types";
 import { useEffect, useRef, useState } from "react";
 import React from "react";
+import { terminalSettings } from "./settings";
 
 const countDisplayInfoCharacters = (
   element: DisplayInfo<GameWorld>
@@ -146,6 +147,8 @@ const sliceCharacters = (
   return resultContent;
 };
 
+const MINUTE = 60000;
+
 const useTypedContents = (
   contents: DisplayInfo<GameWorld>[],
   skipToStep: number
@@ -157,6 +160,12 @@ const useTypedContents = (
   const contentRef = useRef(contents);
   const shown = contentRef.current === contents ? charactersShown : 0;
 
+  const sliced = sliceCharacters(contents, shown);
+  const lastLine = sliced.at(-1);
+  const cpm = lastLine && lastLine.type !== "error" ? lastLine.cpm : 2000;
+
+  const delay = terminalSettings.get().skipScreen ? 0 : MINUTE / cpm;
+
   useEffect(() => {
     if (contentRef.current !== contents) {
       setCharactersShown(skipToStep === 0 ? 0 : count);
@@ -165,14 +174,12 @@ const useTypedContents = (
     if (charactersShown < count) {
       const timeout = setTimeout(() => {
         setCharactersShown((counter) => counter + 1);
-      }, 30);
+      }, delay);
       return () => {
         clearTimeout(timeout);
       };
     }
   }, [charactersShown, count, contents]);
-
-  const sliced = sliceCharacters(contents, shown);
 
   return { contents: sliced, complete: shown >= count };
 };
@@ -196,6 +203,24 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
     convertedContents,
     skipToStep
   );
+
+  useEffect(() => {
+    terminalSettings.update({ skipScreen: false });
+  }, [contents]);
+
+  useEffect(() => {
+    const keyListener = (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        terminalSettings.update({ skipScreen: true });
+        e.preventDefault();
+      }
+    };
+
+    document.body.addEventListener("keydown", keyListener);
+    return () => {
+      document.body.removeEventListener("keydown", keyListener);
+    };
+  });
 
   return (
     <div className={styles.display}>
