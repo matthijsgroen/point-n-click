@@ -1,0 +1,30 @@
+{
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": ["watch", "prepublish", "start", "test"]
+      }
+    }
+  },
+  "targetDefaults": {
+    "prepublish": {
+      "dependsOn": ["^prepublish"],
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "start": {
+      "dependsOn": ["^start"]
+    },
+    "test": {
+      "dependsOn": ["^test"]
+    },
+    "watch": {
+      "outputs": ["{projectRoot}/dist"]
+    }
+  },
+  "defaultBase": "main"
+}
