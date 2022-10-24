@@ -1,4 +1,5 @@
 import { gameModelManager } from "@point-n-click/engine";
+import { createGameStateManager } from "../cli-client/gameStateManager";
 import { runGame } from "../cli-client/run";
 import { startContentBuilder } from "./contentBuilder";
 import { loadTranslationData } from "./loadTranslationData";
@@ -9,17 +10,25 @@ type ServerOptions = {
 };
 
 export const devServer = async (fileName: string, options: ServerOptions) => {
-  let modelManager = gameModelManager(undefined);
+  const modelManager = gameModelManager(undefined);
+
   const unsubscribeContent = await startContentBuilder(
     fileName,
     options,
     modelManager
   );
-  const stopServer = await startWebserver(modelManager, { lang: options.lang });
-
   const translationData = await loadTranslationData(options.lang);
 
-  await runGame({ color: true, translationData }, modelManager);
+  const gameStateManager = await createGameStateManager(modelManager);
+  const stopServer = await startWebserver(modelManager, gameStateManager, {
+    lang: options.lang,
+  });
+
+  await runGame(
+    { color: true, translationData },
+    modelManager,
+    gameStateManager
+  );
 
   await unsubscribeContent();
   stopServer();

@@ -158,11 +158,19 @@ const useTypedContents = (
     skipToStep === 0 ? 0 : count
   );
   const contentRef = useRef(contents);
-  const shown = contentRef.current === contents ? charactersShown : 0;
+  const shown =
+    contentRef.current === contents
+      ? charactersShown
+      : skipToStep === 0
+      ? 0
+      : count;
 
   const sliced = sliceCharacters(contents, shown);
   const lastLine = sliced.at(-1);
-  const cpm = lastLine && lastLine.type !== "error" ? lastLine.cpm : 2000;
+  let cpm = lastLine && lastLine.type !== "error" ? lastLine.cpm : 2000;
+  if (cpm === 0) {
+    cpm = 2000;
+  }
 
   const delay = terminalSettings.get().skipScreen ? 0 : MINUTE / cpm;
 
@@ -170,8 +178,7 @@ const useTypedContents = (
     if (contentRef.current !== contents) {
       setCharactersShown(skipToStep === 0 ? 0 : count);
       contentRef.current = contents;
-    }
-    if (charactersShown < count) {
+    } else if (charactersShown < count) {
       const timeout = setTimeout(() => {
         setCharactersShown((counter) => counter + 1);
       }, delay);
@@ -220,10 +227,10 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
     return () => {
       document.body.removeEventListener("keydown", keyListener);
     };
-  });
+  }, []);
 
   return (
-    <div className={styles.display}>
+    <div className={styles.display} data-testid="terminal theme">
       {typedContents.map((item, index, list) => (
         <TerminalText
           key={index}

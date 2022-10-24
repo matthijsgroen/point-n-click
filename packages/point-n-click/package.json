@@ -42,6 +42,7 @@
     "@point-n-click/types": "^1.0.0-alpha.1",
     "@point-n-click/web-client": "^0.1.0",
     "@tanstack/react-query": "^4.10.3",
+    "body-parser": "^1.20.1",
     "commander": "^9.4.1",
     "express": "^4.18.2",
     "http-proxy-middleware": "^2.0.6",

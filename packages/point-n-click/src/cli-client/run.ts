@@ -16,7 +16,8 @@ import {
 
 export const runGame = async <Game extends GameWorld>(
   { color = true, translationData }: CLISettings & TranslationSettings,
-  gameModelManager: GameModelManager<Game>
+  gameModelManager: GameModelManager<Game>,
+  stateManager: GameStateManager<Game>
 ) => {
   updateSettings({ color });
   updateTranslation({ translationData });
@@ -27,31 +28,6 @@ export const runGame = async <Game extends GameWorld>(
     model = gameModelManager.getModel();
   }
 
-  let gameState: GameState<Game> = createDefaultState(model);
-  let savePoint = gameState;
-  if (color === false) {
-    gameState.settings.cpm = Infinity;
-  }
-
-  let playState: PlayState = "playing";
-
-  const stateManager: GameStateManager<Game> = {
-    getState: () => gameState,
-    updateState: (mutation) => {
-      gameState = mutation(gameState);
-    },
-    setPlayState: (state) => {
-      playState = state;
-    },
-    getPlayState: () => playState,
-    updateSaveState: () => {
-      savePoint = gameState;
-    },
-    restoreSaveState: () => {
-      gameState = savePoint;
-    },
-    isAborting: () => playState === "quitting" || playState === "reloading",
-  };
   enableKeyPresses();
 
   cls();

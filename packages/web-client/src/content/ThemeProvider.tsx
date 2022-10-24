@@ -1,8 +1,8 @@
 import { getDisplayInfo, getInteractions } from "@point-n-click/engine";
-import React, { useCallback } from "react";
+import React from "react";
 import { useGameContent, useGameState } from "./ContentProvider";
 import { Theme } from "@point-n-click/themes";
-import { getClientSettings, setClientSettings } from "../settings";
+import { getClientSettings } from "../settings";
 
 type RegisteredTheme<Settings extends Record<string, unknown>> = {
   theme: Theme<Settings>;
@@ -39,23 +39,11 @@ export const ThemeProvider: React.FC = () => {
     ...activeTheme.settings,
   };
 
-  const handleInteraction = useCallback(
-    (id: string) => {
-      setClientSettings({ skipMode: false });
-      gameStateManager.updateState((state) => ({
-        ...state,
-        currentInteraction: id,
-      }));
-      gameStateManager.updateSaveState();
-    },
-    [gameStateManager]
-  );
-
   return (
     <Theme
       contents={displayInfo}
       interactions={interactions}
-      onInteraction={handleInteraction}
+      onInteraction={gameStateManager.setInteraction}
       settings={renderSettings}
       gameModelManager={content}
       skipToStep={getClientSettings().skipMode ? Infinity : 0}
