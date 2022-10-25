@@ -240,7 +240,7 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
           displayCursor={index === list.length - 1 && !complete}
         />
       ))}
-      {complete && (
+      {complete && interactions.actions.length > 0 && (
         <>
           <p>{interactions.prompt}</p>
 

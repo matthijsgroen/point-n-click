@@ -1,4 +1,4 @@
-import { GameModelManager, getTranslation } from "@point-n-click/engine";
+import { GameModelManager } from "@point-n-click/engine";
 import { GameWorld } from "@point-n-click/types";
 import express from "express";
 import { getContentFolder } from "@point-n-click/web-client";
@@ -21,7 +21,7 @@ export const startWebserver = async (
   });
 
   app.get("/assets/contents.json", function (_req, res) {
-    res.json(modelManager.getModel());
+    res.json(modelManager.getBackupModel());
   });
 
   app.get("/development-server/save.json", function (_req, res) {

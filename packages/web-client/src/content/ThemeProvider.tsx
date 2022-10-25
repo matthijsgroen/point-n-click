@@ -1,8 +1,13 @@
-import { getDisplayInfo, getInteractions } from "@point-n-click/engine";
+import {
+  DisplayErrorText,
+  getDisplayInfo,
+  getInteractions,
+} from "@point-n-click/engine";
 import React from "react";
 import { useGameContent, useGameState } from "./ContentProvider";
 import { Theme } from "@point-n-click/themes";
 import { getClientSettings } from "../settings";
+import { Error } from "./Error";
 
 type RegisteredTheme<Settings extends Record<string, unknown>> = {
   theme: Theme<Settings>;
@@ -38,6 +43,12 @@ export const ThemeProvider: React.FC = () => {
     ...activeTheme.theme.defaultSettings,
     ...activeTheme.settings,
   };
+  const error = displayInfo.find(
+    (item): item is DisplayErrorText => item.type === "error"
+  );
+  if (error) {
+    return <Error content={error} />;
+  }
 
   return (
     <Theme

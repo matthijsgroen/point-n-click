@@ -3,6 +3,7 @@ import { GameWorld } from "@point-n-click/types";
 
 export type GameModelManager<Game extends GameWorld> = {
   getModel: () => GameModel<Game>;
+  getBackupModel: () => GameModel<Game>;
   hasModel: () => boolean;
   setNewModel: (model: GameModel<Game> | undefined) => void;
   waitForChange: () => Promise<boolean>;
@@ -29,6 +30,7 @@ export const gameModelManager = <Game extends GameWorld>(
 
   return {
     getModel: () => internalModel ?? emptyGameModel(),
+    getBackupModel: () => backupModel ?? internalModel ?? emptyGameModel(),
     hasModel: () => internalModel !== undefined,
     backupModel: () => {
       backupModel = internalModel;

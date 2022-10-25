@@ -66,16 +66,10 @@ const statementHandler = <
 
       for (const sentence of statement.sentences) {
         try {
-          const text = getDisplayText(
-            sentence,
-            stateManager,
-            textScope,
-            textScope
+          result.text.push(
+            getDisplayText(sentence, stateManager, textScope, textScope)
           );
-          result.text.push(text);
         } catch (e) {
-          // stateManager.setPlayState("reloading");
-          // gameModelManager.backupModel();
           if ((e as ParseSyntaxError).name === "SyntaxError") {
             return [result, formatParserError(e as ParseSyntaxError)];
           }
@@ -207,12 +201,22 @@ const statementHandler = <
       };
 
       for (const index in sentences) {
-        result.text.push(
-          getDisplayText(sentences[index], stateManager, textScope, [
-            "character",
-            String(character),
-          ])
-        );
+        try {
+          result.text.push(
+            getDisplayText(sentences[index], stateManager, textScope, [
+              "character",
+              String(character),
+            ])
+          );
+        } catch (e) {
+          if ((e as ParseSyntaxError).name === "SyntaxError") {
+            return [result, formatParserError(e as ParseSyntaxError)];
+          }
+          if ((e as StateError).name === "StateError") {
+            return [result, formatStateError(sentence, e as StateError)];
+          }
+          break;
+        }
       }
       return [result];
     },
