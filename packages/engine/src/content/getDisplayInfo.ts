@@ -43,8 +43,16 @@ export const getDisplayInfo = <Game extends GameWorld>(
           displayInfo.push(
             ...runScript(currentOverlayData.onLeave.script, stateManager)
           );
+          stateManager.updateState((state) => ({
+            ...state,
+            currentOverlay: undefined,
+          }));
         }
         if (newOverlayData) {
+          stateManager.updateState((state) => ({
+            ...state,
+            currentOverlay: newOverlayData.id,
+          }));
           displayInfo.push(
             ...runScript(newOverlayData.onEnter.script, stateManager)
           );

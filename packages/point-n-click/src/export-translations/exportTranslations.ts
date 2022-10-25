@@ -90,7 +90,16 @@ const mergeTranslations = (
     }
   }
 
-  return result;
+  const orderedResult: TranslationFile = {};
+  for (const key of newKeys) {
+    orderedResult[key] = result[key];
+  }
+  const extraKeys = Object.keys(result).filter((k) => !newKeys.includes(k));
+  for (const key of extraKeys) {
+    orderedResult[key] = result[key];
+  }
+
+  return orderedResult;
 };
 
 export const exportTranslations = async <Game extends GameWorld>(

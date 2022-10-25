@@ -178,7 +178,7 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
   if (isLoading || !data || !gameStateRef.current) {
     return (
       <div className={styles.loading}>
-        <p>Loading...{developmentMode ? "dev" : "prod"}</p>
+        <p>Loading...</p>
       </div>
     );
   }

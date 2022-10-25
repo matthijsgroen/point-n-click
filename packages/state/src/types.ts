@@ -6,6 +6,7 @@ export type GameState<Game extends GameWorld> = {
   previousLocation?: keyof Game["locations"];
   currentInteraction?: string;
   overlayStack: Game["overlays"][];
+  currentOverlay?: Game["overlays"];
   settings: {
     cpm: number;
     skipMode: "tillChoice" | "screen" | "off";
