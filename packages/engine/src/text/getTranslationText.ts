@@ -15,6 +15,9 @@ export const getTranslationText = (
       return undefined;
     }
   }
+  if (!t) {
+    return undefined;
+  }
 
   const v = t[key];
   if (typeof v !== "string") {
