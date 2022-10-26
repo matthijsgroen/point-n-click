@@ -11,12 +11,12 @@ export const getTranslationText = (
     const v = t[k];
     if (typeof v !== "string") {
       t = v;
+      if (!t) {
+        return undefined;
+      }
     } else {
       return undefined;
     }
-  }
-  if (!t) {
-    return undefined;
   }
 
   const v = t[key];
