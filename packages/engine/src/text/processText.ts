@@ -5,7 +5,7 @@ import { parse } from "./parser";
 import { FormattedText, ParsedText } from "./types";
 import { applyState } from "./applyState";
 
-const parseText = (text: string): ParsedText => {
+export const parseText = (text: string): ParsedText => {
   try {
     return parse(text);
   } catch (e) {

@@ -1,5 +1,6 @@
 import { GameStateManager } from "@point-n-click/state";
 import { GameWorld } from "@point-n-click/types";
+import { noLocation } from "../errors/noLocation";
 import { GameModelManager } from "../model/gameModel";
 import { describeLocation } from "./describeLocation";
 import { getCurrentLocation } from "./getLocation";
@@ -14,6 +15,7 @@ export const getDisplayInfo = <Game extends GameWorld>(
 
   const locationData = getCurrentLocation(gameModelManager, stateManager);
   if (!locationData) {
+    displayInfo.push(noLocation(stateManager.getState().currentLocation));
     return displayInfo;
   }
 

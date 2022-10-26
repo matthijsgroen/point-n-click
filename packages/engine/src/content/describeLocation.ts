@@ -3,6 +3,7 @@ import { GameStateManager } from "@point-n-click/state";
 import { DisplayInfo, runScript } from "./runScript";
 import { GameModelManager } from "../model/gameModel";
 import { getCurrentLocation } from "./getLocation";
+import { noLocation } from "../errors/noLocation";
 
 export const describeLocation = <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
@@ -14,8 +15,7 @@ export const describeLocation = <Game extends GameWorld>(
   const result: DisplayInfo<Game>[] = [];
 
   if (!locationData) {
-    // TODO: Return this as displayInfo 'Error'
-    console.log(`Location not found: ${String(currentLocation)}`);
+    result.push(noLocation(stateManager.getState().currentLocation));
   }
 
   const previousLocation = stateManager.getState().previousLocation;
