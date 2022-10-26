@@ -164,6 +164,19 @@ export const exportTranslations = async <Game extends GameWorld>(
       processScript(interaction.script, overlayScope, setTranslationKey);
     }
   }
+  for (const globalInteraction of gameModel.globalInteractions) {
+    const overlayScope = [
+      "global",
+      "interactions",
+      String(globalInteraction.label),
+    ];
+    setTranslationKey(overlayScope.concat("label"), globalInteraction.label);
+    setTranslationKey(
+      overlayScope.concat("shortcutKey"),
+      globalInteraction.shortcutKey
+    );
+    processScript(globalInteraction.script, overlayScope, setTranslationKey);
+  }
 
   try {
     await mkdir(folder);

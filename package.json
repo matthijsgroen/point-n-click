@@ -5,7 +5,7 @@
   ],
   "scripts": {
     "build": "nx run-many --target=build",
-    "watch": "nx run-many --target=watch --parallel=5"
+    "watch": "nx run-many --target=watch --parallel=7"
   },
   "devDependencies": {
     "nx": "15.0.1"

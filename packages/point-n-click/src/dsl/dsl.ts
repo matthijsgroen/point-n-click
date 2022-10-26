@@ -7,6 +7,7 @@ import {
   ScriptStatement,
   GameOverlay,
   GameLocation,
+  GlobalInteraction,
 } from "@point-n-click/types";
 import { GameModel, Settings } from "@point-n-click/state";
 import { characterDSLFunctions, CharacterInterface } from "./character";
@@ -23,6 +24,7 @@ type GameWorldDSL<Game extends GameWorld> = {
     location: Location,
     script: LocationScript<Game, Location>
   ) => void;
+  globalInteraction: GlobalInteraction<Game>;
 
   text: (...sentences: string[]) => void;
   openOverlay: (id: Game["overlays"]) => void;
@@ -54,6 +56,7 @@ export const world = <Game extends GameWorld>(
     locations: [],
     overlays: [],
     themes: [],
+    globalInteractions: [],
   };
 
   let activeScriptScope: ScriptAST<Game> = [];
@@ -163,6 +166,15 @@ export const world = <Game extends GameWorld>(
       });
       worldModel?.locations.push(locationAST as unknown as GameLocation<Game>);
     },
+    globalInteraction: (text, shortcutKey, condition, script) => {
+      worldModel.globalInteractions.push({
+        label: text,
+        condition,
+        shortcutKey,
+        script: wrapScript(script),
+      });
+    },
+
     ...characterDSLFunctions(addToActiveScript),
     ...itemDSLFunctions(addToActiveScript),
     ...locationDSLFunctions(addToActiveScript),

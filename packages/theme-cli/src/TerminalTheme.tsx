@@ -229,6 +229,8 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
     };
   }, []);
 
+  let actionKey = 0;
+
   return (
     <div className={styles.display} data-testid="terminal theme">
       {typedContents.map((item, index, list) => (
@@ -251,7 +253,8 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
                   onInteraction(item.id);
                 }}
                 item={item}
-                shortcut={`${index + 1}`}
+                shortcut={item.shortcutKey || `${++actionKey}`}
+                global={item.isGlobal}
               />
             </p>
           ))}

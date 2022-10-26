@@ -18,17 +18,20 @@ export const getDisplayInfo = <Game extends GameWorld>(
     displayInfo.push(noLocation(stateManager.getState().currentLocation));
     return displayInfo;
   }
+  const globalInteractions = gameModelManager.getModel().globalInteractions;
 
   let currentOverlayData = getCurrentOverlay(gameModelManager, stateManager);
 
   const currentInteraction = stateManager.getState().currentInteraction;
 
   if (currentInteraction) {
-    const interactionData = (
-      currentOverlayData
-        ? currentOverlayData.interactions
-        : locationData.interactions
-    ).find((interaction) => interaction.label === currentInteraction);
+    const interactionData = globalInteractions
+      .concat(
+        currentOverlayData
+          ? currentOverlayData.interactions
+          : locationData.interactions
+      )
+      .find((interaction) => interaction.label === currentInteraction);
 
     if (interactionData) {
       stateManager.updateState((state) => ({

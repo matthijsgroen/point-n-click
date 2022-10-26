@@ -13,7 +13,13 @@ type TextInteraction = {
   label: FormattedText;
   id: string;
   key: string;
+  isGlobal: boolean;
 };
+
+const globalColor = (active: boolean, text: FormattedText): FormattedText =>
+  active
+    ? [{ type: "formatting", format: "color", value: "777777", contents: text }]
+    : text;
 
 export const handleInteractions = async <Game extends GameWorld>(
   interactions: Interactions,
@@ -21,20 +27,23 @@ export const handleInteractions = async <Game extends GameWorld>(
   modelManager: GameModelManager<Game>
 ) => {
   console.log(interactions.prompt);
+  console.log("");
 
+  let key = 0;
   const textInteractions = interactions.actions.map<TextInteraction>(
-    ({ label, id }, key) => ({
+    ({ label, id, shortcutKey, isGlobal }) => ({
       label,
       id,
-      key: `${key + 1}`,
+      isGlobal,
+      key: `${shortcutKey || ++key}`,
     })
   );
 
   for (const interaction of textInteractions) {
-    let text: FormattedText = [
-      { type: "text", text: `${interaction.key}) ` },
+    let text: FormattedText = globalColor(interaction.isGlobal, [
+      { type: "text", text: `${interaction.key.toUpperCase()}) ` },
       ...interaction.label,
-    ];
+    ]);
     const cpm = stateManager.getState().settings.cpm;
     await renderText(text, cpm, {});
   }

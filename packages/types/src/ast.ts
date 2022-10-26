@@ -39,11 +39,20 @@ export type Interaction<Game extends GameWorld> = (
   script: Script
 ) => void;
 
+export type GlobalInteraction<Game extends GameWorld> = (
+  text: string,
+  shortcutKey: string,
+  condition: StateCondition<Game>,
+  script: Script
+) => void;
+
 export type GameInteraction<Game extends GameWorld> = {
   label: string;
   condition: StateCondition<Game>;
+  shortcutKey?: string;
   script: ScriptAST<Game>;
 };
+
 export type GameLocation<Game extends GameWorld> = {
   id: keyof Game["locations"];
   onEnter: { from: keyof Game["locations"]; script: ScriptAST<Game> }[];

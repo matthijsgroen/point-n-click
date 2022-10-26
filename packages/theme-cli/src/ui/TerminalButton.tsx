@@ -1,16 +1,21 @@
 import { InteractionAction } from "@point-n-click/engine";
 import { formatText } from "@point-n-click/themes";
 import React, { useEffect } from "react";
+import { classNames } from "../classnames";
 import styles from "./TerminalButton.module.css";
 
 export const TerminalButton: React.FC<{
   onClick?: () => void;
   item: InteractionAction;
   shortcut: string;
-}> = ({ onClick, item, shortcut }) => {
+  global: boolean;
+}> = ({ onClick, item, shortcut, global }) => {
   useEffect(() => {
     const keyListener = (e: KeyboardEvent) => {
-      if (e.code === `Key${shortcut}` || e.code === `Digit${shortcut}`) {
+      if (
+        e.code === `Key${shortcut.toUpperCase()}` ||
+        e.code === `Digit${shortcut}`
+      ) {
         onClick && onClick();
         e.preventDefault();
       }
@@ -23,8 +28,14 @@ export const TerminalButton: React.FC<{
   });
 
   return (
-    <button className={styles.button} onClick={onClick}>
-      {shortcut}) {formatText(item.label)}
+    <button
+      className={classNames({
+        [styles.button]: true,
+        [styles.global]: global,
+      })}
+      onClick={onClick}
+    >
+      {shortcut.toUpperCase()}) {formatText(item.label)}
     </button>
   );
 };

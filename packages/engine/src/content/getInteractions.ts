@@ -11,6 +11,8 @@ import { getCurrentLocation } from "./getLocation";
 
 export type InteractionAction = {
   label: FormattedText;
+  shortcutKey?: string;
+  isGlobal: boolean;
   id: string;
 };
 
@@ -37,15 +39,35 @@ export const getInteractions = <Game extends GameWorld>(
     gameModelManager.getModel().settings.defaultActionPrompt ??
     DEFAULT_ACTION_PROMPT;
 
+  const globalInteractions = gameModelManager
+    .getModel()
+    .globalInteractions.filter((interaction) =>
+      testCondition(interaction.condition, stateManager)
+    )
+    .map<InteractionAction>(({ label, shortcutKey }) => ({
+      label: getDisplayText(
+        getTranslationText(["global", "interactions", label], "label") || label,
+        stateManager,
+        [],
+        textScope
+      ),
+      shortcutKey:
+        getTranslationText(["global", "interactions", label], "shortcutKey") ||
+        shortcutKey,
+      isGlobal: true,
+      id: label,
+    }));
+
   const possibleInteractions = interactions
     .filter((interaction) => testCondition(interaction.condition, stateManager))
     .map<InteractionAction>(({ label }) => ({
       label: getDisplayText(label, stateManager, textScope, textScope),
+      isGlobal: false,
       id: label,
     }));
 
   return {
     prompt,
-    actions: possibleInteractions,
+    actions: globalInteractions.concat(possibleInteractions),
   };
 };

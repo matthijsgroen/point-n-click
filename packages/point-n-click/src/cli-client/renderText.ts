@@ -1,4 +1,5 @@
 import { FormattedText } from "@point-n-click/engine";
+import { hexColor } from "..";
 import { getSettings } from "./settings";
 import { wait, resetStyling, setStyling, TextStyling } from "./utils";
 
@@ -42,6 +43,9 @@ export const renderText = async (
       }
       if (element.format === "s") {
         newStyling.strikeThrough = true;
+      }
+      if (element.format === "color" && element.value) {
+        newStyling.color = hexColor(element.value);
       }
       await renderText(element.contents, cpm, newStyling, false);
       if (getSettings().color) {

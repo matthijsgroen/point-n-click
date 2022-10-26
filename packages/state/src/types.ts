@@ -1,4 +1,9 @@
-import { GameLocation, GameOverlay, GameWorld } from "@point-n-click/types";
+import {
+  GameInteraction,
+  GameLocation,
+  GameOverlay,
+  GameWorld,
+} from "@point-n-click/types";
 import { HexColor } from "./hexColor";
 
 export type GameState<Game extends GameWorld> = {
@@ -76,5 +81,6 @@ export type GameModel<Game extends GameWorld> = {
   settings: Settings<Game>;
   locations: GameLocation<Game>[];
   overlays: GameOverlay<Game>[];
+  globalInteractions: GameInteraction<Game>[];
   themes: RegisteredTheme[];
 };

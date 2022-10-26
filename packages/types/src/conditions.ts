@@ -43,6 +43,11 @@ export type OrCondition<Game extends GameWorld> = {
   conditions: StateCondition<Game>[];
 };
 
+export type OverlayOpenCondition<Game extends GameWorld> = {
+  op: "OverlayOpen";
+  overlay?: keyof Game["overlays"];
+};
+
 export type GameObjectStateCondition<
   Game extends GameWorld,
   ItemType extends StateObject
@@ -73,6 +78,7 @@ export type StateCondition<Game extends GameWorld> =
   | GameObjectCounterCondition<Game, "character">
   | GameObjectCounterCondition<Game, "item">
   | GameObjectCounterCondition<Game, "location">
+  | OverlayOpenCondition<Game>
   | TrueCondition
   | FalseCondition
   | NegateCondition<Game>

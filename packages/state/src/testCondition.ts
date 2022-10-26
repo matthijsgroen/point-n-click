@@ -70,6 +70,14 @@ export const testCondition = <Game extends GameWorld>(
       testCondition(condition, stateManager)
     );
   }
+  if (condition.op === "OverlayOpen") {
+    const openOverlays = stateManager.getState().overlayStack;
+    if (condition.overlay) {
+      return openOverlays.some((overlay) => overlay === condition.overlay);
+    } else {
+      return openOverlays.length > 0;
+    }
+  }
 
   return true;
 };

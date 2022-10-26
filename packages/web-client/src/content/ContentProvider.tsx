@@ -35,6 +35,7 @@ const defaultModel: GameModel<GameWorld> = {
   locations: [],
   overlays: [],
   themes: [],
+  globalInteractions: [],
 };
 
 const modelManager = gameModelManager(undefined);
@@ -94,20 +95,34 @@ const developmentMode =
   document.body.attributes.getNamedItem("data-environment")?.value ===
   "development";
 
+const REFETCH_INTERVAL = 3000;
+
 export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const { isLoading, data } = useQuery(
     ["gameContent"],
     async (): Promise<GameModel<GameWorld>> => {
       const data = await fetch("/assets/contents.json");
       return data.json();
-    }
+    },
+    developmentMode
+      ? {
+          refetchInterval: REFETCH_INTERVAL,
+          refetchIntervalInBackground: true,
+        }
+      : {}
   );
   const { data: languageData } = useQuery(
     ["languageContent"],
     async (): Promise<TranslationFile> => {
       const data = await fetch("/assets/lang/nl-NL.json");
       return data.json();
-    }
+    },
+    developmentMode
+      ? {
+          refetchInterval: REFETCH_INTERVAL,
+          refetchIntervalInBackground: true,
+        }
+      : {}
   );
 
   const [, rerender] = useState(0);
@@ -124,6 +139,10 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
       async (): Promise<GameState<GameWorld>> => {
         const data = await fetch("/development-server/save.json");
         return data.json();
+      },
+      {
+        refetchInterval: REFETCH_INTERVAL,
+        refetchIntervalInBackground: true,
       }
     );
     if (saveData !== gameSavePointState) {

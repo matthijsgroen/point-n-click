@@ -6,6 +6,7 @@ import {
   OrCondition,
   StateCondition,
   TrueCondition,
+  OverlayOpenCondition,
 } from "@point-n-click/types";
 
 const always = (): TrueCondition => ({ op: "true" });
@@ -17,6 +18,9 @@ export type ConditionSet<Game extends GameWorld> = {
   or: (...conditions: StateCondition<Game>[]) => OrCondition<Game>;
   always: () => TrueCondition;
   never: () => FalseCondition;
+  isOverlayOpen: (
+    overlay?: keyof Game["overlays"]
+  ) => OverlayOpenCondition<Game>;
 };
 
 export const dslStateConditions = <
@@ -35,11 +39,19 @@ export const dslStateConditions = <
     conditions,
   });
 
+  const isOverlayOpen = (
+    overlay?: keyof Game["overlays"]
+  ): OverlayOpenCondition<Game> => ({
+    op: "OverlayOpen",
+    overlay,
+  });
+
   return {
     not,
     and,
     or,
     always,
     never,
+    isOverlayOpen,
   };
 };
