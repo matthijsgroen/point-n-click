@@ -58,9 +58,15 @@ export type GameStateManager<Game extends GameWorld> = {
   restoreSaveState: () => void;
 };
 
+export type RecursivePartial<T extends Record<string, unknown>> = {
+  [Key in keyof T]?: T[Key] extends Record<string, unknown>
+    ? RecursivePartial<T[Key]>
+    : T[Key];
+};
+
 export type Settings<Game extends GameWorld> = {
   defaultLocale: `${string}-${string}`;
-  initialState: Partial<GameState<Game>>;
+  initialState: RecursivePartial<GameState<Game>>;
   defaultTextColor?: HexColor;
   defaultActionPrompt?: string;
   characterConfigs: Record<

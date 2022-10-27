@@ -200,10 +200,10 @@ const statementHandler = <
         text: [],
       };
 
-      for (const index in sentences) {
+      for (const sentence of sentences) {
         try {
           result.text.push(
-            getDisplayText(sentences[index], stateManager, textScope, [
+            getDisplayText(sentence, stateManager, textScope, [
               "character",
               String(character),
             ])
