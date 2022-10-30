@@ -9,20 +9,31 @@ type ServerOptions = {
   lang: string;
 };
 
-export const devServer = async (fileName: string, options: ServerOptions) => {
+export const devServer = async (
+  fileName: string,
+  resolves: Record<string, string>,
+  options: ServerOptions
+) => {
   const modelManager = gameModelManager(undefined);
+  // Check if filename exists...
 
   const unsubscribeContent = await startContentBuilder(
     fileName,
+    resolves,
     options,
     modelManager
   );
   const translationData = await loadTranslationData(options.lang);
 
   const gameStateManager = await createGameStateManager(modelManager);
-  const stopServer = await startWebserver(modelManager, gameStateManager, {
-    lang: options.lang,
-  });
+  const stopServer = await startWebserver(
+    modelManager,
+    gameStateManager,
+    resolves,
+    {
+      lang: options.lang,
+    }
+  );
 
   await runGame(
     { color: true, translationData },
@@ -31,7 +42,5 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
   );
 
   await unsubscribeContent();
-  stopServer();
-
-  process.exit(0);
+  await stopServer();
 };

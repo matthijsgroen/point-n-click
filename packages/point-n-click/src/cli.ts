@@ -1,7 +1,8 @@
 import { Command } from "commander";
 import { devServer } from "./dev-server/devServer";
+import "@parcel/config-default";
 
-export const cli = (args: string[]) => {
+export const cli = (args: string[], resolves: Record<string, string>) => {
   const program = new Command();
   program
     .description(
@@ -14,7 +15,7 @@ export const cli = (args: string[]) => {
     .option("-l, --lang <language>")
     .description("start build server and game")
     .action((source, options) => {
-      devServer(source, options);
+      devServer(source, resolves, options);
     });
 
   program.parse(args);

@@ -6,7 +6,7 @@ import { GameModel } from "@point-n-click/state";
 import { GameWorld } from "@point-n-click/types";
 import { watch } from "fs";
 import { unlink, writeFile } from "fs/promises";
-import path, { join } from "path";
+import path from "path";
 import {
   isLocale,
   exportTranslations,
@@ -28,7 +28,12 @@ const watchTranslations = <Game extends GameWorld>(
   const ac = new AbortController();
   const { signal } = ac;
 
-  const fileName = join(process.cwd(), "src", "translations", `${locale}.json`);
+  const fileName = path.join(
+    process.cwd(),
+    "src",
+    "translations",
+    `${locale}.json`
+  );
   watch(fileName, { signal }, async () => {
     await loadTranslationData(locale);
     gameModelManager.restoreModel();
@@ -61,6 +66,7 @@ const convertToGameModel = async (
 
 export const startContentBuilder = async (
   fileName: string,
+  resolves: Record<string, string>,
   options: ServerOptions,
   modelManager: GameModelManager<GameWorld>
 ) => {
@@ -72,10 +78,15 @@ export const startContentBuilder = async (
   let outputFS = new MemoryFS(workerFarm);
   let contentBundler = new Parcel({
     entries: fileName,
-    defaultConfig: "@parcel/config-default",
+    defaultConfig: resolves["@parcel/config-default"],
+    shouldAutoInstall: false,
 
     workerFarm,
     outputFS,
+    defaultTargetOptions: {
+      isLibrary: true,
+      engines: { node: "*" },
+    },
   });
   let watchingTranslation: undefined | string = undefined;
 
@@ -87,7 +98,8 @@ export const startContentBuilder = async (
     }
 
     if (event && event.type === "buildSuccess") {
-      let bundle = event.bundleGraph.getBundles()[0];
+      const bundles = event.bundleGraph.getBundles();
+      let bundle = bundles[0];
       const gameContentsDSL = await outputFS.readFile(bundle.filePath, "utf-8");
       try {
         jsonModel = await convertToGameModel(gameContentsDSL);
@@ -95,7 +107,7 @@ export const startContentBuilder = async (
         const defaultLocale = jsonModel.settings.defaultLocale;
         if (isLocale(options.lang) && options.lang !== defaultLocale) {
           await exportTranslations(
-            join(process.cwd(), "src", "translations"),
+            path.join(process.cwd(), "src", "translations"),
             [options.lang],
             jsonModel
           );
@@ -130,6 +142,7 @@ export const startContentBuilder = async (
   });
   return async () => {
     await subscription.unsubscribe();
+    await workerFarm.end();
     if (translationWatchController) {
       (translationWatchController as AbortController).abort();
     }

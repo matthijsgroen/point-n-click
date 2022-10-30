@@ -1,6 +1,7 @@
 import { DisplayErrorText } from "@point-n-click/engine";
 import styles from "./Error.module.css";
-import { formatText } from "@point-n-click/themes";
+import React from "react";
+import { formatText } from "../formatText";
 
 export const Error: React.FC<{ content: DisplayErrorText }> = ({ content }) => {
   return (

@@ -1,10 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import reportWebVitals from "./reportWebVitals";
-import { registerTheme } from "./content/ThemeProvider";
 import terminalTheme from "@point-n-click/theme-cli";
+import { App, registerTheme } from "@point-n-click/web-engine";
 
 registerTheme("terminal", terminalTheme, { color: true });
 registerTheme("terminalBW", terminalTheme, { color: false });

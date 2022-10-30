@@ -16,5 +16,5 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src", "../types/src/types.ts"]
+  "include": ["src", "../types/src/types.ts", "../web-engine/src/settings.ts"]
 }

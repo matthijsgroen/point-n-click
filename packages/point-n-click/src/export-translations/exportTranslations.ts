@@ -171,10 +171,12 @@ export const exportTranslations = async <Game extends GameWorld>(
       String(globalInteraction.label),
     ];
     setTranslationKey(overlayScope.concat("label"), globalInteraction.label);
-    setTranslationKey(
-      overlayScope.concat("shortcutKey"),
-      globalInteraction.shortcutKey
-    );
+    if (globalInteraction.shortcutKey) {
+      setTranslationKey(
+        overlayScope.concat("shortcutKey"),
+        globalInteraction.shortcutKey
+      );
+    }
     processScript(globalInteraction.script, overlayScope, setTranslationKey);
   }
 

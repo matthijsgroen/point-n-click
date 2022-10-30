@@ -152,7 +152,6 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
     }
   } else {
     if (data && !gameSavePointState) {
-      console.log("set start state");
       const startState = createDefaultState(data);
       gameStateRef.current = startState;
       modelManager.setNewModel(data);

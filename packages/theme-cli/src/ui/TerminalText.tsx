@@ -2,7 +2,7 @@ import { DisplayInfo, GameModelManager } from "@point-n-click/engine";
 import { GameWorld } from "@point-n-click/types";
 import React from "react";
 import { Settings } from "../types";
-import { formatText } from "@point-n-click/themes";
+import { formatText } from "./formatText";
 import styles from "./TerminalText.module.css";
 
 export const TerminalText: React.FC<{

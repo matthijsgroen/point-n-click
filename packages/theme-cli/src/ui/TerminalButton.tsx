@@ -1,7 +1,7 @@
 import { InteractionAction } from "@point-n-click/engine";
-import { formatText } from "@point-n-click/themes";
 import React, { useEffect } from "react";
 import { classNames } from "../classnames";
+import { formatText } from "./formatText";
 import styles from "./TerminalButton.module.css";
 
 export const TerminalButton: React.FC<{

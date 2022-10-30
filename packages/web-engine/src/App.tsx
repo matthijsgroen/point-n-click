@@ -5,14 +5,10 @@ import { ThemeProvider } from "./content/ThemeProvider";
 
 const queryClient = new QueryClient();
 
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ContentProvider>
-        <ThemeProvider />
-      </ContentProvider>
-    </QueryClientProvider>
-  );
-}
-
-export default App;
+export const App: React.FC = () => (
+  <QueryClientProvider client={queryClient}>
+    <ContentProvider>
+      <ThemeProvider />
+    </ContentProvider>
+  </QueryClientProvider>
+);

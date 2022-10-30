@@ -1,0 +1,14 @@
+{
+  "name": "@point-n-click/parcel-resolver",
+  "description": "Parcel Package resolver for CLI tool",
+  "version": "1.0.0-alpha.0",
+  "license": "MIT",
+  "author": {
+    "name": "Matthijs Groen",
+    "email": "matthijs.groen@gmail.com"
+  },
+  "main": "resolver.js",
+  "dependencies": {
+    "@parcel/plugin": "^2.7.0"
+  }
+}

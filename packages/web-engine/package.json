@@ -1,12 +1,12 @@
 {
-  "name": "@point-n-click/theme-cli",
+  "name": "@point-n-click/web-engine",
   "version": "1.0.0-alpha.0",
-  "description": "Terminal Theme",
+  "description": "Web engine for Point 'n Click",
   "main": "dist/index.js",
-  "source": "src/index.ts",
-  "types": "dist/index.d.ts",
   "author": "Matthijs Groen",
   "license": "MIT",
+  "source": "src/index.tsx",
+  "types": "dist/index.d.ts",
   "files": [
     "dist/"
   ],
@@ -16,15 +16,15 @@
     "prebuild": "yarn upgrade --pattern='@point-n-click/*' --latest",
     "watch": "parcel watch"
   },
-  "dependencies": {
-    "@point-n-click/engine": "^1.0.0-alpha.0",
-    "@point-n-click/state": "^1.0.0-alpha.0",
-    "@point-n-click/themes": "^1.0.0-alpha.0",
-    "@point-n-click/types": "^1.0.0-alpha.1"
-  },
   "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
+  },
+  "dependencies": {
+    "@point-n-click/engine": "1.0.0-alpha.0",
+    "@point-n-click/state": "1.0.0-alpha.0",
+    "@point-n-click/themes": "1.0.0-alpha.0",
+    "@tanstack/react-query": "^4.13.0"
   },
   "devDependencies": {
     "@parcel/packager-ts": "2.7.0",
