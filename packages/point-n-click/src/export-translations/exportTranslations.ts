@@ -3,6 +3,7 @@ import { GameModel } from "@point-n-click/state";
 import { TranslationFile, DEFAULT_ACTION_PROMPT } from "@point-n-click/engine";
 import { mkdir, writeFile, readFile } from "fs/promises";
 import { join } from "path";
+import { mergeTranslations } from "./mergeTranslations";
 
 export type Locale = `${string}-${string}`;
 
@@ -45,63 +46,6 @@ const processScript = <Game extends GameWorld>(
   }
 };
 
-const mergeTranslations = (
-  newTranslations: TranslationFile,
-  existingTranslations: TranslationFile
-) => {
-  const newKeys = Object.keys(newTranslations);
-  const existingKeys = Object.keys(existingTranslations);
-
-  let removedKeys = existingKeys.filter((k) => !newKeys.includes(k));
-  const addedKeys = newKeys.filter((k) => !existingKeys.includes(k));
-  const keptKeys = newKeys.filter((k) => existingKeys.includes(k));
-
-  const result: TranslationFile = {};
-
-  for (const addedKey of addedKeys) {
-    const previouslyRemovedKey = `DELETED ${addedKey}`;
-    if (existingTranslations[previouslyRemovedKey]) {
-      result[addedKey] = existingTranslations[previouslyRemovedKey];
-
-      removedKeys = removedKeys.filter((key) => key !== previouslyRemovedKey);
-    } else {
-      result[addedKey] = newTranslations[addedKey];
-    }
-  }
-  for (const keptKey of keptKeys) {
-    const value = newTranslations[keptKey];
-    if (typeof value === "string") {
-      result[keptKey] = existingTranslations[keptKey];
-    } else {
-      result[keptKey] = mergeTranslations(
-        newTranslations[keptKey] as TranslationFile,
-        existingTranslations[keptKey] as TranslationFile
-      );
-    }
-  }
-  for (const removedKey of removedKeys) {
-    if (removedKey.startsWith("DELETED ")) {
-      result[removedKey] = existingTranslations[removedKey];
-    } else {
-      if (removedKey !== existingTranslations[removedKey]) {
-        // only keep translation if it was actually translated
-        result[`DELETED ${removedKey}`] = existingTranslations[removedKey];
-      }
-    }
-  }
-
-  const orderedResult: TranslationFile = {};
-  for (const key of newKeys) {
-    orderedResult[key] = result[key];
-  }
-  const extraKeys = Object.keys(result).filter((k) => !newKeys.includes(k));
-  for (const key of extraKeys) {
-    orderedResult[key] = result[key];
-  }
-
-  return orderedResult;
-};
-
 export const exportTranslations = async <Game extends GameWorld>(
   folder: string,
   locales: Locale[],
@@ -118,6 +62,20 @@ export const exportTranslations = async <Game extends GameWorld>(
     }
     obj[tail] = value;
   };
+  setTranslationKey(["title"], gameModel.settings.gameTitle);
+
+  const author = gameModel.settings.meta?.author;
+  if (author) {
+    setTranslationKey(["meta", "author"], author);
+  }
+  const credits = gameModel.settings.meta?.credits ?? [];
+  for (const credit of credits) {
+    setTranslationKey(["meta", "credits", credit.role], credit.role);
+  }
+  const themes = gameModel.settings.themes ?? [];
+  for (const theme of themes) {
+    setTranslationKey(["meta", "themes", theme.name], theme.name);
+  }
 
   setTranslationKey(
     ["settings", "defaultActionPrompt"],

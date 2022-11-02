@@ -64,7 +64,33 @@ export type RecursivePartial<T extends Record<string, unknown>> = {
     : T[Key];
 };
 
+export type JSONValue =
+  | null
+  | string
+  | boolean
+  | number
+  | Array<JSONValue>
+  | { [x: string]: JSONValue };
+
+export type GameCredit = {
+  role: string;
+  names: string[];
+};
+
+export type ThemeInfo = {
+  name: string;
+  themePackage: string;
+  settings: JSONValue;
+};
+
 export type Settings<Game extends GameWorld> = {
+  gameTitle: string;
+  meta?: {
+    author?: string;
+    description?: string;
+    credits?: GameCredit[];
+  };
+  themes?: ThemeInfo[];
   defaultLocale: `${string}-${string}`;
   initialState: RecursivePartial<GameState<Game>>;
   defaultTextColor?: HexColor;
@@ -78,15 +104,9 @@ export type Settings<Game extends GameWorld> = {
   >;
 };
 
-export type RegisteredTheme = {
-  themePackage: string;
-  settings: unknown;
-};
-
 export type GameModel<Game extends GameWorld> = {
   settings: Settings<Game>;
   locations: GameLocation<Game>[];
   overlays: GameOverlay<Game>[];
   globalInteractions: GameInteraction<Game>[];
-  themes: RegisteredTheme[];
 };

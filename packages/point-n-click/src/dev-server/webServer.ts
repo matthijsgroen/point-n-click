@@ -1,4 +1,4 @@
-import { GameModelManager } from "@point-n-click/engine";
+import { GameModelManager, getTranslationText } from "@point-n-click/engine";
 import { GameWorld } from "@point-n-click/types";
 import express from "express";
 import { join, relative } from "node:path";
@@ -12,6 +12,8 @@ import Parcel, { createWorkerFarm } from "@parcel/core";
 import { PackagedBundle } from "@parcel/types";
 import { MemoryFS } from "@parcel/fs";
 import mime from "mime/lite";
+import { htmlFile } from "./templates/htmlFile";
+import { indexFile } from "./templates/indexFile";
 
 export const startWebserver = async (
   modelManager: GameModelManager<GameWorld>,
@@ -24,6 +26,12 @@ export const startWebserver = async (
 
   let workerFarm = createWorkerFarm();
   let outputFS = new MemoryFS(workerFarm);
+
+  let model = modelManager.getModel();
+  while (!modelManager.hasModel()) {
+    await modelManager.waitForChange();
+    model = modelManager.getModel();
+  }
 
   const configFile = join(devServerPath, ".parcelrc");
   const configPromise = writeFile(
@@ -46,46 +54,24 @@ export const startWebserver = async (
 
   const indexPromise = writeFile(
     join(devServerPath, "index.tsx"),
-    `
-import React, {useState} from "react";
-import { createRoot } from "react-dom/client";
-import { App, registerTheme } from "@point-n-click/web-engine";
-import terminalTheme from "@point-n-click/theme-cli";
-
-registerTheme("terminal", terminalTheme, { color: true });
-registerTheme("terminalBW", terminalTheme, { color: false });
-
-const root = createRoot(
-  document.getElementById("root") as HTMLElement
-);
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
-  `,
+    indexFile({
+      themes: model.settings.themes ?? [
+        {
+          name: "Default",
+          themePackage: "@point-n-click/theme-cli",
+          settings: { color: true },
+        },
+      ],
+    }),
     { encoding: "utf8" }
   );
 
   const entryFile = join(devServerPath, "index.html");
-
   const entryPromise = writeFile(
     entryFile,
-    `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="Game created using Point-n-click" />
-    <title>Point 'n Click development server</title>
-  </head>
-  <body data-environment="development">
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <script type="module" src="./index.tsx" />
-  </body>
-</html>`,
+    htmlFile({
+      title: getTranslationText([], "title") ?? model.settings.gameTitle,
+    }),
     { encoding: "utf8" }
   );
 

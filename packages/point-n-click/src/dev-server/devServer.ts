@@ -43,4 +43,5 @@ export const devServer = async (
 
   await unsubscribeContent();
   await stopServer();
+  process.exit(0);
 };

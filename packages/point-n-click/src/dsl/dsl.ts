@@ -52,10 +52,9 @@ export const world = <Game extends GameWorld>(
   settings: Settings<Game>
 ): GameWorldDSL<Game> => {
   let worldModel: GameModel<Game> = {
-    settings: settings as Settings<Game>,
+    settings,
     locations: [],
     overlays: [],
-    themes: [],
     globalInteractions: [],
   };
 

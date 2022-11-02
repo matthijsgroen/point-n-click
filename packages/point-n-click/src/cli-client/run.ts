@@ -30,7 +30,7 @@ export const runGame = async <Game extends GameWorld>(
 
   enableKeyPresses();
 
-  cls();
+  // cls();
 
   while (stateManager.getPlayState() !== "quitting") {
     await runLocation(gameModelManager, stateManager);
