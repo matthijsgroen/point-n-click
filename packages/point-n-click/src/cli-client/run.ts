@@ -1,12 +1,7 @@
 import { GameWorld } from "@point-n-click/types";
-import {
-  createDefaultState,
-  GameState,
-  GameStateManager,
-  PlayState,
-} from "@point-n-click/state";
+import { GameStateManager } from "@point-n-click/state";
 import { CLISettings, updateSettings } from "./settings";
-import { cls, enableKeyPresses, startSkip, stopKeyPresses } from "./utils";
+import { enableKeyPresses, startSkip, stopKeyPresses } from "./utils";
 import { runLocation } from "./runLocation";
 import {
   TranslationSettings,
@@ -17,7 +12,8 @@ import {
 export const runGame = async <Game extends GameWorld>(
   { color = true, translationData }: CLISettings & TranslationSettings,
   gameModelManager: GameModelManager<Game>,
-  stateManager: GameStateManager<Game>
+  stateManager: GameStateManager<Game>,
+  clearScreen: () => void
 ) => {
   updateSettings({ color });
   updateTranslation({ translationData });
@@ -30,10 +26,10 @@ export const runGame = async <Game extends GameWorld>(
 
   enableKeyPresses();
 
-  // cls();
+  clearScreen();
 
   while (stateManager.getPlayState() !== "quitting") {
-    await runLocation(gameModelManager, stateManager);
+    await runLocation(gameModelManager, stateManager, clearScreen);
     if (stateManager.getPlayState() === "reloading") {
       let model = gameModelManager.getModel();
       while (!gameModelManager.hasModel()) {
@@ -41,7 +37,7 @@ export const runGame = async <Game extends GameWorld>(
         model = gameModelManager.getModel();
       }
 
-      cls();
+      clearScreen();
       stateManager.setPlayState("playing");
       startSkip();
       stateManager.restoreSaveState();

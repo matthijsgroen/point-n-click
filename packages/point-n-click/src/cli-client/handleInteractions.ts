@@ -24,7 +24,8 @@ const globalColor = (active: boolean, text: FormattedText): FormattedText =>
 export const handleInteractions = async <Game extends GameWorld>(
   interactions: Interactions,
   stateManager: GameStateManager<Game>,
-  modelManager: GameModelManager<Game>
+  modelManager: GameModelManager<Game>,
+  clearScreen: () => void
 ) => {
   console.log(interactions.prompt);
   console.log("");
@@ -74,7 +75,7 @@ export const handleInteractions = async <Game extends GameWorld>(
       (interaction) => interaction.key === input
     );
   } while (!chosenAction);
-  cls();
+  clearScreen();
   stateManager.updateState(
     produce((state) => {
       state.currentInteraction = chosenAction?.id;

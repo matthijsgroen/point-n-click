@@ -20,12 +20,12 @@ export const startWebserver = async (
   stateManager: GameStateManager<GameWorld>,
   resolves: Record<string, string>,
   { port = 3456, lang }: { port?: number; lang?: string } = {}
-) => {
+): Promise<[stopServer: () => Promise<void>, runningPort: number]> => {
   const devServerPath = join(CACHE_FOLDER, "dev-build");
   await mkdir(devServerPath);
 
-  let workerFarm = createWorkerFarm();
-  let outputFS = new MemoryFS(workerFarm);
+  const workerFarm = createWorkerFarm();
+  const outputFS = new MemoryFS(workerFarm);
 
   let model = modelManager.getModel();
   while (!modelManager.hasModel()) {
@@ -55,6 +55,7 @@ export const startWebserver = async (
   const indexPromise = writeFile(
     join(devServerPath, "index.tsx"),
     indexFile({
+      lang: lang ?? model.settings.defaultLocale,
       themes: model.settings.themes ?? [
         {
           name: "Default",
@@ -71,6 +72,7 @@ export const startWebserver = async (
     entryFile,
     htmlFile({
       title: getTranslationText([], "title") ?? model.settings.gameTitle,
+      lang: lang ?? model.settings.defaultLocale,
     }),
     { encoding: "utf8" }
   );
@@ -172,8 +174,11 @@ export const startWebserver = async (
 
   await startupPromise;
 
-  return async () => {
-    await workerFarm.end();
-    server.close();
-  };
+  return [
+    async () => {
+      await workerFarm.end();
+      server.close();
+    },
+    port,
+  ];
 };

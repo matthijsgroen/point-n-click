@@ -1,10 +1,11 @@
 type TemplateSettings = {
   title: string;
+  lang: string;
 };
 
 export const htmlFile = (settings: TemplateSettings) =>
   `<!DOCTYPE html>
-<html lang="en">
+<html lang="${settings.lang}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

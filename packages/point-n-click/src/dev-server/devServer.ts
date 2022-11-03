@@ -4,6 +4,8 @@ import { runGame } from "../cli-client/run";
 import { startContentBuilder } from "./contentBuilder";
 import { loadTranslationData } from "./loadTranslationData";
 import { startWebserver } from "./webServer";
+import { cls, resetStyling, setColor } from "../cli-client/utils";
+import { hexColor } from "..";
 
 type ServerOptions = {
   lang: string;
@@ -26,7 +28,7 @@ export const devServer = async (
   const translationData = await loadTranslationData(options.lang);
 
   const gameStateManager = await createGameStateManager(modelManager);
-  const stopServer = await startWebserver(
+  const [stopServer, runningPort] = await startWebserver(
     modelManager,
     gameStateManager,
     resolves,
@@ -35,10 +37,21 @@ export const devServer = async (
     }
   );
 
+  const clearScreen = () => {
+    cls();
+    setColor(hexColor("ffff00"));
+    console.log(
+      `Server running at: http://localhost:${runningPort}. Press space to skip, press q to quit.`
+    );
+    resetStyling();
+    console.log("");
+  };
+
   await runGame(
     { color: true, translationData },
     modelManager,
-    gameStateManager
+    gameStateManager,
+    clearScreen
   );
 
   await unsubscribeContent();

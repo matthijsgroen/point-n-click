@@ -10,7 +10,8 @@ import { renderScreen } from "./renderScreen";
 
 export const runLocation = async <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
-  stateManager: GameStateManager<Game>
+  stateManager: GameStateManager<Game>,
+  clearScreen: () => void
 ) => {
   const currentLocation = stateManager.getState().currentLocation;
 
@@ -36,6 +37,11 @@ export const runLocation = async <Game extends GameWorld>(
     }
 
     const interactions = getInteractions(gameModelManager, stateManager);
-    await handleInteractions(interactions, stateManager, gameModelManager);
+    await handleInteractions(
+      interactions,
+      stateManager,
+      gameModelManager,
+      clearScreen
+    );
   }
 };
