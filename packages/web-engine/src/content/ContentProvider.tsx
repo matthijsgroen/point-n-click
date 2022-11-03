@@ -15,6 +15,7 @@ import {
   GameState,
   createDefaultState,
   GameStateManager,
+  emptyGameModel,
 } from "@point-n-click/state";
 import { GameWorld } from "@point-n-click/types";
 import {
@@ -23,20 +24,10 @@ import {
   updateTranslation,
   TranslationFile,
 } from "@point-n-click/engine";
-import { setClientSettings } from "../settings";
+import { getClientSettings, setClientSettings } from "../settings";
 import styles from "./ContentProvider.module.css";
 
-const defaultModel: GameModel<GameWorld> = {
-  settings: {
-    defaultLocale: "en-US",
-    initialState: {},
-    characterConfigs: {},
-  },
-  locations: [],
-  overlays: [],
-  themes: [],
-  globalInteractions: [],
-};
+const defaultModel = emptyGameModel();
 
 const modelManager = gameModelManager(undefined);
 
@@ -113,16 +104,24 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
   );
   const { data: languageData } = useQuery(
     ["languageContent"],
-    async (): Promise<TranslationFile> => {
-      const data = await fetch("/assets/lang/nl-NL.json");
-      return data.json();
+    async (): Promise<TranslationFile | undefined> => {
+      if (!data) {
+        return undefined;
+      }
+      const currentLocale = getClientSettings().currentLocale;
+      if (currentLocale !== data.settings.defaultLocale) {
+        const data = await fetch(`/assets/lang/${currentLocale}.json`);
+        return data.json();
+      }
+      return undefined;
     },
     developmentMode
       ? {
           refetchInterval: REFETCH_INTERVAL,
           refetchIntervalInBackground: true,
+          enabled: !!data,
         }
-      : {}
+      : { enabled: !!data }
   );
 
   const [, rerender] = useState(0);
@@ -185,8 +184,8 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
   gameStateRef.current = gameSavePointState;
 
   useEffect(() => {
+    updateTranslation({ translationData: languageData });
     if (gameStateRef.current) {
-      updateTranslation({ translationData: languageData });
       setClientSettings({ skipMode: true });
       modelManager.setNewModel(data);
       rerender((s) => (s + 1) % 100);

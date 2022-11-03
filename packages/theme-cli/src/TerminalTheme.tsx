@@ -221,6 +221,36 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
         terminalSettings.update({ skipScreen: true });
         e.preventDefault();
       }
+
+      if (e.code === "ArrowUp" || e.code === "ArrowDown") {
+        const interactions = document.getElementById("interactions");
+        if (interactions) {
+          const interactionButtons = Array.from(
+            interactions.querySelectorAll("button")
+          );
+          const element =
+            interactions.querySelector<HTMLButtonElement>("button:focus");
+          if (!element) {
+            let elem: HTMLButtonElement | undefined;
+            if (e.code === "ArrowDown" && (elem = interactionButtons[0])) {
+              elem.focus();
+              return;
+            }
+            if (e.code === "ArrowUp" && (elem = interactionButtons.at(-1))) {
+              elem.focus();
+              return;
+            }
+          } else {
+            const index = interactionButtons.indexOf(element);
+            const newIndex =
+              (e.code === "ArrowDown"
+                ? index + 1
+                : index + interactionButtons.length - 1) %
+              interactionButtons.length;
+            interactionButtons[newIndex].focus();
+          }
+        }
+      }
     };
 
     document.body.addEventListener("keydown", keyListener);
@@ -243,9 +273,8 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
         />
       ))}
       {complete && interactions.actions.length > 0 && (
-        <>
+        <div id="interactions">
           <p>{interactions.prompt}</p>
-
           {interactions.actions.map((item, index) => (
             <p key={index} style={{ margin: 0 }}>
               <TerminalButton
@@ -258,7 +287,7 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
               />
             </p>
           ))}
-        </>
+        </div>
       )}
     </div>
   );

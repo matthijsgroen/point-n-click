@@ -1,11 +1,15 @@
 .button {
   background: transparent;
   border: none;
-  color: inherit;
+  color: var(--color, inherit);
   font-size: 1em;
   padding: 0;
   cursor: pointer;
 }
+.button:focus-visible {
+  outline: none;
+  text-shadow: var(--color, #fff) 0 0 10px;
+}
 .global {
-  color: #777;
+  --color: #777;
 }
