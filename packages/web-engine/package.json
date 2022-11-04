@@ -12,8 +12,8 @@
   ],
   "scripts": {
     "build": "parcel build",
+    "preprepublish": "yarn upgrade --pattern='@point-n-click/*' --latest",
     "prepublish": "yarn build",
-    "prebuild": "yarn upgrade --pattern='@point-n-click/*' --latest",
     "watch": "parcel watch"
   },
   "peerDependencies": {

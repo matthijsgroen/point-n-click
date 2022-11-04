@@ -9,6 +9,8 @@
   "license": "MIT",
   "scripts": {
     "build": "parcel build",
+    "prepublish": "yarn build",
+    "preprepublish": "yarn upgrade --pattern='@point-n-click/*' --latest",
     "watch": "parcel watch"
   },
   "files": [
