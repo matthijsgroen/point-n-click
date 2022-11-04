@@ -1,11 +1,37 @@
-import { GameStateManager } from "@point-n-click/state";
+import { GameState, GameStateManager } from "@point-n-click/state";
 import { GameWorld } from "@point-n-click/types";
+import { getTranslationText } from "./getTranslationText";
 import { FormattedText, ParsedText } from "./types";
 
 export type StateError = Error & {
   name: "StateError";
   stateKey: string;
 };
+
+export const characterName = <Game extends GameWorld>(
+  character: keyof Game["characters"],
+  state: GameState<Game>
+): string => {
+  const stateName = state.characters[character]?.name;
+  const name =
+    (stateName
+      ? getTranslationText(
+          ["characters", String(character), "names"],
+          stateName
+        )
+      : null) ??
+    stateName ??
+    state.characters[character]?.name ??
+    characterDefaultName(character, state);
+  return name;
+};
+
+export const characterDefaultName = <Game extends GameWorld>(
+  character: keyof Game["characters"],
+  state: GameState<Game>
+): string =>
+  getTranslationText(["characters", String(character)], "defaultName") ??
+  state.characters[character].defaultName;
 
 export const applyState = <Game extends GameWorld>(
   text: ParsedText,
@@ -45,12 +71,10 @@ export const applyState = <Game extends GameWorld>(
           throw error;
         }
         if (property === "defaultName") {
-          value = state.characters[character].defaultName;
+          value = characterDefaultName(character, state);
         }
         if (property === "name") {
-          value =
-            state.characters[character].name ||
-            state.characters[character].defaultName;
+          value = characterName(character, state);
         }
         if (property === "counters") {
           const valueKey = resolveStatePath[3];

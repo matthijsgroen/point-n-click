@@ -13,7 +13,7 @@ import {
   formatParserError,
   formatStateError,
 } from "../errors/formatErrors";
-import { StateError } from "../text/applyState";
+import { characterName, StateError } from "../text/applyState";
 import { getTranslationText } from "../text/getTranslationText";
 
 type NarratorText = {
@@ -185,9 +185,7 @@ const statementHandler = <
       return null;
     },
     CharacterSay: ({ character, sentences }, stateManager) => {
-      const name =
-        stateManager.getState().characters[character]?.name ??
-        stateManager.getState().characters[character]?.defaultName;
+      const name = characterName(character, stateManager.getState());
 
       const textScope = determineTextScope(stateManager, String(character));
 
