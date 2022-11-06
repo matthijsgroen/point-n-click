@@ -13,6 +13,12 @@ export const cli = (args: string[], resolves: Record<string, string>) => {
   program
     .command("dev [source]")
     .option("-l, --lang <language>")
+    .option(
+      "-p, --port <portnumber>",
+      "port to run the dev server on",
+      (value) => parseInt(value, 10),
+      3456
+    )
     .description("start build server and game")
     .action((source, options) => {
       devServer(source, resolves, options);

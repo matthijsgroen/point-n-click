@@ -9,6 +9,7 @@ import { hexColor } from "..";
 
 type ServerOptions = {
   lang: string;
+  port: number;
 };
 
 export const devServer = async (
@@ -17,8 +18,6 @@ export const devServer = async (
   options: ServerOptions
 ) => {
   const modelManager = gameModelManager(undefined);
-  // Check if filename exists...
-
   const unsubscribeContent = await startContentBuilder(
     fileName,
     resolves,
@@ -32,9 +31,7 @@ export const devServer = async (
     modelManager,
     gameStateManager,
     resolves,
-    {
-      lang: options.lang,
-    }
+    options
   );
 
   const clearScreen = () => {
