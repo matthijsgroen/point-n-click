@@ -15,7 +15,7 @@ import { ConditionSet, dslStateConditions } from "./dsl-conditions";
 import { itemDSLFunctions, ItemInterface } from "./item";
 import { locationDSLFunctions, LocationInterface } from "./location";
 
-type GameWorldDSL<Game extends GameWorld> = {
+type GameWorldDSL<Version extends number, Game extends GameWorld<Version>> = {
   defineOverlay: (
     id: Game["overlays"],
     handleOverlay: OverlayScript<Game>
@@ -37,7 +37,10 @@ type GameWorldDSL<Game extends GameWorld> = {
   LocationInterface<Game> &
   ConditionSet<Game>;
 
-export type GameDefinition<Game extends GameWorld> = Game;
+export type GameDefinition<
+  Version extends number,
+  Game extends GameWorld<Version>
+> = Game;
 
 /**
  * This is the starting point of your adventure.
@@ -48,9 +51,9 @@ export type GameDefinition<Game extends GameWorld> = Game;
  * @param settings
  * @returns
  */
-export const world = <Game extends GameWorld>(
+export const world = <Game extends GameWorld<number>>(
   settings: Settings<Game>
-): GameWorldDSL<Game> => {
+): GameWorldDSL<Game["version"], Game> => {
   let worldModel: GameModel<Game> = {
     settings,
     locations: [],

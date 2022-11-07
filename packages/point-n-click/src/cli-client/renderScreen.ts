@@ -27,6 +27,16 @@ export const renderScreen = async <Game extends GameWorld>(
       console.log("");
       resetStyling();
     } else if (displayItem.type === "characterText") {
+      if (
+        !Object.hasOwn(
+          gameModelManager.getModel().settings.characterConfigs,
+          displayItem.character
+        )
+      ) {
+        stateManager.setPlayState("reloading");
+        gameModelManager.backupModel();
+      }
+
       const name =
         displayItem.displayName ??
         gameModelManager.getModel().settings.characterConfigs[

@@ -185,6 +185,20 @@ const statementHandler = <
       return null;
     },
     CharacterSay: ({ character, sentences }, stateManager) => {
+      if (!Object.hasOwn(stateManager.getState().characters, character)) {
+        const error: DisplayErrorText = {
+          type: "error",
+          message: [
+            [
+              {
+                type: "text",
+                text: `Character not found: '${String(character)}'`,
+              },
+            ],
+          ],
+        };
+        return [error];
+      }
       const name = characterName(character, stateManager.getState());
 
       const textScope = determineTextScope(stateManager, String(character));

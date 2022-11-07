@@ -21,7 +21,8 @@ export type WorldObjectSettings = {
   counters?: unknown;
 };
 
-export type GameWorld = {
+export type GameWorld<Version extends number = number> = {
+  version: Version;
   /**
    * Locations you can visit in the game
    */

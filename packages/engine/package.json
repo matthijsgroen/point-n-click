@@ -9,7 +9,7 @@
   "scripts": {
     "build": "parcel build",
     "prepublish": "yarn build",
-    "prebuild": "yarn upgrade --pattern='@point-n-click/*' --latest",
+    "preprepublish": "yarn upgrade --pattern='@point-n-click/*' --latest",
     "watch": "parcel watch"
   },
   "files": [

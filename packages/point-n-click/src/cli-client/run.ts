@@ -1,5 +1,9 @@
 import { GameWorld } from "@point-n-click/types";
-import { GameStateManager } from "@point-n-click/state";
+import {
+  createDefaultState,
+  GameStateManager,
+  mergeState,
+} from "@point-n-click/state";
 import { CLISettings, updateSettings } from "./settings";
 import { enableKeyPresses, startSkip, stopKeyPresses } from "./utils";
 import { runLocation } from "./runLocation";
@@ -35,6 +39,14 @@ export const runGame = async <Game extends GameWorld>(
       while (!gameModelManager.hasModel()) {
         await gameModelManager.waitForChange();
         model = gameModelManager.getModel();
+
+        const newStartState = createDefaultState(model);
+        const mergedState = mergeState(
+          newStartState,
+          stateManager.getSaveState()
+        );
+        stateManager.updateState(() => mergedState);
+        stateManager.updateSaveState();
       }
 
       clearScreen();
