@@ -14,9 +14,9 @@ ${settings.themes.map(
 )}
 ${settings.themes.map(
   (t, index) =>
-    `registerTheme("${t.themePackage}", theme${1 + index}, ${JSON.stringify(
+    `registerTheme("${t.themePackage}", theme${1 + index}(${JSON.stringify(
       t.settings
-    )});\n`
+    )}));\n`
 )}
 setClientSettings({ currentLocale: "${settings.lang}" });
 

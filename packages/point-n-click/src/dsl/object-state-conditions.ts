@@ -13,7 +13,8 @@ export type ObjectStateDSL<
   I extends keyof Game[`${T}s`]
 > = {
   setState: (newState: Game[`${T}s`][I]["states"] | "unknown") => void;
-  setFlag: (flag: Game[`${T}s`][I]["flags"], value: boolean) => void;
+  setFlag: (flag: Game[`${T}s`][I]["flags"]) => void;
+  clearFlag: (flag: Game[`${T}s`][I]["flags"]) => void;
   setCounter: (flag: Game[`${T}s`][I]["counters"], value: number) => void;
   increaseCounter: (flag: Game[`${T}s`][I]["counters"], value: number) => void;
   decreaseCounter: (flag: Game[`${T}s`][I]["counters"], value: number) => void;
@@ -50,13 +51,22 @@ export const objectStateManagement = <
       newState,
     });
   },
-  setFlag: (flag, value) => {
+  setFlag: (flag) => {
     addToActiveScript({
       statementType: "UpdateGameObjectFlag",
       objectType,
       stateItem: item,
       flag,
-      value,
+      value: true,
+    });
+  },
+  clearFlag: (flag) => {
+    addToActiveScript({
+      statementType: "UpdateGameObjectFlag",
+      objectType,
+      stateItem: item,
+      flag,
+      value: false,
     });
   },
   setCounter: (name, value) => {

@@ -1,4 +1,4 @@
-import { Theme, ThemeRenderer } from "@point-n-click/themes";
+import { ThemeRenderer } from "@point-n-click/themes";
 import "./screen.css";
 import styles from "./display.module.css";
 import { TerminalText } from "./ui/TerminalText";
@@ -293,10 +293,4 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
   );
 };
 
-export const terminalTheme: Theme<Settings> = {
-  name: "Terminal",
-  author: "Matthijs Groen",
-  version: "0.0.1",
-  render: TerminalTheme,
-  defaultSettings: { color: true },
-};
+export default TerminalTheme;

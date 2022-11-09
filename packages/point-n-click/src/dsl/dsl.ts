@@ -9,11 +9,17 @@ import {
   GameLocation,
   GlobalInteraction,
 } from "@point-n-click/types";
-import { GameModel, Settings } from "@point-n-click/state";
+import {
+  GameModel,
+  JSONValue,
+  Settings,
+  ThemeInfo,
+} from "@point-n-click/state";
 import { characterDSLFunctions, CharacterInterface } from "./character";
 import { ConditionSet, dslStateConditions } from "./dsl-conditions";
 import { itemDSLFunctions, ItemInterface } from "./item";
 import { locationDSLFunctions, LocationInterface } from "./location";
+import { ThemeDefinition } from "@point-n-click/themes";
 
 type GameWorldDSL<Version extends number, Game extends GameWorld<Version>> = {
   defineOverlay: (
@@ -52,13 +58,19 @@ export type GameDefinition<
  * @returns
  */
 export const world = <Game extends GameWorld<number>>(
-  settings: Settings<Game>
+  settings: Settings<Game>,
+  ...themes: ThemeDefinition<{ [x: string]: JSONValue }>[]
 ): GameWorldDSL<Game["version"], Game> => {
   let worldModel: GameModel<Game> = {
     settings,
     locations: [],
     overlays: [],
     globalInteractions: [],
+    themes: themes.map<ThemeInfo>((t) => ({
+      themePackage: t.packageName,
+      name: t.name,
+      settings: t.settings,
+    })),
   };
 
   let activeScriptScope: ScriptAST<Game> = [];

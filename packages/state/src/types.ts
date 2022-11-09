@@ -96,12 +96,6 @@ export type Settings<Game extends GameWorld> = {
     credits?: GameCredit[];
   };
   /**
-   * Available themes for your game.
-   * If no theme is specified, the engine falls back to
-   * the cli theme.
-   */
-  themes?: ThemeInfo[];
-  /**
    * The locale used for writing all the game's content.
    * This means all translation keys of the other language files
    * will also be in this locale.
@@ -131,4 +125,5 @@ export type GameModel<Game extends GameWorld> = {
   locations: GameLocation<Game>[];
   overlays: GameOverlay<Game>[];
   globalInteractions: GameInteraction<Game>[];
+  themes?: ThemeInfo[];
 };

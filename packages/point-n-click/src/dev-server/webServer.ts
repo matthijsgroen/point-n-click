@@ -56,7 +56,7 @@ export const startWebserver = async (
     join(devServerPath, "index.tsx"),
     indexFile({
       lang: lang ?? model.settings.defaultLocale,
-      themes: model.settings.themes ?? [
+      themes: model.themes ?? [
         {
           name: "Default",
           themePackage: "@point-n-click/theme-cli",

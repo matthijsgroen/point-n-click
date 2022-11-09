@@ -3,29 +3,27 @@ import {
   getDisplayInfo,
   getInteractions,
 } from "@point-n-click/engine";
-import React from "react";
+import React, { Suspense } from "react";
 import { useGameContent, useGameState } from "./ContentProvider";
-import { Theme } from "@point-n-click/themes";
+import { ThemeDefinition, ThemeSettings } from "@point-n-click/themes";
 import { getClientSettings } from "../settings";
 import { Error } from "./Error";
+import { Loading } from "./Loading";
 
-type RegisteredTheme<Settings extends Record<string, unknown>> = {
-  theme: Theme<Settings>;
-  settings: Settings;
+type RegisteredTheme<Settings extends ThemeSettings> = {
+  theme: ThemeDefinition<Settings>;
   id: string;
 };
 
-const themeList: RegisteredTheme<Record<string, unknown>>[] = [];
+const themeList: RegisteredTheme<ThemeSettings>[] = [];
 
-export const registerTheme = <Settings extends Record<string, unknown>>(
+export const registerTheme = <Settings extends ThemeSettings>(
   id: string,
-  theme: Theme<Settings>,
-  settings: Partial<Settings>
+  theme: ThemeDefinition<Settings>
 ) => {
   themeList.push({
     id,
-    theme: theme as Theme<Record<string, unknown>>,
-    settings,
+    theme: theme as unknown as ThemeDefinition<ThemeSettings>,
   });
 };
 
@@ -38,11 +36,8 @@ export const ThemeProvider: React.FC = () => {
   const interactions = getInteractions(content, gameStateManager);
 
   const activeTheme = themeList[0];
-  const Theme = activeTheme.theme.render;
-  const renderSettings: typeof activeTheme.theme.defaultSettings = {
-    ...activeTheme.theme.defaultSettings,
-    ...activeTheme.settings,
-  };
+  const Theme = React.lazy(activeTheme.theme.renderer);
+
   const error = displayInfo.find(
     (item): item is DisplayErrorText => item.type === "error"
   );
@@ -51,13 +46,15 @@ export const ThemeProvider: React.FC = () => {
   }
 
   return (
-    <Theme
-      contents={displayInfo}
-      interactions={interactions}
-      onInteraction={gameStateManager.setInteraction}
-      settings={renderSettings}
-      gameModelManager={content}
-      skipToStep={getClientSettings().skipMode ? Infinity : 0}
-    />
+    <Suspense fallback={<Loading />}>
+      <Theme
+        contents={displayInfo}
+        interactions={interactions}
+        onInteraction={gameStateManager.setInteraction}
+        settings={activeTheme.theme.settings}
+        gameModelManager={content}
+        skipToStep={getClientSettings().skipMode ? Infinity : 0}
+      />
+    </Suspense>
   );
 };
