@@ -1,6 +1,15 @@
-import { GameWorld, ScriptAST } from "@point-n-click/types";
+import {
+  ContentPluginStatement,
+  GameWorld,
+  ScriptAST,
+  TranslationFile,
+} from "@point-n-click/types";
 import { GameModel } from "@point-n-click/state";
-import { TranslationFile, DEFAULT_ACTION_PROMPT } from "@point-n-click/engine";
+import {
+  isContentPluginStatement,
+  DEFAULT_ACTION_PROMPT,
+  getContentPlugin,
+} from "@point-n-click/engine";
 import { mkdir, writeFile, readFile } from "fs/promises";
 import { join } from "path";
 import { mergeTranslations } from "./mergeTranslations";
@@ -10,12 +19,38 @@ export type Locale = `${string}-${string}`;
 export const isLocale = (item: unknown): item is Locale =>
   !!(typeof item === "string" && item.match(/^\w{2}-\w{2}$/));
 
+const applyTranslations = (
+  translations: TranslationFile,
+  translationKey: string[],
+  setTranslationKey: (key: string[], value: string) => void
+) => {
+  for (const [key, value] of Object.entries(translations)) {
+    if (typeof value === "string") {
+      setTranslationKey(translationKey.concat(key), value);
+    } else {
+      applyTranslations(value, translationKey.concat(key), setTranslationKey);
+    }
+  }
+};
+
 const processScript = <Game extends GameWorld>(
   script: ScriptAST<Game>,
   enterScriptScope: string[],
   setTranslationKey: (key: string[], value: string) => void
 ) => {
+  const contentPluginStatementsPerSource: Record<
+    string,
+    ContentPluginStatement[]
+  > = {};
+
   for (const statement of script) {
+    if (isContentPluginStatement(statement)) {
+      contentPluginStatementsPerSource[statement.source] =
+        contentPluginStatementsPerSource[statement.source] || [];
+      contentPluginStatementsPerSource[statement.source].push(statement);
+
+      continue;
+    }
     if (statement.statementType === "Text") {
       for (const sentence of statement.sentences) {
         setTranslationKey(enterScriptScope.concat("text", sentence), sentence);
@@ -42,6 +77,15 @@ const processScript = <Game extends GameWorld>(
     if (statement.statementType === "Condition") {
       processScript(statement.body, enterScriptScope, setTranslationKey);
       processScript(statement.elseBody, enterScriptScope, setTranslationKey);
+    }
+  }
+  for (const source in contentPluginStatementsPerSource) {
+    const plugin = getContentPlugin(source);
+    if (plugin && plugin.translationContent) {
+      const result = plugin.translationContent(
+        contentPluginStatementsPerSource[source]
+      );
+      applyTranslations(result, enterScriptScope, setTranslationKey);
     }
   }
 };
@@ -72,7 +116,7 @@ export const exportTranslations = async <Game extends GameWorld>(
   for (const credit of credits) {
     setTranslationKey(["meta", "credits", credit.role], credit.role);
   }
-  const themes = gameModel.settings.themes ?? [];
+  const themes = gameModel.themes ?? [];
   for (const theme of themes) {
     setTranslationKey(["meta", "themes", theme.name], theme.name);
   }

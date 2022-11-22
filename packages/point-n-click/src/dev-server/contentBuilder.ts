@@ -1,8 +1,12 @@
 /// <reference types="node" />
 import Parcel, { createWorkerFarm } from "@parcel/core";
 import { MemoryFS } from "@parcel/fs";
-import { GameModelManager } from "@point-n-click/engine";
-import { createDefaultState, GameModel } from "@point-n-click/state";
+import {
+  clearRegisteredThemes,
+  GameModelManager,
+  registerTheme,
+} from "@point-n-click/engine";
+import { GameModel } from "@point-n-click/state";
 import { GameWorld } from "@point-n-click/types";
 import { watch } from "fs";
 import { unlink, writeFile } from "fs/promises";
@@ -103,6 +107,20 @@ export const startContentBuilder = async (
       const gameContentsDSL = await outputFS.readFile(bundle.filePath, "utf-8");
       try {
         jsonModel = await convertToGameModel(gameContentsDSL);
+        if (jsonModel.themes) {
+          for (const themeRegistration of jsonModel.themes) {
+            clearRegisteredThemes();
+
+            await import(themeRegistration.themePackage).then(
+              (themeDefinition) => {
+                registerTheme(
+                  themeRegistration.name,
+                  themeDefinition.default.default(themeRegistration.settings)
+                );
+              }
+            );
+          }
+        }
 
         const defaultLocale = jsonModel.settings.defaultLocale;
         if (isLocale(options.lang) && options.lang !== defaultLocale) {

@@ -1,4 +1,4 @@
-import { GameWorld } from "@point-n-click/types";
+import { ContentPlugin, DSLExtension, GameWorld } from "@point-n-click/types";
 import React from "react";
 import {
   DisplayInfo,
@@ -18,15 +18,20 @@ export type ThemeRenderer<Settings extends ThemeSettings> = React.FC<{
   onInteraction: (interactionId: string) => void;
 }>;
 
-export type ThemeDefinition<Settings extends ThemeSettings> = {
+export type ThemeDefinition<
+  Settings extends ThemeSettings,
+  Extensions extends ContentPlugin<DSLExtension>[]
+> = {
   name: string;
   version: string;
   author: string;
   packageName: string;
   renderer: () => Promise<{ default: ThemeRenderer<Settings> }>;
   settings: Settings;
+  extensions: Extensions;
 };
 
-export type Theme<Settings extends ThemeSettings> = (
-  settings: Partial<Settings>
-) => ThemeDefinition<ThemeSettings>;
+export type Theme<
+  Settings extends ThemeSettings,
+  Extensions extends ContentPlugin<DSLExtension>[]
+> = (settings: Partial<Settings>) => ThemeDefinition<ThemeSettings, Extensions>;

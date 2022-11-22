@@ -6,9 +6,10 @@ type IndexSettings = {
 };
 
 export const indexFile = (settings: IndexSettings) =>
-  `import React, {useState} from "react";
+  `import React from "react";
 import { createRoot } from "react-dom/client";
-import { App, registerTheme, setClientSettings } from "@point-n-click/web-engine";
+import { registerTheme } from "@point-n-click/engine";
+import { App, setClientSettings } from "@point-n-click/web-engine";
 ${settings.themes.map(
   (t, index) => `import theme${1 + index} from "${t.themePackage}";\n`
 )}
@@ -17,8 +18,7 @@ ${settings.themes.map(
     `registerTheme("${t.themePackage}", theme${1 + index}(${JSON.stringify(
       t.settings
     )}));\n`
-)}
-setClientSettings({ currentLocale: "${settings.lang}" });
+)}setClientSettings({ currentLocale: "${settings.lang}" });
 
 const root = createRoot(
   document.getElementById("root") as HTMLElement

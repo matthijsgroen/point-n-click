@@ -1,5 +1,11 @@
 import produce from "immer";
-import { GameWorld, ScriptStatement, ScriptAST } from "@point-n-click/types";
+import {
+  GameWorld,
+  ScriptStatement,
+  ScriptAST,
+  ContentStatement,
+  ContentPluginStatement,
+} from "@point-n-click/types";
 import {
   GameState,
   GameStateManager,
@@ -15,6 +21,7 @@ import {
 } from "../errors/formatErrors";
 import { characterName, StateError } from "../text/applyState";
 import { getTranslationText } from "../text/getTranslationText";
+import { isContentPluginStatement } from "../contentPlugin";
 
 type NarratorText = {
   type: "narratorText";
@@ -273,12 +280,17 @@ export const runScript = <Game extends GameWorld>(
     if (stateManager.isAborting()) {
       return result;
     }
-    const handler = statementHandler<Game, ScriptStatement<Game>>(
-      statement.statementType
-    );
-    const statementResult = handler(statement, stateManager);
-    if (statementResult !== null) {
-      result.push(...statementResult);
+
+    if (isContentPluginStatement(statement)) {
+      // use source to check plugin type
+    } else {
+      const handler = statementHandler<Game, ScriptStatement<Game>>(
+        statement.statementType
+      );
+      const statementResult = handler(statement, stateManager);
+      if (statementResult !== null) {
+        result.push(...statementResult);
+      }
     }
   }
   return result;

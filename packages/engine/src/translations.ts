@@ -1,8 +1,5 @@
 import { settings } from "./settings";
-
-export type TranslationFile = {
-  [key: string]: string | TranslationFile;
-};
+import type { TranslationFile } from "@point-n-click/types";
 
 export type TranslationSettings = {
   translationData?: TranslationFile;

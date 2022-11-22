@@ -1,4 +1,5 @@
 import { StateCondition } from "./conditions";
+import { ContentPluginStatement } from "./contentPlugin";
 import { StateObject } from "./state";
 import { GameWorld } from "./world";
 
@@ -16,7 +17,7 @@ export type LocationScript<
     from: Exclude<keyof Game["locations"], Location>,
     script: Script
   ) => void;
-  describe: (script: () => void) => void;
+  describe: (script: Script) => void;
   interaction: Interaction<Game>;
 }) => void;
 
@@ -66,7 +67,10 @@ export type GameOverlay<Game extends GameWorld> = {
   onLeave: { script: ScriptAST<Game> };
   interactions: GameInteraction<Game>[];
 };
-export type ScriptAST<Game extends GameWorld> = ScriptStatement<Game>[];
+export type ScriptAST<Game extends GameWorld> = (
+  | ScriptStatement<Game>
+  | ContentPluginStatement
+)[];
 
 export type ScriptStatement<Game extends GameWorld> =
   | TextStatement
@@ -138,7 +142,7 @@ export type UpdateCounter<
 };
 
 export type UpdateCharacterName<Game extends GameWorld> = {
-  statementType: `UpdateCharacterName`;
+  statementType: "UpdateCharacterName";
   translatable: boolean;
   character: keyof Game["characters"];
   newName: string | null;

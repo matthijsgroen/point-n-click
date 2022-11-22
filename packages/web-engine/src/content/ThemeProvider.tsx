@@ -5,27 +5,9 @@ import {
 } from "@point-n-click/engine";
 import React, { Suspense } from "react";
 import { useGameContent, useGameState } from "./ContentProvider";
-import { ThemeDefinition, ThemeSettings } from "@point-n-click/themes";
 import { getClientSettings } from "../settings";
 import { Error } from "./Error";
 import { Loading } from "./Loading";
-
-type RegisteredTheme<Settings extends ThemeSettings> = {
-  theme: ThemeDefinition<Settings>;
-  id: string;
-};
-
-const themeList: RegisteredTheme<ThemeSettings>[] = [];
-
-export const registerTheme = <Settings extends ThemeSettings>(
-  id: string,
-  theme: ThemeDefinition<Settings>
-) => {
-  themeList.push({
-    id,
-    theme: theme as unknown as ThemeDefinition<ThemeSettings>,
-  });
-};
 
 export const ThemeProvider: React.FC = () => {
   const content = useGameContent();

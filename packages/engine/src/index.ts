@@ -10,3 +10,5 @@ export * from "./text/getTranslationText";
 export * from "./text/processText";
 export * from "./text/types";
 export * from "./translations";
+export * from "./theme";
+export * from "./contentPlugin";

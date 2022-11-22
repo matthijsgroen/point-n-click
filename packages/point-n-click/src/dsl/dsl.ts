@@ -8,18 +8,40 @@ import {
   GameOverlay,
   GameLocation,
   GlobalInteraction,
+  ContentPlugin,
+  DSLExtension,
+  SystemInterface,
 } from "@point-n-click/types";
-import {
-  GameModel,
-  JSONValue,
-  Settings,
-  ThemeInfo,
-} from "@point-n-click/state";
+import { GameModel, Settings, ThemeInfo } from "@point-n-click/state";
 import { characterDSLFunctions, CharacterInterface } from "./character";
 import { ConditionSet, dslStateConditions } from "./dsl-conditions";
 import { itemDSLFunctions, ItemInterface } from "./item";
 import { locationDSLFunctions, LocationInterface } from "./location";
-import { ThemeDefinition } from "@point-n-click/themes";
+import { ThemeDefinition, ThemeSettings } from "@point-n-click/themes";
+
+type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) extends (
+  x: infer R
+) => any
+  ? R
+  : never;
+
+type FunctionExceptFirst<F> = F extends (
+  head: SystemInterface,
+  ...rest: infer R
+) => void
+  ? (...args: R) => void
+  : never;
+
+type RemapFunctions<T extends DSLExtension> = {
+  [K in keyof T]: FunctionExceptFirst<T[K]>;
+};
+
+type ThemeDSLMap<
+  ThemeMap extends ThemeDefinition<
+    ThemeSettings,
+    ContentPlugin<DSLExtension>[]
+  >[]
+> = RemapFunctions<ThemeMap[number]["extensions"][number]["dslFunctions"]>;
 
 type GameWorldDSL<Version extends number, Game extends GameWorld<Version>> = {
   defineOverlay: (
@@ -57,156 +79,194 @@ export type GameDefinition<
  * @param settings
  * @returns
  */
-export const world = <Game extends GameWorld<number>>(
-  settings: Settings<Game>,
-  ...themes: ThemeDefinition<{ [x: string]: JSONValue }>[]
-): GameWorldDSL<Game["version"], Game> => {
-  let worldModel: GameModel<Game> = {
-    settings,
-    locations: [],
-    overlays: [],
-    globalInteractions: [],
-    themes: themes.map<ThemeInfo>((t) => ({
-      themePackage: t.packageName,
-      name: t.name,
-      settings: t.settings,
-    })),
-  };
+export const world =
+  <Game extends GameWorld<number>>(settings: Settings<Game>) =>
+  <T extends ThemeDefinition<ThemeSettings, ContentPlugin<DSLExtension>[]>[]>(
+    ...themes: T
+  ): GameWorldDSL<Game["version"], Game> &
+    UnionToIntersection<ThemeDSLMap<T>> => {
+    let worldModel: GameModel<Game> = {
+      settings,
+      locations: [],
+      overlays: [],
+      globalInteractions: [],
+      themes: themes.map<ThemeInfo>((t) => ({
+        themePackage: t.packageName,
+        name: t.name,
+        settings: t.settings,
+      })),
+    };
 
-  let activeScriptScope: ScriptAST<Game> = [];
+    let activeScriptScope: ScriptAST<Game> = [];
 
-  const wrapScript = (execution: () => void): ScriptAST<Game> => {
-    const previousScript = activeScriptScope;
-    const script: ScriptAST<Game> = [];
+    const wrapScript = (execution: () => void): ScriptAST<Game> => {
+      const previousScript = activeScriptScope;
+      const script: ScriptAST<Game> = [];
 
-    activeScriptScope = script;
-    execution();
-    const result = activeScriptScope;
-    activeScriptScope = previousScript;
-    return result;
-  };
+      activeScriptScope = script;
+      execution();
+      const result = activeScriptScope;
+      activeScriptScope = previousScript;
+      return result;
+    };
 
-  const onState: EvaluateCondition<Game> = (condition, script, elseScript) => {
-    const body = wrapScript(script);
-    const elseBody = elseScript ? wrapScript(elseScript) : [];
-    activeScriptScope.push({
-      statementType: "Condition",
+    const onState: EvaluateCondition<Game> = (
       condition,
-      body,
-      elseBody,
-    });
-  };
-
-  const addToActiveScript = (statement: ScriptStatement<Game>) => {
-    activeScriptScope.push(statement);
-  };
-
-  return {
-    defineOverlay: (
-      id: Game["overlays"],
-      handleOverlay: OverlayScript<Game>
+      script,
+      elseScript
     ) => {
-      const overlayAST: GameOverlay<Game> = {
-        id,
-        onEnter: { script: [] },
-        onLeave: { script: [] },
-        interactions: [],
-      };
-
-      handleOverlay({
-        onEnter: (script) => {
-          const startScript = wrapScript(script);
-          overlayAST.onEnter.script = startScript;
-        },
-        onLeave: (script) => {
-          const endScript = wrapScript(script);
-          overlayAST.onLeave.script = endScript;
-        },
-        interaction: (label, condition, script) => {
-          const interactionScript = wrapScript(script);
-          overlayAST.interactions.push({
-            label,
-            condition,
-            script: interactionScript,
-          });
-        },
-        closeOverlay: () => {
-          activeScriptScope.push({
-            statementType: "CloseOverlay",
-            overlayId: id,
-          });
-        },
-      });
-      worldModel?.overlays.push(overlayAST as unknown as GameOverlay<Game>);
-    },
-    defineLocation: <Location extends keyof Game["locations"]>(
-      location: Location,
-      script: LocationScript<Game, Location>
-    ) => {
-      const locationAST: GameLocation<Game> = {
-        id: location,
-        describe: { script: [] },
-        onEnter: [],
-        onLeave: [],
-        interactions: [],
-      };
-      script({
-        describe: (script) => {
-          const description = wrapScript(script);
-          locationAST.describe = { script: description };
-        },
-        onEnter: (from: Exclude<keyof Game["locations"], Location>, script) => {
-          const enterScript = wrapScript(script);
-          locationAST.onEnter.push({
-            from,
-            script: enterScript,
-          });
-        },
-        onLeave: (to: Exclude<keyof Game["locations"], Location>, script) => {
-          const enterScript = wrapScript(script);
-          locationAST.onLeave.push({
-            to,
-            script: enterScript,
-          });
-        },
-        interaction: (label, condition, script) => {
-          const interactionScript = wrapScript(script);
-          locationAST.interactions.push({
-            label,
-            condition,
-            script: interactionScript,
-          });
-        },
-      });
-      worldModel?.locations.push(locationAST as unknown as GameLocation<Game>);
-    },
-    globalInteraction: (text, shortcutKey, condition, script) => {
-      worldModel.globalInteractions.push({
-        label: text,
+      const body = wrapScript(script);
+      const elseBody = elseScript ? wrapScript(elseScript) : [];
+      activeScriptScope.push({
+        statementType: "Condition",
         condition,
-        shortcutKey,
-        script: wrapScript(script),
+        body,
+        elseBody,
       });
-    },
+    };
 
-    ...characterDSLFunctions(addToActiveScript),
-    ...itemDSLFunctions(addToActiveScript),
-    ...locationDSLFunctions(addToActiveScript),
+    const addToActiveScript = (statement: ScriptStatement<Game>) => {
+      activeScriptScope.push(statement);
+    };
 
-    text: (...sentences: string[]) => {
-      addToActiveScript({
-        statementType: "Text",
-        sentences,
-      });
-    },
-    openOverlay: (id: Game["overlays"]) => {
-      addToActiveScript({
-        statementType: "OpenOverlay",
-        overlayId: id,
-      });
-    },
-    onState,
-    ...dslStateConditions<Game>(),
-    __exportWorld: () => worldModel,
+    const basisDSL: GameWorldDSL<Game["version"], Game> = {
+      defineOverlay: (
+        id: Game["overlays"],
+        handleOverlay: OverlayScript<Game>
+      ) => {
+        const overlayAST: GameOverlay<Game> = {
+          id,
+          onEnter: { script: [] },
+          onLeave: { script: [] },
+          interactions: [],
+        };
+
+        handleOverlay({
+          onEnter: (script) => {
+            const startScript = wrapScript(script);
+            overlayAST.onEnter.script = startScript;
+          },
+          onLeave: (script) => {
+            const endScript = wrapScript(script);
+            overlayAST.onLeave.script = endScript;
+          },
+          interaction: (label, condition, script) => {
+            const interactionScript = wrapScript(script);
+            overlayAST.interactions.push({
+              label,
+              condition,
+              script: interactionScript,
+            });
+          },
+          closeOverlay: () => {
+            activeScriptScope.push({
+              statementType: "CloseOverlay",
+              overlayId: id,
+            });
+          },
+        });
+        worldModel?.overlays.push(overlayAST as unknown as GameOverlay<Game>);
+      },
+      defineLocation: <Location extends keyof Game["locations"]>(
+        location: Location,
+        script: LocationScript<Game, Location>
+      ) => {
+        const locationAST: GameLocation<Game> = {
+          id: location,
+          describe: { script: [] },
+          onEnter: [],
+          onLeave: [],
+          interactions: [],
+        };
+        script({
+          describe: (script) => {
+            const description = wrapScript(script);
+            locationAST.describe = { script: description };
+          },
+          onEnter: (
+            from: Exclude<keyof Game["locations"], Location>,
+            script
+          ) => {
+            const enterScript = wrapScript(script);
+            locationAST.onEnter.push({
+              from,
+              script: enterScript,
+            });
+          },
+          onLeave: (to: Exclude<keyof Game["locations"], Location>, script) => {
+            const enterScript = wrapScript(script);
+            locationAST.onLeave.push({
+              to,
+              script: enterScript,
+            });
+          },
+          interaction: (label, condition, script) => {
+            const interactionScript = wrapScript(script);
+            locationAST.interactions.push({
+              label,
+              condition,
+              script: interactionScript,
+            });
+          },
+        });
+        worldModel?.locations.push(
+          locationAST as unknown as GameLocation<Game>
+        );
+      },
+      globalInteraction: (text, shortcutKey, condition, script) => {
+        worldModel.globalInteractions.push({
+          label: text,
+          condition,
+          shortcutKey,
+          script: wrapScript(script),
+        });
+      },
+
+      ...characterDSLFunctions(addToActiveScript),
+      ...itemDSLFunctions(addToActiveScript),
+      ...locationDSLFunctions(addToActiveScript),
+
+      text: (...sentences) => {
+        addToActiveScript({
+          statementType: "Text",
+          sentences,
+        });
+      },
+      openOverlay: (id) => {
+        addToActiveScript({
+          statementType: "OpenOverlay",
+          overlayId: id,
+        });
+      },
+      onState,
+      ...dslStateConditions<Game>(),
+      __exportWorld: () => worldModel,
+    };
+
+    const createSystemInterface = (
+      contentPlugin: ContentPlugin<DSLExtension>
+    ): SystemInterface => ({
+      addContent: (item) => {
+        activeScriptScope.push({ ...item, source: contentPlugin.pluginType });
+      },
+    });
+
+    const pluginDSLFunctions: Record<string, (...args: any[]) => void> = {};
+
+    for (const theme of themes) {
+      for (const contentPlugin of theme.extensions) {
+        const systemInterface = createSystemInterface(contentPlugin);
+        for (const [name, func] of Object.entries(contentPlugin.dslFunctions)) {
+          pluginDSLFunctions[name] = (...args) => {
+            func(systemInterface, ...args);
+          };
+        }
+      }
+    }
+
+    return { ...basisDSL, ...pluginDSLFunctions } as unknown as GameWorldDSL<
+      Game["version"],
+      Game
+    > &
+      UnionToIntersection<ThemeDSLMap<T>>;
   };
-};
