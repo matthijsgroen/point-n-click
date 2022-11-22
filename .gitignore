@@ -2,3 +2,4 @@
 node_modules
 dist
 web-client/public/assets/contents.json
+yarn-error.log
