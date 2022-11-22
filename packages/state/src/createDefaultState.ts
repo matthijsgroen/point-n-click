@@ -1,5 +1,5 @@
-import { GameWorld } from "@point-n-click/types";
-import { GameModel, GameState, RecursivePartial } from "./types";
+import { GameWorld, GameState } from "@point-n-click/types";
+import { GameModel, RecursivePartial } from "./types";
 
 const isObject = (o: any): o is Record<string, unknown> =>
   o && typeof o === "object" && !Array.isArray(o) && Object.keys(o).length > 0;

@@ -34,6 +34,9 @@ const textContent: ContentPlugin<typeof textDslFunctions> = {
     }
     return translationScope;
   },
+  handleContent: (content, stateManager) => {
+    return [];
+  },
 };
 
 export default textContent;

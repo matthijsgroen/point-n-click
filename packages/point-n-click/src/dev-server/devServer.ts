@@ -55,12 +55,12 @@ export const devServer = async (
     console.log("");
   };
 
-  // await runGame(
-  //   { color: true, translationData },
-  //   modelManager,
-  //   gameStateManager,
-  //   clearScreen
-  // );
+  await runGame(
+    { color: true, translationData },
+    modelManager,
+    gameStateManager,
+    clearScreen
+  );
 
   await unsubscribeContent();
   await stopServer();
