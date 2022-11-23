@@ -3,10 +3,19 @@ import {
   ContentStatement,
   SystemInterface,
 } from "@point-n-click/types";
+import { FormattedText, handleTextContent } from "@point-n-click/engine";
+
+const PLUGIN_SOURCE = "descriptionText" as const;
 
 type TextStatement = {
   statementType: "descriptionText";
   content: string[];
+};
+
+type TextContent = {
+  type: "descriptionText";
+  pluginSource: typeof PLUGIN_SOURCE;
+  text: FormattedText[];
 };
 
 const isTextStatement = (item: ContentStatement): item is TextStatement =>
@@ -19,7 +28,7 @@ const textDslFunctions = {
 } as const;
 
 const textContent: ContentPlugin<typeof textDslFunctions> = {
-  pluginType: "descriptionText",
+  pluginType: PLUGIN_SOURCE,
   dslFunctions: textDslFunctions,
   translationContent: (content) => {
     const translationScope = {
@@ -34,7 +43,26 @@ const textContent: ContentPlugin<typeof textDslFunctions> = {
     }
     return translationScope;
   },
-  handleContent: (content, stateManager) => {
+  handleContent: (statement, stateManager) => {
+    if (isTextStatement(statement)) {
+      const result: TextContent = {
+        type: "descriptionText",
+        pluginSource: PLUGIN_SOURCE,
+        text: [],
+      };
+      const content = handleTextContent(
+        stateManager,
+        statement.content,
+        "descriptionText"
+      );
+
+      result.text = content.result;
+      if (content.error) {
+        return [result, content.error];
+      }
+
+      return [result];
+    }
     return [];
   },
 };

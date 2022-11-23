@@ -3,13 +3,21 @@ import {
   ContentPluginStatement,
   ContentPlugin,
   DSLExtension,
+  GameWorld,
+  ContentPluginContent,
 } from "@point-n-click/types";
+import { DisplayInfo } from "./content/runScript";
 import { getRegisteredThemes } from "./theme";
 
 export const isContentPluginStatement = (
   statement: ContentStatement
 ): statement is ContentPluginStatement =>
   !!(statement as ContentPluginStatement).source;
+
+export const isContentPluginContent = <Game extends GameWorld>(
+  statement: DisplayInfo<Game>
+): statement is ContentPluginContent =>
+  !!(statement as ContentPluginContent).pluginSource;
 
 export const getContentPlugin = (
   pluginType: string

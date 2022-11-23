@@ -9,6 +9,7 @@ export * from "./text/determineTextScope";
 export * from "./text/getTranslationText";
 export * from "./text/processText";
 export * from "./text/types";
+export * from "./text/handleText";
 export * from "./translations";
 export * from "./theme";
 export * from "./contentPlugin";

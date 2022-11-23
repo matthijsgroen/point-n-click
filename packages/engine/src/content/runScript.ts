@@ -21,6 +21,7 @@ import {
 import { characterName, StateError } from "../text/applyState";
 import { getTranslationText } from "../text/getTranslationText";
 import { getContentPlugin, isContentPluginStatement } from "../contentPlugin";
+import { handleTextContent } from "../text/handleText";
 
 type NarratorText = {
   type: "narratorText";
@@ -54,38 +55,6 @@ type StatementMap<Game extends GameWorld> = {
   [K in ScriptStatement<Game> as K["statementType"]]: StatementHandler<Game, K>;
 };
 
-const handleTextContent =
-  <Game extends GameWorld>(stateManager: GameStateManager<Game>) =>
-  (
-    sentences: string[],
-    textScope: string
-  ): { result: FormattedText[]; error: DisplayErrorText | null } => {
-    const fullTextScope = determineTextScope(stateManager, textScope);
-    const text: FormattedText[] = [];
-    for (const sentence of sentences) {
-      try {
-        text.push(
-          getDisplayText(sentence, stateManager, fullTextScope, fullTextScope)
-        );
-      } catch (e) {
-        if ((e as ParseSyntaxError).name === "SyntaxError") {
-          return {
-            result: text,
-            error: formatParserError(e as ParseSyntaxError),
-          };
-        }
-        if ((e as StateError).name === "StateError") {
-          return {
-            result: text,
-            error: formatStateError(sentence, e as StateError),
-          };
-        }
-        break;
-      }
-    }
-    return { result: text, error: null };
-  };
-
 const statementHandler = <
   Game extends GameWorld,
   K extends ScriptStatement<Game>
@@ -101,7 +70,7 @@ const statementHandler = <
         text: [],
       };
 
-      const text = handleTextContent(stateManager)(statement.sentences, "text");
+      const text = handleTextContent(stateManager, statement.sentences, "text");
       result.text = text.result;
       if (text.error) {
         return [result, text.error];

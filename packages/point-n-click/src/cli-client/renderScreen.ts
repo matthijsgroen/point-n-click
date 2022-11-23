@@ -2,12 +2,18 @@ import {
   DisplayInfo,
   FormattedText,
   GameModelManager,
+  isContentPluginContent,
 } from "@point-n-click/engine";
 import { GameStateManager } from "@point-n-click/state";
-import { GameWorld } from "@point-n-click/types";
+import { ContentPluginContent, GameWorld } from "@point-n-click/types";
 import { renderText } from "./renderText";
 import { getSettings } from "./settings";
 import { resetStyling } from "./utils";
+
+const isDescriptionText = (
+  item: ContentPluginContent
+): item is ContentPluginContent & { text: FormattedText[] } =>
+  item.pluginSource === "descriptionText" && item.type === "descriptionText";
 
 export const renderScreen = async <Game extends GameWorld>(
   info: DisplayInfo<Game>[],
@@ -20,6 +26,17 @@ export const renderScreen = async <Game extends GameWorld>(
     : undefined;
 
   for (const displayItem of info) {
+    if (isContentPluginContent(displayItem)) {
+      if (isDescriptionText(displayItem)) {
+        for (const sentence of displayItem.text) {
+          const cpm = stateManager.getState().settings.cpm;
+          await renderText(sentence, cpm, { color: textColor });
+        }
+        console.log("");
+        resetStyling();
+      }
+      continue;
+    }
     if (displayItem.type === "narratorText") {
       for (const sentence of displayItem.text) {
         await renderText(sentence, displayItem.cpm, { color: textColor });

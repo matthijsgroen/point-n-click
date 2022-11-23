@@ -1,3 +1,4 @@
+import { DisplayErrorText } from "@point-n-click/engine";
 import { GameStateManager } from "./state";
 import { GameWorld } from "./world";
 
@@ -34,7 +35,7 @@ export type ContentPlugin<Extension extends DSLExtension> = {
   handleContent: <Game extends GameWorld>(
     content: ContentStatement,
     stateManager: GameStateManager<Game>
-  ) => ContentPluginContent[];
+  ) => (ContentPluginContent | DisplayErrorText)[];
   translationContent?: (content: ContentStatement[]) => TranslationFile;
   dslFunctions: Extension;
 };
