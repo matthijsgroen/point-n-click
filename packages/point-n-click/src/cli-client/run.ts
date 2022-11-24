@@ -1,9 +1,5 @@
-import { GameWorld } from "@point-n-click/types";
-import {
-  createDefaultState,
-  GameStateManager,
-  mergeState,
-} from "@point-n-click/state";
+import { GameWorld, GameStateManager } from "@point-n-click/types";
+import { createDefaultState, mergeState } from "@point-n-click/state";
 import { CLISettings, updateSettings } from "./settings";
 import { enableKeyPresses, startSkip, stopKeyPresses } from "./utils";
 import { runLocation } from "./runLocation";

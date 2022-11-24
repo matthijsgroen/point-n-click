@@ -4,15 +4,29 @@ import styles from "./display.module.css";
 import { TerminalText } from "./ui/TerminalText";
 import { TerminalButton } from "./ui/TerminalButton";
 import { Settings } from "./types";
-import { DisplayInfo, FormattedText } from "@point-n-click/engine";
-import { GameWorld } from "@point-n-click/types";
+import {
+  DisplayInfo,
+  FormattedText,
+  isContentPluginContent,
+} from "@point-n-click/engine";
+import { ContentPluginContent, GameWorld } from "@point-n-click/types";
 import { useEffect, useRef, useState } from "react";
 import React from "react";
 import { terminalSettings } from "./settings";
+import { isDescriptionText } from "./isDescriptionText";
 
 const countDisplayInfoCharacters = (
   element: DisplayInfo<GameWorld>
 ): number => {
+  if (isContentPluginContent(element)) {
+    if (isDescriptionText(element)) {
+      return element.text.reduce(
+        (textResult, element) => textResult + formattedTextLength(element),
+        0
+      );
+    }
+    return 0;
+  }
   if (element.type === "narratorText") {
     return element.text.reduce(
       (textResult, element) => textResult + formattedTextLength(element),
@@ -110,6 +124,15 @@ const sliceDisplayInfo = (
   content: DisplayInfo<GameWorld>,
   characters: number
 ): DisplayInfo<GameWorld> => {
+  if (isContentPluginContent(content)) {
+    if (isDescriptionText(content)) {
+      return {
+        ...content,
+        text: sliceFormattedTexts(content.text, characters),
+      } as ContentPluginContent;
+    }
+    return content;
+  }
   if (content.type === "narratorText") {
     return {
       ...content,
@@ -167,7 +190,12 @@ const useTypedContents = (
 
   const sliced = sliceCharacters(contents, shown);
   const lastLine = sliced.at(-1);
-  let cpm = lastLine && lastLine.type !== "error" ? lastLine.cpm : 2000;
+  let cpm =
+    lastLine && isContentPluginContent(lastLine)
+      ? 2000
+      : lastLine && lastLine.type !== "error"
+      ? lastLine.cpm
+      : 2000;
   if (cpm === 0) {
     cpm = 2000;
   }

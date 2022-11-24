@@ -1,11 +1,11 @@
 import { GameModelManager } from "@point-n-click/engine";
+import { createDefaultState } from "@point-n-click/state";
 import {
-  createDefaultState,
   GameState,
   GameStateManager,
+  GameWorld,
   PlayState,
-} from "@point-n-click/state";
-import { GameWorld } from "@point-n-click/types";
+} from "@point-n-click/types";
 
 export const createGameStateManager = async <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>

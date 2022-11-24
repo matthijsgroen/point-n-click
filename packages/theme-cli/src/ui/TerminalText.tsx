@@ -1,6 +1,11 @@
-import { DisplayInfo, GameModelManager } from "@point-n-click/engine";
+import {
+  DisplayInfo,
+  GameModelManager,
+  isContentPluginContent,
+} from "@point-n-click/engine";
 import { GameWorld } from "@point-n-click/types";
 import React from "react";
+import { isDescriptionText } from "../isDescriptionText";
 import { Settings } from "../types";
 import { formatText } from "./formatText";
 import styles from "./TerminalText.module.css";
@@ -11,6 +16,31 @@ export const TerminalText: React.FC<{
   settings: Settings;
   displayCursor?: boolean;
 }> = ({ item, gameModelManager, settings, displayCursor = false }) => {
+  if (isContentPluginContent(item)) {
+    if (isDescriptionText(item)) {
+      return (
+        <p
+          className={`${styles.lines} ${displayCursor ? styles.cursor : ""}`}
+          style={
+            settings.color
+              ? ({
+                  "--color": `#${
+                    gameModelManager.getModel().settings.defaultTextColor
+                  }`,
+                } as React.CSSProperties)
+              : undefined
+          }
+        >
+          {item.text.map((formattedText, key) => (
+            <span className={styles.line} key={key}>
+              {formatText(formattedText)}
+            </span>
+          ))}
+        </p>
+      );
+    }
+    return null;
+  }
   if (item.type === "narratorText") {
     return (
       <p

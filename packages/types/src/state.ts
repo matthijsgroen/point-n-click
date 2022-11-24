@@ -3,7 +3,7 @@ import { GameWorld } from "./world";
 export type StateObject = "item" | "location" | "character";
 
 export type GameState<Game extends GameWorld> = {
-  currentLocation: keyof Game["locations"];
+  currentLocation?: keyof Game["locations"];
   previousLocation?: keyof Game["locations"];
   currentInteraction?: string;
   overlayStack: Game["overlays"][];

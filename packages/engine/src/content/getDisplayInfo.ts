@@ -1,5 +1,4 @@
-import { GameStateManager } from "@point-n-click/state";
-import { GameWorld } from "@point-n-click/types";
+import { GameWorld, GameStateManager } from "@point-n-click/types";
 import { noLocation } from "../errors/noLocation";
 import { GameModelManager } from "../model/gameModel";
 import { describeLocation } from "./describeLocation";

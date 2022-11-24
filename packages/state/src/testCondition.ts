@@ -2,8 +2,8 @@ import {
   GameWorld,
   NumberComparator,
   StateCondition,
+  GameStateManager,
 } from "@point-n-click/types";
-import { GameStateManager } from "./types";
 
 const numberCompare = (
   a: number,

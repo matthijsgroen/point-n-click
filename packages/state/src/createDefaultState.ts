@@ -24,7 +24,7 @@ export const createDefaultState = <Game extends GameWorld>(
   gameModel: GameModel<Game>
 ): GameState<Game> => {
   const startState: GameState<Game> = {
-    currentLocation: gameModel.locations[0]?.id,
+    currentLocation: undefined,
     overlayStack: [],
     settings: {
       cpm: 3000,

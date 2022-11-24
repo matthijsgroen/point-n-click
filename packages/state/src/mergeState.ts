@@ -1,5 +1,4 @@
-import { GameWorld, WorldObjectSettings } from "@point-n-click/types";
-import { GameState } from "./types";
+import { GameWorld, GameState } from "@point-n-click/types";
 
 /**
  * Merges two game states. The locations and characters

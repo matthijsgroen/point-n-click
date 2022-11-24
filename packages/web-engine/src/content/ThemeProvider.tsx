@@ -2,6 +2,7 @@ import {
   DisplayErrorText,
   getDisplayInfo,
   getInteractions,
+  getRegisteredThemes,
 } from "@point-n-click/engine";
 import React, { Suspense } from "react";
 import { useGameContent, useGameState } from "./ContentProvider";
@@ -17,7 +18,7 @@ export const ThemeProvider: React.FC = () => {
   const displayInfo = getDisplayInfo(content, gameStateManager);
   const interactions = getInteractions(content, gameStateManager);
 
-  const activeTheme = themeList[0];
+  const activeTheme = getRegisteredThemes()[0];
   const Theme = React.lazy(activeTheme.theme.renderer);
 
   const error = displayInfo.find(

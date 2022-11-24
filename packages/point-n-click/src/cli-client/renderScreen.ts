@@ -4,8 +4,11 @@ import {
   GameModelManager,
   isContentPluginContent,
 } from "@point-n-click/engine";
-import { GameStateManager } from "@point-n-click/state";
-import { ContentPluginContent, GameWorld } from "@point-n-click/types";
+import {
+  ContentPluginContent,
+  GameWorld,
+  GameStateManager,
+} from "@point-n-click/types";
 import { renderText } from "./renderText";
 import { getSettings } from "./settings";
 import { resetStyling } from "./utils";

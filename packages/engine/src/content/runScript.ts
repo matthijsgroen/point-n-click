@@ -1,15 +1,13 @@
 import produce from "immer";
 import {
-  GameWorld,
-  ScriptStatement,
-  ScriptAST,
   ContentPluginContent,
-} from "@point-n-click/types";
-import {
   GameState,
   GameStateManager,
-  testCondition,
-} from "@point-n-click/state";
+  GameWorld,
+  ScriptAST,
+  ScriptStatement,
+} from "@point-n-click/types";
+import { testCondition } from "@point-n-click/state";
 import { getDisplayText, ParseSyntaxError } from "../text/processText";
 import { determineTextScope } from "../text/determineTextScope";
 import { FormattedText } from "../text/types";

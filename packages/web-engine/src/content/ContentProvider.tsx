@@ -12,17 +12,19 @@ import React, {
 } from "react";
 import {
   GameModel,
-  GameState,
   createDefaultState,
-  GameStateManager,
   emptyGameModel,
 } from "@point-n-click/state";
-import { GameWorld } from "@point-n-click/types";
+import {
+  GameState,
+  GameStateManager,
+  GameWorld,
+  TranslationFile,
+} from "@point-n-click/types";
 import {
   gameModelManager,
   GameModelManager,
   updateTranslation,
-  TranslationFile,
 } from "@point-n-click/engine";
 import { getClientSettings, setClientSettings } from "../settings";
 import styles from "./ContentProvider.module.css";
@@ -102,6 +104,7 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
         }
       : {}
   );
+
   const { data: languageData } = useQuery(
     ["languageContent"],
     async (): Promise<TranslationFile | undefined> => {

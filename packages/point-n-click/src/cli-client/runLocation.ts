@@ -1,10 +1,9 @@
-import { GameWorld } from "@point-n-click/types";
+import { GameWorld, GameStateManager } from "@point-n-click/types";
 import {
   GameModelManager,
   getDisplayInfo,
   getInteractions,
 } from "@point-n-click/engine";
-import { GameStateManager } from "@point-n-click/state";
 import { handleInteractions } from "./handleInteractions";
 import { renderScreen } from "./renderScreen";
 
