@@ -26,7 +26,7 @@ export const getContentPlugin = (
    * In the future we could extend this bit to return the highest version of a plugin type found.
    */
   for (const theme of getRegisteredThemes()) {
-    const foundPlugin = theme.theme.extensions.find(
+    const foundPlugin = theme.extensions.find(
       (plugin) => plugin.pluginType === pluginType
     );
     if (foundPlugin) {

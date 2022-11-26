@@ -181,6 +181,19 @@ export const exportTranslations = async <Game extends GameWorld>(
     }
     processScript(globalInteraction.script, overlayScope, setTranslationKey);
   }
+  for (const theme of gameModel.themes || []) {
+    const themePluginLib = await import(theme.themePackage);
+    const themePlugin = themePluginLib.default.default(
+      theme.name,
+      theme.settings
+    );
+    const content = themePlugin.getTextContent();
+    applyTranslations(
+      content,
+      ["themes", theme.themePackage],
+      setTranslationKey
+    );
+  }
 
   try {
     await mkdir(folder);

@@ -114,8 +114,10 @@ export const startContentBuilder = async (
             await import(themeRegistration.themePackage).then(
               (themeDefinition) => {
                 registerTheme(
-                  themeRegistration.name,
-                  themeDefinition.default.default(themeRegistration.settings)
+                  themeDefinition.default.default(
+                    themeRegistration.name,
+                    themeRegistration.settings
+                  )
                 );
               }
             );

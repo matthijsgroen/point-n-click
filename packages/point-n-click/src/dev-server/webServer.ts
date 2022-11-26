@@ -1,8 +1,7 @@
 import { GameModelManager, getTranslationText } from "@point-n-click/engine";
-import { GameWorld } from "@point-n-click/types";
+import { GameStateManager, GameWorld } from "@point-n-click/types";
 import express from "express";
 import { join, relative } from "node:path";
-import { GameStateManager } from "@point-n-click/state";
 import bodyParser from "body-parser";
 import produce from "immer";
 import { CACHE_FOLDER } from "./constants";
@@ -33,84 +32,88 @@ export const startWebserver = async (
     model = modelManager.getModel();
   }
 
-  const configFile = join(devServerPath, ".parcelrc");
-  const configPromise = writeFile(
-    configFile,
-    JSON.stringify(
-      {
-        extends: `${relative(
-          devServerPath,
-          resolves["@parcel/config-default"]
-        )}`,
-        resolvers: ["@point-n-click/parcel-resolver", "..."],
-      },
-      undefined,
-      2
-    ),
-    {
-      encoding: "utf8",
-    }
-  );
-
-  const indexPromise = writeFile(
-    join(devServerPath, "index.tsx"),
-    indexFile({
-      lang: lang ?? model.settings.defaultLocale,
-      themes: model.themes ?? [
-        {
-          name: "Default",
-          themePackage: "@point-n-click/theme-cli",
-          settings: { color: true },
-        },
-      ],
-    }),
-    { encoding: "utf8" }
-  );
-
-  const entryFile = join(devServerPath, "index.html");
-  const entryPromise = writeFile(
-    entryFile,
-    htmlFile({
-      title: getTranslationText([], "title") ?? model.settings.gameTitle,
-      lang: lang ?? model.settings.defaultLocale,
-    }),
-    { encoding: "utf8" }
-  );
-
-  await Promise.all([configPromise, indexPromise, entryPromise]);
-
-  let webappBundler = new Parcel({
-    entries: entryFile,
-    defaultConfig: configFile,
-    workerFarm,
-    outputFS,
-    mode: "production",
-    env: {
-      NODE_ENV: "production",
-    },
-
-    shouldAutoInstall: false,
-    shouldDisableCache: true,
-    targets: {
-      main: {
-        distDir: "./",
-        publicUrl: "/",
-        context: "browser",
-        sourceMap: true,
-      },
-    },
-    defaultTargetOptions: {
-      shouldOptimize: true,
-    },
-  });
-
-  const { bundleGraph } = await webappBundler.run();
-  const bundles = bundleGraph.getBundles();
   const bundleMap: Record<string, PackagedBundle> = {};
-  for (const bundle of bundles) {
-    const path = relative(process.cwd(), bundle.filePath);
-    bundleMap[`/${path}`] = bundle;
-  }
+
+  const buildWebContent = async () => {
+    const configFile = join(devServerPath, ".parcelrc");
+    const configPromise = writeFile(
+      configFile,
+      JSON.stringify(
+        {
+          extends: `${relative(
+            devServerPath,
+            resolves["@parcel/config-default"]
+          )}`,
+          resolvers: ["@point-n-click/parcel-resolver", "..."],
+        },
+        undefined,
+        2
+      ),
+      {
+        encoding: "utf8",
+      }
+    );
+
+    const indexPromise = writeFile(
+      join(devServerPath, "index.tsx"),
+      indexFile({
+        lang: lang ?? model.settings.defaultLocale,
+        themes: model.themes ?? [
+          {
+            name: "Default",
+            themePackage: "@point-n-click/theme-cli",
+            settings: { color: true },
+          },
+        ],
+      }),
+      { encoding: "utf8" }
+    );
+
+    const entryFile = join(devServerPath, "index.html");
+    const entryPromise = writeFile(
+      entryFile,
+      htmlFile({
+        title: getTranslationText([], "title") ?? model.settings.gameTitle,
+        lang: lang ?? model.settings.defaultLocale,
+      }),
+      { encoding: "utf8" }
+    );
+
+    await Promise.all([configPromise, indexPromise, entryPromise]);
+    const webappBundler = new Parcel({
+      entries: entryFile,
+      defaultConfig: configFile,
+      workerFarm,
+      outputFS,
+      mode: "production",
+      env: {
+        NODE_ENV: "production",
+      },
+
+      shouldAutoInstall: false,
+      shouldDisableCache: true,
+      targets: {
+        main: {
+          distDir: "./",
+          publicUrl: "/",
+          context: "browser",
+          sourceMap: true,
+        },
+      },
+      defaultTargetOptions: {
+        shouldOptimize: true,
+      },
+    });
+
+    const { bundleGraph } = await webappBundler.run();
+    const bundles = bundleGraph.getBundles();
+    for (const bundle of bundles) {
+      const path = relative(process.cwd(), bundle.filePath);
+      bundleMap[`/${path}`] = bundle;
+    }
+  };
+
+  await buildWebContent();
 
   const app = express();
 

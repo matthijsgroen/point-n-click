@@ -1,4 +1,9 @@
-import { ContentPlugin, DSLExtension, GameWorld } from "@point-n-click/types";
+import {
+  ContentPlugin,
+  DSLExtension,
+  GameWorld,
+  TranslationFile,
+} from "@point-n-click/types";
 import React from "react";
 import {
   DisplayInfo,
@@ -15,6 +20,7 @@ export type ThemeRenderer<Settings extends ThemeSettings> = React.FC<{
   interactions: Interactions;
   skipToStep: number;
   gameModelManager: GameModelManager<GameWorld>;
+  translations: TranslationFile;
   onInteraction: (interactionId: string) => void;
 }>;
 
@@ -26,7 +32,10 @@ export type ThemeDefinition<
   version: string;
   author: string;
   packageName: string;
-  renderer: () => Promise<{ default: ThemeRenderer<Settings> }>;
+  renderer: () => Promise<{
+    default: ThemeRenderer<Settings>;
+  }>;
+  getTextContent: () => TranslationFile;
   settings: Settings;
   extensions: Extensions;
 };
@@ -34,4 +43,7 @@ export type ThemeDefinition<
 export type Theme<
   Settings extends ThemeSettings,
   Extensions extends ContentPlugin<DSLExtension>[]
-> = (settings: Partial<Settings>) => ThemeDefinition<ThemeSettings, Extensions>;
+> = (
+  name: string,
+  settings: Partial<Settings>
+) => ThemeDefinition<Settings, Extensions>;

@@ -1,6 +1,27 @@
+.screen {
+  display: grid;
+}
+
 .display {
   color: #aaaaaa;
   max-width: 80ch;
   margin: 0 auto;
   padding: 4ch;
+  padding-top: 0;
+}
+
+.stickyBar {
+  position: sticky;
+  top: 0em;
+  display: flex;
+  padding: 0.5em;
+  justify-content: end;
+}
+
+.menuButton {
+  color: green;
+  background-color: black;
+
+  padding: 0.5em;
+  border: 2px solid green;
 }

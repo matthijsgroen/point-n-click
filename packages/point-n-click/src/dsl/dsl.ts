@@ -36,11 +36,20 @@ type RemapFunctions<T extends DSLExtension> = {
   [K in keyof T]: FunctionExceptFirst<T[K]>;
 };
 
+interface ThemeWithDSL<
+  Settings extends ThemeSettings,
+  Extensions extends ContentPlugin<DSLExtension>[]
+> {
+  name: string;
+  version: string;
+  author: string;
+  packageName: string;
+  settings: Settings;
+  extensions: Extensions;
+}
+
 type ThemeDSLMap<
-  ThemeMap extends ThemeDefinition<
-    ThemeSettings,
-    ContentPlugin<DSLExtension>[]
-  >[]
+  ThemeMap extends ThemeWithDSL<ThemeSettings, ContentPlugin<DSLExtension>[]>[]
 > = RemapFunctions<ThemeMap[number]["extensions"][number]["dslFunctions"]>;
 
 type GameWorldDSL<Version extends number, Game extends GameWorld<Version>> = {
@@ -81,7 +90,7 @@ export type GameDefinition<
  */
 export const world =
   <Game extends GameWorld<number>>(settings: Settings<Game>) =>
-  <T extends ThemeDefinition<ThemeSettings, ContentPlugin<DSLExtension>[]>[]>(
+  <T extends ThemeWithDSL<ThemeSettings, ContentPlugin<DSLExtension>[]>[]>(
     ...themes: T
   ): GameWorldDSL<Game["version"], Game> &
     UnionToIntersection<ThemeDSLMap<T>> => {

@@ -4,10 +4,7 @@ import { ContentPlugin, DSLExtension } from "@point-n-click/types";
 type RegisteredTheme<
   Settings extends ThemeSettings,
   Extensions extends ContentPlugin<DSLExtension>[]
-> = {
-  theme: ThemeDefinition<Settings, Extensions>;
-  id: string;
-};
+> = ThemeDefinition<Settings, Extensions>;
 
 let themeList: RegisteredTheme<ThemeSettings, ContentPlugin<DSLExtension>[]>[] =
   [];
@@ -20,13 +17,11 @@ export const registerTheme = <
   Settings extends ThemeSettings,
   Extensions extends ContentPlugin<DSLExtension>[]
 >(
-  id: string,
   theme: ThemeDefinition<Settings, Extensions>
 ) => {
-  themeList.push({
-    id,
-    theme: theme as unknown as ThemeDefinition<ThemeSettings, Extensions>,
-  });
+  themeList.push(
+    theme as unknown as ThemeDefinition<ThemeSettings, Extensions>
+  );
 };
 
 export const getRegisteredThemes = () => themeList;

@@ -3,13 +3,22 @@ import { Theme } from "@point-n-click/themes";
 import packageDef from "../package.json";
 import descriptionText from "@point-n-click/content-description-text";
 
-const terminalTheme: Theme<Settings, [typeof descriptionText]> = (s) => ({
-  name: "Terminal",
+const terminalTheme: Theme<Settings, [typeof descriptionText]> = (
+  name,
+  settings
+) => ({
+  name,
   author: packageDef.author,
   version: packageDef.version,
   packageName: packageDef.name,
   renderer: () => import("./TerminalTheme"),
-  settings: { color: true, ...s },
+  getTextContent: () => ({
+    menu: "Menu",
+    settings: "Settings",
+    language: "Language",
+    pause: "Pause Menu",
+  }),
+  settings: { color: true, ...settings },
   extensions: [descriptionText],
 });
 
