@@ -74,5 +74,5 @@ export type GameModel<Game extends GameWorld> = {
   locations: GameLocation<Game>[];
   overlays: GameOverlay<Game>[];
   globalInteractions: GameInteraction<Game>[];
-  themes?: ThemeInfo[];
+  themes: ThemeInfo[];
 };

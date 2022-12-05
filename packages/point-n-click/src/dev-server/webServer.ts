@@ -1,7 +1,7 @@
 import { GameModelManager, getTranslationText } from "@point-n-click/engine";
 import { GameStateManager, GameWorld } from "@point-n-click/types";
 import express from "express";
-import { join, relative } from "node:path";
+import { dirname, join, relative } from "node:path";
 import bodyParser from "body-parser";
 import produce from "immer";
 import { CACHE_FOLDER } from "./constants";
@@ -13,6 +13,10 @@ import { MemoryFS } from "@parcel/fs";
 import mime from "mime/lite";
 import { htmlFile } from "./templates/htmlFile";
 import { indexFile } from "./templates/indexFile";
+import { GameModel } from "@point-n-click/state";
+import { watch } from "fs";
+
+const defaultWatchList = ["@point-n-click/engine", "@point-n-click/web-engine"];
 
 export const startWebserver = async (
   modelManager: GameModelManager<GameWorld>,
@@ -88,31 +92,34 @@ export const startWebserver = async (
     );
 
     await Promise.all([configPromise, indexPromise, entryPromise]);
-    const webappBundler = new Parcel({
-      entries: entryFile,
-      defaultConfig: configFile,
-      workerFarm,
-      outputFS,
-      mode: "production",
-      env: {
-        NODE_ENV: "production",
-      },
+  };
 
-      shouldAutoInstall: false,
-      shouldDisableCache: true,
-      targets: {
-        main: {
-          distDir: "./",
-          publicUrl: "/",
-          context: "browser",
-          sourceMap: true,
-        },
-      },
-      defaultTargetOptions: {
-        shouldOptimize: true,
-      },
-    });
+  const webappBundler = new Parcel({
+    entries: entryFile,
+    defaultConfig: configFile,
+    workerFarm,
+    outputFS,
+    mode: "production",
+    env: {
+      NODE_ENV: "production",
+    },
 
+    shouldAutoInstall: false,
+    shouldDisableCache: true,
+    targets: {
+      main: {
+        distDir: "./",
+        publicUrl: "/",
+        context: "browser",
+        sourceMap: true,
+      },
+    },
+    defaultTargetOptions: {
+      shouldOptimize: true,
+    },
+  });
+
+  const bundleEngine = async () => {
     const { bundleGraph } = await webappBundler.run();
     const bundles = bundleGraph.getBundles();
     for (const bundle of bundles) {
@@ -123,6 +130,63 @@ export const startWebserver = async (
 
   await buildWebFiles(model);
 
+  let watchAbort: AbortController = new AbortController();
+  let watchPromise: Promise<void> = new Promise(() => {});
+
+  const updateWatch = (model: GameModel<GameWorld>) => {
+    if (watchAbort) {
+      watchAbort.abort();
+    }
+    const watchList = defaultWatchList
+      .map((packageName) => resolver(packageName))
+      .concat(
+        model.themes
+          .filter(
+            (t, i, l) =>
+              !!l
+                .slice(0, i)
+                .find((prevTheme) => prevTheme.themePackage === t.themePackage)
+          )
+          .map((t) => resolver(t.themePackage))
+      );
+
+    watchAbort = new AbortController();
+    watchPromise = new Promise((resolve) => {
+      const { signal } = watchAbort;
+      for (const file of watchList) {
+        const folder = dirname(file);
+        watch(folder, { signal, recursive: true }, async () => {
+          resolve();
+          watchAbort.abort();
+        });
+      }
+    });
+  };
+
+  const rebuildOnModelOrEngineChange = () => {
+    let keepLoop = true;
+
+    const stopLoop = () => {
+      keepLoop = false;
+    };
+
+    const run = async () => {
+      while (keepLoop) {
+        const newModel = modelManager.getModel();
+        if (newModel && keepLoop) {
+          updateWatch(newModel);
+          await buildWebFiles(newModel);
+          await bundleEngine();
+        }
+        if (!keepLoop) return;
+        await Promise.race([modelManager.waitForChange(), watchPromise]);
+      }
+    };
+    run();
+    return stopLoop;
+  };
+
+  const stopRebuild = rebuildOnModelOrEngineChange();
 
   const app = express();
 
@@ -180,7 +244,6 @@ export const startWebserver = async (
   });
 
   const server = app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
     serverStartResolver();
   });
 
@@ -188,8 +251,10 @@ export const startWebserver = async (
 
   return [
     async () => {
+      watchAbort?.abort();
       await workerFarm.end();
       server.close();
+      stopRebuild();
     },
     port,
   ];
