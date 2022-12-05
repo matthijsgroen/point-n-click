@@ -23,6 +23,7 @@ import { mkdir } from "./mkdir";
 
 type ServerOptions = {
   lang: string;
+  resolver: (packageName: string) => string;
 };
 
 const watchTranslations = <Game extends GameWorld>(
@@ -70,8 +71,7 @@ const convertToGameModel = async (
 
 export const startContentBuilder = async (
   fileName: string,
-  resolves: Record<string, string>,
-  options: ServerOptions,
+  { resolver, lang }: ServerOptions,
   modelManager: GameModelManager<GameWorld>
 ) => {
   let jsonModel: GameModel<GameWorld> | undefined = undefined;
@@ -82,7 +82,7 @@ export const startContentBuilder = async (
   let outputFS = new MemoryFS(workerFarm);
   let contentBundler = new Parcel({
     entries: fileName,
-    defaultConfig: resolves["@parcel/config-default"],
+    defaultConfig: resolver("@parcel/config-default"),
     shouldAutoInstall: false,
 
     workerFarm,
@@ -125,19 +125,16 @@ export const startContentBuilder = async (
         }
 
         const defaultLocale = jsonModel.settings.defaultLocale;
-        if (isLocale(options.lang) && options.lang !== defaultLocale) {
+        if (isLocale(lang) && lang !== defaultLocale) {
           await exportTranslations(
             path.join(process.cwd(), "src", "translations"),
-            [options.lang],
+            [lang],
             jsonModel
           );
 
           if (!watchingTranslation) {
-            translationWatchController = watchTranslations(
-              options.lang,
-              modelManager
-            );
-            watchingTranslation = options.lang;
+            translationWatchController = watchTranslations(lang, modelManager);
+            watchingTranslation = lang;
           }
         }
 

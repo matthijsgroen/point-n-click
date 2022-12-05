@@ -13,17 +13,13 @@ import { join } from "node:path";
 type ServerOptions = {
   lang: string;
   port: number;
+  resolver: (packageName: string) => string;
 };
 
-export const devServer = async (
-  fileName: string,
-  resolves: Record<string, string>,
-  options: ServerOptions
-) => {
+export const devServer = async (fileName: string, options: ServerOptions) => {
   const modelManager = gameModelManager(undefined);
   const unsubscribeContent = await startContentBuilder(
     fileName,
-    resolves,
     options,
     modelManager
   );
@@ -41,7 +37,6 @@ export const devServer = async (
   const [stopServer, runningPort] = await startWebserver(
     modelManager,
     gameStateManager,
-    resolves,
     options
   );
 

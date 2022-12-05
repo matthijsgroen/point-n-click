@@ -17,8 +17,15 @@ import { indexFile } from "./templates/indexFile";
 export const startWebserver = async (
   modelManager: GameModelManager<GameWorld>,
   stateManager: GameStateManager<GameWorld>,
-  resolves: Record<string, string>,
-  { port = 3456, lang }: { port?: number; lang?: string } = {}
+  {
+    port = 3456,
+    lang,
+    resolver,
+  }: {
+    port?: number;
+    lang?: string;
+    resolver: (packageName: string) => string;
+  }
 ): Promise<[stopServer: () => Promise<void>, runningPort: number]> => {
   const devServerPath = join(CACHE_FOLDER, "dev-build");
   await mkdir(devServerPath);
@@ -34,26 +41,28 @@ export const startWebserver = async (
 
   const bundleMap: Record<string, PackagedBundle> = {};
 
-  const buildWebContent = async () => {
-    const configFile = join(devServerPath, ".parcelrc");
-    const configPromise = writeFile(
-      configFile,
-      JSON.stringify(
-        {
-          extends: `${relative(
-            devServerPath,
-            resolves["@parcel/config-default"]
-          )}`,
-          resolvers: ["@point-n-click/parcel-resolver", "..."],
-        },
-        undefined,
-        2
-      ),
+  const configFile = join(devServerPath, ".parcelrc");
+  const configPromise = writeFile(
+    configFile,
+    JSON.stringify(
       {
-        encoding: "utf8",
-      }
-    );
+        extends: `${relative(
+          devServerPath,
+          resolver("@parcel/config-default")
+        )}`,
+        resolvers: ["@point-n-click/parcel-resolver", "..."],
+      },
+      undefined,
+      2
+    ),
+    {
+      encoding: "utf8",
+    }
+  );
 
+  const entryFile = join(devServerPath, "index.html");
+
+  const buildWebFiles = async (model: GameModel<GameWorld>) => {
     const indexPromise = writeFile(
       join(devServerPath, "index.tsx"),
       indexFile({
@@ -69,7 +78,6 @@ export const startWebserver = async (
       { encoding: "utf8" }
     );
 
-    const entryFile = join(devServerPath, "index.html");
     const entryPromise = writeFile(
       entryFile,
       htmlFile({
@@ -113,7 +121,8 @@ export const startWebserver = async (
     }
   };
 
-  await buildWebContent();
+  await buildWebFiles(model);
+
 
   const app = express();
 

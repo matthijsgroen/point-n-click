@@ -2,9 +2,12 @@
 
 const resolveOptions = { paths: [process.cwd(), __dirname] };
 
-const resolves = {};
-["@parcel/config-default"].forEach((package) => {
-  resolves[package] = require.resolve(package, resolveOptions);
-});
+/**
+ * Resolves package path
+ *
+ * @param {string} packageName
+ * @returns {string}
+ */
+const resolver = (packageName) => require.resolve(packageName, resolveOptions);
 
-require("../dist/index").cli(process.argv, resolves);
+require("../dist/index").cli(process.argv, resolver);
