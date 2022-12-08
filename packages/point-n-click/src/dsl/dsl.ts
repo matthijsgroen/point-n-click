@@ -17,7 +17,7 @@ import { characterDSLFunctions, CharacterInterface } from "./character";
 import { ConditionSet, dslStateConditions } from "./dsl-conditions";
 import { itemDSLFunctions, ItemInterface } from "./item";
 import { locationDSLFunctions, LocationInterface } from "./location";
-import { ThemeDefinition, ThemeSettings } from "@point-n-click/themes";
+import { ThemeSettings } from "@point-n-click/themes";
 
 type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) extends (
   x: infer R

@@ -1,5 +1,4 @@
-import { GameState, GameStateManager } from "@point-n-click/state";
-import { GameWorld } from "@point-n-click/types";
+import { GameWorld, GameStateManager, GameState } from "@point-n-click/types";
 import { getTranslationText } from "./getTranslationText";
 import { FormattedText, ParsedText } from "./types";
 

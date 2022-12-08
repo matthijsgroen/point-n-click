@@ -1,7 +1,8 @@
 /// <reference types="node" />
 import { readFile } from "fs/promises";
 import { join } from "path";
-import { TranslationFile, updateTranslation } from "@point-n-click/engine";
+import { updateTranslation } from "@point-n-click/engine";
+import { TranslationFile } from "@point-n-click/types";
 
 export const loadTranslationData = async (
   locale?: string

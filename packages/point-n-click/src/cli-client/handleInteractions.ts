@@ -1,6 +1,5 @@
 import produce from "immer";
-import { GameWorld } from "@point-n-click/types";
-import { GameStateManager } from "@point-n-click/state";
+import { GameWorld, GameStateManager } from "@point-n-click/types";
 import { keypress, stopSkip } from "./utils";
 import { renderText } from "./renderText";
 import {

@@ -1,5 +1,4 @@
-import { GameStateManager } from "@point-n-click/state";
-import { GameWorld } from "@point-n-click/types";
+import { GameWorld, GameStateManager } from "@point-n-click/types";
 
 export const determineTextScope = <Game extends GameWorld>(
   stateManager: GameStateManager<Game>,

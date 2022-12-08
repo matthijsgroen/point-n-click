@@ -4,7 +4,7 @@ import { FormattedText } from "../text/types";
 import { DisplayErrorText } from "./formatErrors";
 
 export const noLocation = <Game extends GameWorld>(
-  locationId: keyof Game["locations"]
+  locationId: keyof Game["locations"] | undefined
 ): DisplayErrorText => ({
   type: "error",
   message: [

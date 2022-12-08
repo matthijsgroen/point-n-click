@@ -1,5 +1,5 @@
-import { GameStateManager, testCondition } from "@point-n-click/state";
-import { GameWorld } from "@point-n-click/types";
+import { testCondition } from "@point-n-click/state";
+import { GameWorld, GameStateManager } from "@point-n-click/types";
 import { GameModelManager } from "../model/gameModel";
 import { getTranslationText } from "../text/getTranslationText";
 import { getCurrentOverlay } from "./getOverlay";
