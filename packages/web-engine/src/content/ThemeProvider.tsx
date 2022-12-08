@@ -25,7 +25,7 @@ export const ThemeProvider: React.FC = () => {
   const activeTheme = getRegisteredThemes()[0];
   const Theme = React.lazy(activeTheme.renderer);
 
-  const translations = useMemo((): TranslationFile => {
+  const themeTranslations = useMemo((): TranslationFile => {
     const defaultTranslations = activeTheme.getTextContent();
     const themeTranslations = getTranslationScope([
       "themes",
@@ -53,7 +53,7 @@ export const ThemeProvider: React.FC = () => {
     <Suspense fallback={<Loading />}>
       <Theme
         contents={displayInfo}
-        translations={translations}
+        translations={themeTranslations}
         interactions={interactions}
         onInteraction={gameStateManager.setInteraction}
         settings={activeTheme.settings}
