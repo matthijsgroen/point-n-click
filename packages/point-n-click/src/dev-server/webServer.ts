@@ -70,7 +70,7 @@ export const startWebserver = async (
     const indexPromise = writeFile(
       join(devServerPath, "index.tsx"),
       indexFile({
-        lang: lang ?? model.settings.defaultLocale,
+        lang: lang ?? model.settings.locales.default,
         themes: model.themes ?? [
           {
             name: "Default",
@@ -86,7 +86,7 @@ export const startWebserver = async (
       entryFile,
       htmlFile({
         title: getTranslationText([], "title") ?? model.settings.gameTitle,
-        lang: lang ?? model.settings.defaultLocale,
+        lang: lang ?? model.settings.locales.default,
       }),
       { encoding: "utf8" }
     );

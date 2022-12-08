@@ -32,6 +32,8 @@ export type ThemeInfo = {
   settings: JSONValue;
 };
 
+export type Locale = `${string}-${string}`;
+
 export type Settings<Game extends GameWorld> = {
   /**
    * The title of your game. Displayed on the title screen
@@ -45,18 +47,15 @@ export type Settings<Game extends GameWorld> = {
     credits?: GameCredit[];
   };
   /**
-   * The locale used for writing all the game's content.
-   * This means all translation keys of the other language files
-   * will also be in this locale.
-   */
-  defaultLocale: `${string}-${string}`;
-  /**
    * List of supported locales. These are the locales the user can choose in the
    * interface, and the locales that will be bundled when packaging the game.
    *
    * When translating to a new language you can also set a language using the command line.
    */
-  supportedLocales?: `${string}-${string}`[];
+  locales: {
+    default: Locale;
+    supported: { [key: Locale]: string };
+  };
   initialState: RecursivePartial<GameState<Game>>;
   defaultTextColor?: HexColor;
   defaultActionPrompt?: string;

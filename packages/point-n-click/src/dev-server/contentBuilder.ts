@@ -6,7 +6,7 @@ import {
   GameModelManager,
   registerTheme,
 } from "@point-n-click/engine";
-import { GameModel } from "@point-n-click/state";
+import { GameModel, Locale } from "@point-n-click/state";
 import { GameWorld } from "@point-n-click/types";
 import { watch } from "fs";
 import { unlink, writeFile } from "fs/promises";
@@ -14,7 +14,6 @@ import path from "path";
 import {
   isLocale,
   exportTranslations,
-  Locale,
 } from "../export-translations/exportTranslations";
 import { CACHE_FOLDER } from "./constants";
 import { displayTypescriptError } from "./displayTypescriptError";
@@ -124,7 +123,7 @@ export const startContentBuilder = async (
           }
         }
 
-        const defaultLocale = jsonModel.settings.defaultLocale;
+        const defaultLocale = jsonModel.settings.locales.default;
         if (isLocale(lang) && lang !== defaultLocale) {
           await exportTranslations(
             path.join(process.cwd(), "src", "translations"),

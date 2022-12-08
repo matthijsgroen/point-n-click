@@ -4,7 +4,7 @@ import {
   ScriptAST,
   TranslationFile,
 } from "@point-n-click/types";
-import { GameModel } from "@point-n-click/state";
+import { GameModel, Locale } from "@point-n-click/state";
 import {
   isContentPluginStatement,
   DEFAULT_ACTION_PROMPT,
@@ -13,8 +13,6 @@ import {
 import { mkdir, writeFile, readFile } from "fs/promises";
 import { join } from "path";
 import { mergeTranslations } from "./mergeTranslations";
-
-export type Locale = `${string}-${string}`;
 
 export const isLocale = (item: unknown): item is Locale =>
   !!(typeof item === "string" && item.match(/^\w{2}-\w{2}$/));

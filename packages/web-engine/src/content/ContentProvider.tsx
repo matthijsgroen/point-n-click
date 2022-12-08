@@ -112,7 +112,7 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
         return undefined;
       }
       const currentLocale = getClientSettings().currentLocale;
-      if (currentLocale !== data.settings.defaultLocale) {
+      if (currentLocale !== data.settings.locales.default) {
         const data = await fetch(`/assets/lang/${currentLocale}.json`);
         return data.json();
       }

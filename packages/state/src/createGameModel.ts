@@ -4,7 +4,12 @@ import { GameModel, Settings } from "./types";
 export const emptyGameModel = <Game extends GameWorld>(): GameModel<Game> => ({
   settings: {
     gameTitle: "My new game",
-    defaultLocale: "en-US",
+    locales: {
+      default: "en-US",
+      supported: {
+        "en-US": "English",
+      },
+    },
     initialState: {},
     characterConfigs: {} as Settings<Game>["characterConfigs"],
   },
