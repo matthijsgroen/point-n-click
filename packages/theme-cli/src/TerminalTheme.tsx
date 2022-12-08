@@ -1,17 +1,30 @@
+import React, { useEffect, useRef, useState } from "react";
 import { ThemeRenderer } from "@point-n-click/themes";
+import { GameWorld } from "@point-n-click/types";
+import { DisplayInfo, isContentPluginContent } from "@point-n-click/engine";
 import "./screen.css";
 import styles from "./display.module.css";
 import { TerminalText } from "./ui/TerminalText";
 import { TerminalButton } from "./ui/TerminalButton";
 import { Settings } from "./types";
-import { DisplayInfo, isContentPluginContent } from "@point-n-click/engine";
-import { GameWorld } from "@point-n-click/types";
-import { useEffect, useRef, useState } from "react";
-import React from "react";
 import { terminalSettings } from "./settings";
 import { countCharacters, sliceCharacters } from "./textSupport";
+import { DialogButton } from "./ui/DialogButton";
+import { DialogSelect, SelectOption } from "./ui/DialogSelect";
 
 const MINUTE = 60000;
+
+enum DialogType {
+  None,
+  Pause,
+  Settings,
+}
+
+const classNames = (struct: { [x: string]: boolean }): string =>
+  Object.entries(struct)
+    .filter(([, k]) => k)
+    .map(([v]) => v)
+    .join(" ");
 
 const useTypedContents = (
   contents: DisplayInfo<GameWorld>[],
@@ -129,12 +142,39 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
     };
   }, []);
 
+  const [settingsMenu, setSettingsMenu] = useState(DialogType.None);
+
+  const pauseDialogRef = useRef<HTMLDialogElement>(null);
+  const settingsDialogRef = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (settingsMenu === DialogType.Pause) {
+      pauseDialogRef.current?.showModal();
+    }
+    if (settingsMenu === DialogType.Settings) {
+      settingsDialogRef.current?.showModal();
+    }
+  }, [settingsMenu]);
+
+  const languageOptions: SelectOption<string>[] = Object.entries(
+    gameModelManager.getModel().settings.locales.supported
+  ).map<SelectOption<string>>(([key, value]) => ({ label: value, value: key }));
+
   let actionKey = 0;
 
   return (
-    <div className={styles.screen}>
+    <div
+      className={classNames({
+        [styles.screen]: true,
+        [styles.colorScreen]: settings.color,
+      })}
+    >
       <div className={styles.stickyBar}>
-        <button className={styles.menuButton}>
+        <button
+          className={styles.menuButton}
+          onClick={() => {
+            setSettingsMenu(DialogType.Pause);
+          }}
+        >
           {translations["menu"] as string}
         </button>
       </div>
@@ -166,6 +206,52 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
           </div>
         )}
       </div>
+      <dialog ref={pauseDialogRef} className={styles.dialog}>
+        <form method="dialog">
+          <h1>Game paused</h1>
+          <div className={styles.buttonGroup}>
+            <DialogButton>Save game</DialogButton>
+            <DialogButton>Load game</DialogButton>
+            <DialogButton
+              value="close"
+              onClick={() => {
+                setSettingsMenu(DialogType.Settings);
+              }}
+            >
+              Settings
+            </DialogButton>
+            <DialogButton>Main menu</DialogButton>
+          </div>
+          <button
+            className={`${styles.dialogButton} ${styles.dialogCloseButton}`}
+            value="close"
+            onClick={() => {
+              setSettingsMenu(DialogType.None);
+            }}
+          >
+            Continue playing
+          </button>
+        </form>
+      </dialog>
+      <dialog ref={settingsDialogRef} className={styles.dialog}>
+        <form method="dialog">
+          <h1>Settings</h1>
+          <div className={styles.buttonGroup}>
+            <DialogButton>Theme</DialogButton>
+            <DialogSelect label="Language" options={languageOptions} />
+            <DialogButton>Text speed</DialogButton>
+          </div>
+          <button
+            className={`${styles.dialogButton} ${styles.dialogCloseButton}`}
+            value="close"
+            onClick={() => {
+              setSettingsMenu(DialogType.None);
+            }}
+          >
+            Close
+          </button>
+        </form>
+      </dialog>
     </div>
   );
 };

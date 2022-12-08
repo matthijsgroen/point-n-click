@@ -1,10 +1,17 @@
+:root {
+  --ui-color: #aaaaaa;
+}
 .screen {
   display: grid;
 }
 
+.colorScreen {
+  --ui-color: green;
+}
+
 .display {
   color: #aaaaaa;
-  max-width: 80ch;
+  width: 80ch;
   margin: 0 auto;
   padding: 4ch;
   padding-top: 0;
@@ -19,9 +26,33 @@
 }
 
 .menuButton {
-  color: green;
+  color: var(--ui-color);
   background-color: black;
 
   padding: 0.5em;
-  border: 2px solid green;
+  border: 2px solid var(--ui-color);
+  cursor: pointer;
+}
+
+.dialogCloseButton {
+  margin-top: 1rem;
+  width: 100%;
+  color: orange;
+}
+
+.buttonGroup {
+  display: grid;
+  grid-template-rows: 1fr;
+  gap: 0.5rem;
+}
+
+.dialog h1 {
+  font-size: 1rem;
+  margin: 0 0 1rem 0;
+  color: white;
+}
+
+.dialog {
+  background-color: black;
+  border: 4px double var(--ui-color);
 }
