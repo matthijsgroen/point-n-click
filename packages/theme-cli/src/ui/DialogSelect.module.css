@@ -8,14 +8,20 @@
   padding: 0.5em 1em;
   border: 2px solid var(--ui-color);
   cursor: pointer;
+  font-size: 0.8rem;
 }
+
+.dialogSelect label {
+  line-height: 1.1rem;
+}
+
 .dialogSelect select {
   background: black;
   color: var(--ui-color);
   border: none;
   text-align: end;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.8rem;
 }
 
 .dialogSelect option {

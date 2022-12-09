@@ -1,89 +1,23 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ThemeRenderer } from "@point-n-click/themes";
-import { GameWorld } from "@point-n-click/types";
-import { DisplayInfo, isContentPluginContent } from "@point-n-click/engine";
 import "./screen.css";
 import styles from "./display.module.css";
 import { TerminalText } from "./ui/TerminalText";
 import { TerminalButton } from "./ui/TerminalButton";
 import { Settings } from "./types";
 import { terminalSettings } from "./settings";
-import { countCharacters, sliceCharacters } from "./textSupport";
 import { DialogButton } from "./ui/DialogButton";
-import { DialogSelect, SelectOption } from "./ui/DialogSelect";
-import {
-  GameTheme,
-  useGameLocale,
-  useGameTheme,
-} from "@point-n-click/web-engine";
-import { Locale } from "@point-n-click/state";
-
-const MINUTE = 60000;
+import { classNames } from "./classnames";
+import { useTypedContents } from "./hooks/useTypedContents";
+import { SettingsDialog } from "./components/SettingsDialog";
+import { Dialog } from "./components/Dialog";
+import { ButtonGroup } from "./components/ButtonGroup";
 
 enum DialogType {
   None,
   Pause,
   Settings,
 }
-
-const classNames = (struct: { [x: string]: boolean }): string =>
-  Object.entries(struct)
-    .filter(([, k]) => k)
-    .map(([v]) => v)
-    .join(" ");
-
-const useTypedContents = (
-  contents: DisplayInfo<GameWorld>[],
-  skipToStep: number
-): { contents: DisplayInfo<GameWorld>[]; complete: boolean } => {
-  const count = countCharacters(contents);
-  const [charactersShown, setCharactersShown] = useState(
-    skipToStep === 0 ? 0 : count
-  );
-  const contentRef = useRef(contents);
-  const shown =
-    contentRef.current === contents
-      ? charactersShown
-      : skipToStep === 0
-      ? 0
-      : count;
-
-  const sliced = sliceCharacters(contents, shown);
-  const lastLine = sliced.at(-1);
-  let cpm =
-    lastLine && isContentPluginContent(lastLine)
-      ? 2000
-      : lastLine && lastLine.type !== "error"
-      ? lastLine.cpm
-      : 2000;
-  if (cpm === 0) {
-    cpm = 2000;
-  }
-
-  const delay = terminalSettings.get().skipScreen ? 0 : MINUTE / cpm;
-
-  useEffect(() => {
-    if (contentRef.current !== contents) {
-      setCharactersShown(skipToStep === 0 ? 0 : count);
-      contentRef.current = contents;
-    } else if (charactersShown < count) {
-      const timeout = setTimeout(() => {
-        setCharactersShown((counter) => counter + 1);
-      }, delay);
-      return () => {
-        clearTimeout(timeout);
-      };
-    }
-  }, [charactersShown, count, contents]);
-
-  return { contents: sliced, complete: shown >= count };
-};
-
-const usePreformattedCharacters = (
-  contents: DisplayInfo<GameWorld>[]
-): DisplayInfo<GameWorld>[] => {
-  return contents;
-};
 
 const TerminalTheme: ThemeRenderer<Settings> = ({
   contents,
@@ -94,9 +28,8 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
   skipToStep,
   onInteraction,
 }) => {
-  const convertedContents = usePreformattedCharacters(contents);
   const { contents: typedContents, complete } = useTypedContents(
-    convertedContents,
+    contents,
     skipToStep
   );
 
@@ -161,23 +94,6 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
     }
   }, [settingsMenu]);
 
-  const { locale, supportedLocales, setLocale } = useGameLocale();
-  const { theme, availableThemes, setTheme } = useGameTheme();
-
-  const languageOptions: SelectOption<Locale>[] = Object.entries(
-    supportedLocales
-  ).map<SelectOption<Locale>>(([key, value]) => ({
-    label: value,
-    value: key as Locale,
-  }));
-
-  const themeOptions: SelectOption<number>[] = availableThemes.map<
-    SelectOption<number>
-  >((theme) => ({
-    label: theme.name,
-    value: theme.index,
-  }));
-
   let actionKey = 0;
 
   return (
@@ -225,10 +141,10 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
           </div>
         )}
       </div>
-      <dialog ref={pauseDialogRef} className={styles.dialog}>
+      <Dialog ref={pauseDialogRef}>
         <form method="dialog">
           <h1>{translations["pause"] as string}</h1>
-          <div className={styles.buttonGroup}>
+          <ButtonGroup>
             <DialogButton>{translations["saveGame"] as string}</DialogButton>
             <DialogButton>{translations["loadGame"] as string}</DialogButton>
             <DialogButton
@@ -240,8 +156,8 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
               {translations["settings"] as string}
             </DialogButton>
             <DialogButton>Main menu</DialogButton>
-          </div>
-          <div className={styles.buttonGroup}>
+          </ButtonGroup>
+          <ButtonGroup>
             <DialogButton
               value="close"
               onClick={() => {
@@ -250,43 +166,16 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
             >
               {translations["continuePlaying"] as string}
             </DialogButton>
-          </div>
+          </ButtonGroup>
         </form>
-      </dialog>
-      <dialog ref={settingsDialogRef} className={styles.dialog}>
-        <form method="dialog">
-          <h1>{translations["settings"] as string}</h1>
-          <div className={styles.buttonGroup}>
-            <DialogSelect
-              label={translations["theme"] as string}
-              options={themeOptions}
-              selected={theme.index}
-              onSelect={(newValue) => {
-                setTheme(availableThemes[newValue]);
-              }}
-            />
-            <DialogSelect
-              label={translations["language"] as string}
-              options={languageOptions}
-              selected={locale}
-              onSelect={(newValue) => {
-                setLocale(newValue);
-              }}
-            />
-            <DialogButton>Text speed</DialogButton>
-          </div>
-          <div className={styles.buttonGroup}>
-            <DialogButton
-              value="close"
-              onClick={() => {
-                setSettingsMenu(DialogType.None);
-              }}
-            >
-              Close
-            </DialogButton>
-          </div>
-        </form>
-      </dialog>
+      </Dialog>
+      <SettingsDialog
+        ref={settingsDialogRef}
+        translations={translations}
+        onClose={() => {
+          setSettingsMenu(DialogType.None);
+        }}
+      />
     </div>
   );
 };
