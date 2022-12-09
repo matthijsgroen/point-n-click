@@ -9,15 +9,37 @@ export type SelectOption<T> = {
 type DialogSelectProps<T> = {
   label: string;
   options: SelectOption<T>[];
+  selected?: T;
+  onSelect?: (newValue: T) => void;
 };
 
-export const DialogSelect = <T,>({ label, options }: DialogSelectProps<T>) => {
+export const DialogSelect = <T,>({
+  label,
+  options,
+  selected,
+  onSelect,
+}: DialogSelectProps<T>) => {
   return (
     <label className={styles.dialogSelect}>
       {label}:{" "}
-      <select>
+      <select
+        onChange={(event) => {
+          if (!onSelect) {
+            return;
+          }
+          const selectedLabel = event.target.value;
+          const option = options.find(
+            (option) => option.label === selectedLabel
+          );
+          if (option) {
+            onSelect(option.value);
+          }
+        }}
+      >
         {options.map((item) => (
-          <option key={item.label}>{item.label}</option>
+          <option key={item.label} selected={item.value === selected}>
+            {item.label}
+          </option>
         ))}
       </select>
     </label>

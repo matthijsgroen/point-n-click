@@ -14,6 +14,7 @@ import {
   GameModel,
   createDefaultState,
   emptyGameModel,
+  Locale,
 } from "@point-n-click/state";
 import {
   GameState,
@@ -26,7 +27,11 @@ import {
   GameModelManager,
   updateTranslation,
 } from "@point-n-click/engine";
-import { getClientSettings, setClientSettings } from "../settings";
+import {
+  getClientSettings,
+  setClientSettings,
+  subscribeClientSettings,
+} from "../settings";
 import styles from "./ContentProvider.module.css";
 
 const defaultModel = emptyGameModel();
@@ -84,11 +89,29 @@ export const useGameState = (): GameStateManager<GameWorld> & {
   };
 };
 
+export const useGameLocale = (): {
+  locale: Locale;
+  supportedLocales: GameModel<GameWorld>["settings"]["locales"]["supported"];
+  setLocale: (newLocale: Locale) => void;
+} => {
+  const modelManager = useGameContent();
+
+  return {
+    locale: getClientSettings().currentLocale,
+    supportedLocales: modelManager.getModel().settings.locales.supported,
+    setLocale: (newLocale) => {
+      setClientSettings({ currentLocale: newLocale });
+    },
+  };
+};
+
 const developmentMode =
   document.body.attributes.getNamedItem("data-environment")?.value ===
   "development";
 
 const REFETCH_INTERVAL = 3000;
+
+const USE_DEFAULT_LANGUAGE = "DEFAULT_LANG" as const;
 
 export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const { isLoading, data } = useQuery(
@@ -107,7 +130,9 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
   const { data: languageData } = useQuery(
     ["languageContent"],
-    async (): Promise<TranslationFile | undefined> => {
+    async (): Promise<
+      TranslationFile | typeof USE_DEFAULT_LANGUAGE | undefined
+    > => {
       if (!data) {
         return undefined;
       }
@@ -116,7 +141,7 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
         const data = await fetch(`/assets/lang/${currentLocale}.json`);
         return data.json();
       }
-      return undefined;
+      return USE_DEFAULT_LANGUAGE;
     },
     developmentMode
       ? {
@@ -187,13 +212,28 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
   gameStateRef.current = gameSavePointState;
 
   useEffect(() => {
-    updateTranslation({ translationData: languageData });
+    if (languageData === USE_DEFAULT_LANGUAGE) {
+      updateTranslation({ translationData: undefined });
+    } else {
+      updateTranslation({ translationData: languageData });
+    }
+
     if (gameStateRef.current) {
       setClientSettings({ skipMode: true });
       modelManager.setNewModel(data);
       rerender((s) => (s + 1) % 100);
     }
   }, [data, languageData]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeClientSettings((newSettings, oldSettings) => {
+      if (newSettings.currentLocale !== oldSettings.currentLocale) {
+        queryClient.invalidateQueries(["languageContent"]);
+        rerender((s) => (s + 1) % 100);
+      }
+    });
+    return unsubscribe;
+  }, [queryClient]);
 
   if (isLoading || !data || !gameStateRef.current) {
     return (

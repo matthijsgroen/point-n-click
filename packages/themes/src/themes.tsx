@@ -10,12 +10,12 @@ import {
   GameModelManager,
   Interactions,
 } from "@point-n-click/engine";
-import { JSONValue } from "@point-n-click/state";
+import { JSONValue, Locale } from "@point-n-click/state";
 
 export type ThemeSettings = { [x: string]: JSONValue };
 
 export type ThemeRenderer<Settings extends ThemeSettings> = React.FC<{
-  settings: Settings;
+  themeSettings: Settings;
   contents: DisplayInfo<GameWorld>[];
   interactions: Interactions;
   skipToStep: number;

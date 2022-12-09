@@ -11,6 +11,8 @@ import { terminalSettings } from "./settings";
 import { countCharacters, sliceCharacters } from "./textSupport";
 import { DialogButton } from "./ui/DialogButton";
 import { DialogSelect, SelectOption } from "./ui/DialogSelect";
+import { useGameLocale } from "@point-n-click/web-engine";
+import { Locale } from "@point-n-click/state";
 
 const MINUTE = 60000;
 
@@ -155,9 +157,14 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
     }
   }, [settingsMenu]);
 
-  const languageOptions: SelectOption<string>[] = Object.entries(
-    gameModelManager.getModel().settings.locales.supported
-  ).map<SelectOption<string>>(([key, value]) => ({ label: value, value: key }));
+  const { locale, supportedLocales, setLocale } = useGameLocale();
+
+  const languageOptions: SelectOption<Locale>[] = Object.entries(
+    supportedLocales
+  ).map<SelectOption<Locale>>(([key, value]) => ({
+    label: value,
+    value: key as Locale,
+  }));
 
   let actionKey = 0;
 
@@ -218,7 +225,7 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
                 setSettingsMenu(DialogType.Settings);
               }}
             >
-              Settings
+              {translations["settings"] as string}
             </DialogButton>
             <DialogButton>Main menu</DialogButton>
           </div>
@@ -235,10 +242,17 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
       </dialog>
       <dialog ref={settingsDialogRef} className={styles.dialog}>
         <form method="dialog">
-          <h1>Settings</h1>
+          <h1>{translations["settings"] as string}</h1>
           <div className={styles.buttonGroup}>
             <DialogButton>Theme</DialogButton>
-            <DialogSelect label="Language" options={languageOptions} />
+            <DialogSelect
+              label={translations["language"] as string}
+              options={languageOptions}
+              selected={locale}
+              onSelect={(newValue) => {
+                setLocale(newValue);
+              }}
+            />
             <DialogButton>Text speed</DialogButton>
           </div>
           <button
