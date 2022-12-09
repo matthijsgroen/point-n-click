@@ -5,13 +5,50 @@ import {
   getRegisteredThemes,
   getTranslation,
   getTranslationScope,
+  getTranslationText,
 } from "@point-n-click/engine";
-import React, { Suspense, useMemo } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
 import { useGameContent, useGameState } from "./ContentProvider";
-import { getClientSettings, setClientSettings } from "../settings";
+import {
+  getClientSettings,
+  setClientSettings,
+  subscribeClientSettings,
+} from "../settings";
 import { Error } from "./Error";
 import { Loading } from "./Loading";
 import { TranslationFile } from "@point-n-click/types";
+
+export type GameTheme = {
+  index: number;
+  name: string;
+};
+
+export const useGameTheme = (): {
+  theme: GameTheme;
+  availableThemes: GameTheme[];
+  setTheme: (newTheme: GameTheme) => void;
+} => {
+  const activeThemeIndex = getClientSettings().currentTheme;
+  const modelManager = useGameContent();
+  const availableThemes = modelManager.getModel().themes.map((theme, index) => {
+    const originalName = theme.name;
+    const name =
+      getTranslationText(["meta", "themes"], originalName) || originalName;
+
+    return {
+      name,
+      index,
+    };
+  });
+
+  return {
+    theme: availableThemes[activeThemeIndex],
+    availableThemes,
+    setTheme: (theme) => {
+      setClientSettings({ currentTheme: theme.index });
+    },
+  };
+};
 
 export const ThemeProvider: React.FC = () => {
   const content = useGameContent();
@@ -21,8 +58,19 @@ export const ThemeProvider: React.FC = () => {
   const displayInfo = getDisplayInfo(content, gameStateManager);
   const interactions = getInteractions(content, gameStateManager);
 
-  // TODO: Read from 'storage' first what active theme is
-  const activeTheme = getRegisteredThemes()[0];
+  const [, rerender] = useState(0);
+
+  useEffect(() => {
+    const unsubscribe = subscribeClientSettings((newSettings, oldSettings) => {
+      if (newSettings.currentTheme !== oldSettings.currentTheme) {
+        rerender((s) => (s + 1) % 100);
+      }
+    });
+    return unsubscribe;
+  }, []);
+
+  const currentTheme = getClientSettings().currentTheme;
+  const activeTheme = getRegisteredThemes()[currentTheme];
   const Theme = React.lazy(activeTheme.renderer);
 
   const themeTranslations = useMemo((): TranslationFile => {

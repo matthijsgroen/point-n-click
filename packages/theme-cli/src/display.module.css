@@ -34,16 +34,11 @@
   cursor: pointer;
 }
 
-.dialogCloseButton {
-  margin-top: 1rem;
-  width: 100%;
-  color: orange;
-}
-
 .buttonGroup {
   display: grid;
   grid-template-rows: 1fr;
-  gap: 0.5rem;
+  gap: 1em;
+  padding: 1em 0;
 }
 
 .dialog h1 {

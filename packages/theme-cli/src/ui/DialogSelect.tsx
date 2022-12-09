@@ -21,7 +21,7 @@ export const DialogSelect = <T,>({
 }: DialogSelectProps<T>) => {
   return (
     <label className={styles.dialogSelect}>
-      {label}:{" "}
+      <span>{label}: </span>
       <select
         onChange={(event) => {
           if (!onSelect) {

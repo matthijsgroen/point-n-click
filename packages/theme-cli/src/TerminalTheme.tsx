@@ -11,7 +11,11 @@ import { terminalSettings } from "./settings";
 import { countCharacters, sliceCharacters } from "./textSupport";
 import { DialogButton } from "./ui/DialogButton";
 import { DialogSelect, SelectOption } from "./ui/DialogSelect";
-import { useGameLocale } from "@point-n-click/web-engine";
+import {
+  GameTheme,
+  useGameLocale,
+  useGameTheme,
+} from "@point-n-click/web-engine";
 import { Locale } from "@point-n-click/state";
 
 const MINUTE = 60000;
@@ -158,12 +162,20 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
   }, [settingsMenu]);
 
   const { locale, supportedLocales, setLocale } = useGameLocale();
+  const { theme, availableThemes, setTheme } = useGameTheme();
 
   const languageOptions: SelectOption<Locale>[] = Object.entries(
     supportedLocales
   ).map<SelectOption<Locale>>(([key, value]) => ({
     label: value,
     value: key as Locale,
+  }));
+
+  const themeOptions: SelectOption<number>[] = availableThemes.map<
+    SelectOption<number>
+  >((theme) => ({
+    label: theme.name,
+    value: theme.index,
   }));
 
   let actionKey = 0;
@@ -215,10 +227,10 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
       </div>
       <dialog ref={pauseDialogRef} className={styles.dialog}>
         <form method="dialog">
-          <h1>Game paused</h1>
+          <h1>{translations["pause"] as string}</h1>
           <div className={styles.buttonGroup}>
-            <DialogButton>Save game</DialogButton>
-            <DialogButton>Load game</DialogButton>
+            <DialogButton>{translations["saveGame"] as string}</DialogButton>
+            <DialogButton>{translations["loadGame"] as string}</DialogButton>
             <DialogButton
               value="close"
               onClick={() => {
@@ -229,22 +241,30 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
             </DialogButton>
             <DialogButton>Main menu</DialogButton>
           </div>
-          <button
-            className={`${styles.dialogButton} ${styles.dialogCloseButton}`}
-            value="close"
-            onClick={() => {
-              setSettingsMenu(DialogType.None);
-            }}
-          >
-            Continue playing
-          </button>
+          <div className={styles.buttonGroup}>
+            <DialogButton
+              value="close"
+              onClick={() => {
+                setSettingsMenu(DialogType.None);
+              }}
+            >
+              {translations["continuePlaying"] as string}
+            </DialogButton>
+          </div>
         </form>
       </dialog>
       <dialog ref={settingsDialogRef} className={styles.dialog}>
         <form method="dialog">
           <h1>{translations["settings"] as string}</h1>
           <div className={styles.buttonGroup}>
-            <DialogButton>Theme</DialogButton>
+            <DialogSelect
+              label={translations["theme"] as string}
+              options={themeOptions}
+              selected={theme.index}
+              onSelect={(newValue) => {
+                setTheme(availableThemes[newValue]);
+              }}
+            />
             <DialogSelect
               label={translations["language"] as string}
               options={languageOptions}
@@ -255,15 +275,16 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
             />
             <DialogButton>Text speed</DialogButton>
           </div>
-          <button
-            className={`${styles.dialogButton} ${styles.dialogCloseButton}`}
-            value="close"
-            onClick={() => {
-              setSettingsMenu(DialogType.None);
-            }}
-          >
-            Close
-          </button>
+          <div className={styles.buttonGroup}>
+            <DialogButton
+              value="close"
+              onClick={() => {
+                setSettingsMenu(DialogType.None);
+              }}
+            >
+              Close
+            </DialogButton>
+          </div>
         </form>
       </dialog>
     </div>

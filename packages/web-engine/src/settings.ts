@@ -4,7 +4,8 @@ import { Locale } from "@point-n-click/state";
 const webClientSettings = settings<{
   skipMode: boolean;
   currentLocale: Locale;
-}>({ skipMode: true, currentLocale: "en-US" });
+  currentTheme: number;
+}>({ skipMode: true, currentTheme: 0, currentLocale: "en-US" });
 
 export const setClientSettings = webClientSettings.update;
 export const getClientSettings = webClientSettings.get;
