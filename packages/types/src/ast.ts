@@ -14,7 +14,7 @@ export type LocationScript<
     script: Script
   ) => void;
   onLeave: (
-    from: Exclude<keyof Game["locations"], Location>,
+    to: Exclude<keyof Game["locations"], Location>,
     script: Script
   ) => void;
   describe: (script: Script) => void;
