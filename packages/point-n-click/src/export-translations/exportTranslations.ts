@@ -90,6 +90,7 @@ const processScript = <Game extends GameWorld>(
 
 export const exportTranslations = async <Game extends GameWorld>(
   folder: string,
+  resolver: (packageName: string) => string,
   locales: Locale[],
   gameModel: GameModel<Game>
 ) => {
@@ -180,7 +181,8 @@ export const exportTranslations = async <Game extends GameWorld>(
     processScript(globalInteraction.script, overlayScope, setTranslationKey);
   }
   for (const theme of gameModel.themes || []) {
-    const themePluginLib = await import(theme.themePackage);
+    const resolvedPackage = resolver(theme.themePackage);
+    const themePluginLib = await import(resolvedPackage);
     const themePlugin = themePluginLib.default.default(
       theme.name,
       theme.settings

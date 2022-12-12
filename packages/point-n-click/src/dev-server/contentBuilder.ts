@@ -107,19 +107,17 @@ export const startContentBuilder = async (
       try {
         jsonModel = await convertToGameModel(gameContentsDSL);
         if (jsonModel.themes) {
+          clearRegisteredThemes();
           for (const themeRegistration of jsonModel.themes) {
-            clearRegisteredThemes();
-
-            await import(themeRegistration.themePackage).then(
-              (themeDefinition) => {
-                registerTheme(
-                  themeDefinition.default.default(
-                    themeRegistration.name,
-                    themeRegistration.settings
-                  )
-                );
-              }
-            );
+            const resolvedPackage = resolver(themeRegistration.themePackage);
+            await import(resolvedPackage).then((themeDefinition) => {
+              registerTheme(
+                themeDefinition.default.default(
+                  themeRegistration.name,
+                  themeRegistration.settings
+                )
+              );
+            });
           }
         }
 
@@ -127,6 +125,7 @@ export const startContentBuilder = async (
         if (isLocale(lang) && lang !== defaultLocale) {
           await exportTranslations(
             path.join(process.cwd(), "src", "translations"),
+            resolver,
             [lang],
             jsonModel
           );
