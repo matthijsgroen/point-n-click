@@ -1,0 +1,10 @@
+.dialog h1 {
+  font-size: 1rem;
+  margin: 0 0 1rem 0;
+  color: white;
+}
+
+.dialog {
+  background-color: black;
+  border: 4px double var(--ui-color);
+}

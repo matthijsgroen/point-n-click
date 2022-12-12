@@ -1,0 +1,15 @@
+.dialogButton {
+  display: block;
+  color: var(--ui-color);
+  background-color: black;
+
+  padding: 0.5em 1em;
+  border: 2px solid var(--ui-color);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.dialogButton:disabled {
+  cursor: default;
+  opacity: 0.8;
+}
