@@ -143,7 +143,7 @@ export const startWebserver = async (
         model.themes
           .filter(
             (t, i, l) =>
-              !!l
+              !l
                 .slice(0, i)
                 .find((prevTheme) => prevTheme.themePackage === t.themePackage)
           )
