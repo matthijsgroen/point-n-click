@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ThemeRenderer } from "@point-n-click/themes";
-import "./screen.css";
-import styles from "./display.module.css";
+import styles from "./book.module.css";
 import { TerminalText } from "./ui/TerminalText";
 import { TerminalButton } from "./ui/TerminalButton";
 import { Settings } from "./types";
@@ -19,7 +18,7 @@ enum DialogType {
   Settings,
 }
 
-const TerminalTheme: ThemeRenderer<Settings> = ({
+const BookTheme: ThemeRenderer<Settings> = ({
   contents,
   translations,
   interactions,
@@ -97,11 +96,7 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
   let actionKey = 0;
 
   return (
-    <div
-      className={classNames({
-        [styles.screen]: true,
-      })}
-    >
+    <div className={styles.display}>
       <div className={styles.stickyBar}>
         <button
           className={styles.menuButton}
@@ -112,33 +107,46 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
           {translations["menu"] as string}
         </button>
       </div>
-      <div className={styles.display}>
-        {typedContents.map((item, index, list) => (
-          <TerminalText
-            key={index}
-            item={item}
-            gameModelManager={gameModelManager}
-            settings={settings}
-            displayCursor={index === list.length - 1 && !complete}
-          />
-        ))}
-        {complete && interactions.actions.length > 0 && (
-          <div id="interactions">
-            <p>{interactions.prompt}</p>
-            {interactions.actions.map((item, index) => (
-              <p key={index} style={{ margin: 0 }}>
-                <TerminalButton
-                  onClick={() => {
-                    onInteraction(item.id);
-                  }}
-                  item={item}
-                  shortcut={item.shortcutKey || `${++actionKey}`}
-                  global={item.isGlobal}
-                />
-              </p>
-            ))}
+      <div className={styles.book}>
+        <div className={styles.pageStack}></div>
+        <div className={styles.pageLocator}>
+          <div className={styles.cover}>
+            <p>Author</p>
+            <h1>Title</h1>
+
+            <button>Start</button>
           </div>
-        )}
+          <div className={styles.innerPage}></div>
+          <div className={styles.page}>
+            {typedContents.map((item, index, list) => (
+              <TerminalText
+                key={index}
+                item={item}
+                gameModelManager={gameModelManager}
+                settings={settings}
+                displayCursor={index === list.length - 1 && !complete}
+              />
+            ))}
+            {complete && interactions.actions.length > 0 && (
+              <div id="interactions">
+                <p>{interactions.prompt}</p>
+                {interactions.actions.map((item, index) => (
+                  <p key={index} style={{ margin: 0 }}>
+                    <TerminalButton
+                      onClick={() => {
+                        onInteraction(item.id);
+                      }}
+                      item={item}
+                      shortcut={item.shortcutKey || `${++actionKey}`}
+                      global={item.isGlobal}
+                    />
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className={styles.pageBackside}></div>
+        </div>
       </div>
       <Dialog ref={pauseDialogRef}>
         <form method="dialog">
@@ -179,4 +187,4 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
   );
 };
 
-export default TerminalTheme;
+export default BookTheme;
