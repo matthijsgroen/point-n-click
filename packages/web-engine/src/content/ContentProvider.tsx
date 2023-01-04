@@ -114,7 +114,7 @@ const REFETCH_INTERVAL = 3000;
 const USE_DEFAULT_LANGUAGE = "DEFAULT_LANG" as const;
 
 export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
-  const { isLoading, data } = useQuery(
+  const { isInitialLoading, data } = useQuery(
     ["gameContent"],
     async (): Promise<GameModel<GameWorld>> => {
       const data = await fetch("/assets/contents.json");
@@ -235,7 +235,7 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
     return unsubscribe;
   }, [queryClient]);
 
-  if (isLoading || !data || !gameStateRef.current) {
+  if (isInitialLoading || !data || !gameStateRef.current) {
     return (
       <div className={styles.loading}>
         <p>Loading...</p>

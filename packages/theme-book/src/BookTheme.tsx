@@ -23,7 +23,7 @@ const BookTheme: ThemeRenderer<Settings> = ({
   translations,
   interactions,
   gameModelManager,
-  settings,
+  themeSettings,
   skipToStep,
   onInteraction,
 }) => {
@@ -31,9 +31,38 @@ const BookTheme: ThemeRenderer<Settings> = ({
     contents,
     skipToStep
   );
+  const [isOpen, setIsOpen] = useState(false);
+  const [isTurning, setIsTurning] = useState({
+    turn: false,
+    interaction: "",
+    clear: false,
+  });
 
   useEffect(() => {
     bookSettings.update({ skipScreen: false });
+  }, [contents]);
+
+  useEffect(() => {
+    if (isTurning.turn) {
+      const timer = setTimeout(() => {
+        setIsTurning({
+          turn: false,
+          interaction: isTurning.interaction,
+          clear: true,
+        });
+      }, 1110);
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+    if (isTurning.clear) {
+      onInteraction(isTurning.interaction);
+    }
+  }, [isTurning]);
+  useEffect(() => {
+    if (isTurning.clear) {
+      setIsTurning({ turn: false, interaction: "", clear: false });
+    }
   }, [contents]);
 
   useEffect(() => {
@@ -110,40 +139,79 @@ const BookTheme: ThemeRenderer<Settings> = ({
       <div className={styles.book}>
         <div className={styles.pageStack}></div>
         <div className={styles.pageLocator}>
-          <div className={styles.cover}>
+          <div
+            key="stablePage"
+            className={classNames({
+              [styles.page]: true,
+            })}
+            style={{ zIndex: 0 }}
+          ></div>
+          <div
+            key="shadowPage"
+            className={classNames({
+              [styles.pageShadow]: true,
+              [styles.turn]: isTurning.turn,
+            })}
+          ></div>
+          <div
+            key="cover"
+            className={classNames({
+              [styles.cover]: true,
+              [styles.open]: isOpen,
+            })}
+          >
             <p>Author</p>
             <h1>Title</h1>
 
-            <button>Start</button>
+            <button
+              onClick={() => {
+                setIsOpen(true);
+              }}
+            >
+              Start
+            </button>
           </div>
           <div className={styles.innerPage}></div>
-          <div className={styles.page}>
-            {typedContents.map((item, index, list) => (
-              <TerminalText
-                key={index}
-                item={item}
-                gameModelManager={gameModelManager}
-                settings={settings}
-                displayCursor={index === list.length - 1 && !complete}
-              />
-            ))}
-            {complete && interactions.actions.length > 0 && (
-              <div id="interactions">
-                <p>{interactions.prompt}</p>
-                {interactions.actions.map((item, index) => (
-                  <p key={index} style={{ margin: 0 }}>
-                    <TerminalButton
-                      onClick={() => {
-                        onInteraction(item.id);
-                      }}
-                      item={item}
-                      shortcut={item.shortcutKey || `${++actionKey}`}
-                      global={item.isGlobal}
-                    />
-                  </p>
-                ))}
-              </div>
-            )}
+          <div
+            key="turnPage"
+            className={classNames({
+              [styles.page]: true,
+              [styles.turn]: isTurning.turn,
+            })}
+          >
+            {!isTurning.clear &&
+              typedContents.map((item, index, list) => (
+                <TerminalText
+                  key={index}
+                  item={item}
+                  gameModelManager={gameModelManager}
+                  settings={themeSettings}
+                  displayCursor={index === list.length - 1 && !complete}
+                />
+              ))}
+            {complete &&
+              !isTurning.clear &&
+              interactions.actions.length > 0 && (
+                <div id="interactions">
+                  <p>{interactions.prompt}</p>
+                  {interactions.actions.map((item, index) => (
+                    <p key={index} style={{ margin: 0 }}>
+                      <TerminalButton
+                        onClick={() => {
+                          setIsTurning({
+                            turn: true,
+                            interaction: item.id,
+                            clear: false,
+                          });
+                        }}
+                        item={item}
+                        shortcut={item.shortcutKey || `${++actionKey}`}
+                        global={item.isGlobal}
+                      />
+                    </p>
+                  ))}
+                </div>
+              )}
           </div>
           <div className={styles.pageBackside}></div>
         </div>

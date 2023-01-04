@@ -71,7 +71,7 @@ export const ThemeProvider: React.FC = () => {
 
   const currentTheme = getClientSettings().currentTheme;
   const activeTheme = getRegisteredThemes()[currentTheme];
-  const Theme = React.lazy(activeTheme.renderer);
+  const Theme = useMemo(() => React.lazy(activeTheme.renderer), [activeTheme]);
 
   const themeTranslations = useMemo((): TranslationFile => {
     const defaultTranslations = activeTheme.getTextContent();
@@ -104,7 +104,7 @@ export const ThemeProvider: React.FC = () => {
         translations={themeTranslations}
         interactions={interactions}
         onInteraction={gameStateManager.setInteraction}
-        settings={activeTheme.settings}
+        themeSettings={activeTheme.settings}
         gameModelManager={content}
         skipToStep={getClientSettings().skipMode ? Infinity : 0}
       />
