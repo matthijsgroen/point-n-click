@@ -24,7 +24,7 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
   translations,
   interactions,
   gameModelManager,
-  settings,
+  themeSettings,
   skipToStep,
   onInteraction,
 }) => {
@@ -100,7 +100,7 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
     <div
       className={classNames({
         [styles.screen]: true,
-        [styles.colorScreen]: settings.color,
+        [styles.colorScreen]: themeSettings.color,
       })}
     >
       <div className={styles.stickyBar}>
@@ -119,7 +119,7 @@ const TerminalTheme: ThemeRenderer<Settings> = ({
             key={index}
             item={item}
             gameModelManager={gameModelManager}
-            settings={settings}
+            settings={themeSettings}
             displayCursor={index === list.length - 1 && !complete}
           />
         ))}
