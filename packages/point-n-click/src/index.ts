@@ -5,3 +5,4 @@ export type { GameDefinition } from "./dsl/dsl";
 export { cli } from "./cli";
 
 export const hexColor = state.hexColor;
+export const createColorPalette = state.createColorPalette;

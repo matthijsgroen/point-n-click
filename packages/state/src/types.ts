@@ -5,7 +5,7 @@ import {
   GameState,
   GameWorld,
 } from "@point-n-click/types";
-import { HexColor } from "./hexColor";
+import { ColorPalette, PaletteColor } from "./colorPalette";
 
 export type RecursivePartial<T extends Record<string, unknown>> = {
   [Key in keyof T]?: T[Key] extends Record<string, unknown>
@@ -57,13 +57,17 @@ export type Settings<Game extends GameWorld> = {
     supported: { [key: Locale]: string };
   };
   initialState: RecursivePartial<GameState<Game>>;
-  defaultTextColor?: HexColor;
+  colors: {
+    defaultTextColor?: PaletteColor;
+    lightPalette: ColorPalette;
+    darkPalette: ColorPalette;
+  };
   defaultActionPrompt?: string;
   characterConfigs: Record<
     keyof Game["characters"],
     {
       defaultName: string;
-      textColor?: HexColor;
+      textColor?: PaletteColor;
     }
   >;
 };

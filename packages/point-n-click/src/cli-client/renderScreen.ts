@@ -4,6 +4,7 @@ import {
   GameModelManager,
   isContentPluginContent,
 } from "@point-n-click/engine";
+import { HexColor, PaletteColor } from "@point-n-click/state";
 import {
   ContentPluginContent,
   GameWorld,
@@ -18,6 +19,13 @@ const isDescriptionText = (
 ): item is ContentPluginContent & { text: FormattedText[] } =>
   item.pluginSource === "descriptionText" && item.type === "descriptionText";
 
+const getPaletteColor =
+  <Game extends GameWorld<number>>(gameModelManager: GameModelManager<Game>) =>
+  (color: PaletteColor | undefined): HexColor | undefined =>
+    color
+      ? gameModelManager.getModel().settings.colors.darkPalette[color]
+      : undefined;
+
 export const renderScreen = async <Game extends GameWorld>(
   info: DisplayInfo<Game>[],
   gameModelManager: GameModelManager<Game>,
@@ -25,15 +33,18 @@ export const renderScreen = async <Game extends GameWorld>(
 ): Promise<void> => {
   const useColor = getSettings().color;
   const textColor = useColor
-    ? gameModelManager.getModel().settings.defaultTextColor
+    ? gameModelManager.getModel().settings.colors.defaultTextColor
     : undefined;
+
+  const getColor = getPaletteColor(gameModelManager);
 
   for (const displayItem of info) {
     if (isContentPluginContent(displayItem)) {
       if (isDescriptionText(displayItem)) {
         for (const sentence of displayItem.text) {
           const cpm = stateManager.getState().settings.cpm;
-          await renderText(sentence, cpm, { color: textColor });
+          const color = getColor(textColor);
+          await renderText(sentence, cpm, { color });
         }
         console.log("");
         resetStyling();
@@ -42,7 +53,8 @@ export const renderScreen = async <Game extends GameWorld>(
     }
     if (displayItem.type === "narratorText") {
       for (const sentence of displayItem.text) {
-        await renderText(sentence, displayItem.cpm, { color: textColor });
+        const color = getColor(textColor);
+        await renderText(sentence, displayItem.cpm, { color });
       }
       console.log("");
       resetStyling();
@@ -81,7 +93,8 @@ export const renderScreen = async <Game extends GameWorld>(
         if (Number(index) === displayItem.text.length - 1) {
           text.push({ type: "text", text: '"' });
         }
-        await renderText(text, displayItem.cpm, { color });
+        const c = getColor(color);
+        await renderText(text, displayItem.cpm, { color: c });
       }
       console.log("");
       resetStyling();

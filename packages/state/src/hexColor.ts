@@ -1,4 +1,4 @@
-type Brand<K, T> = K & { __brand: T };
+export type Brand<K, T> = K & { __brand: T };
 
 /**
  * You can create a HexColor type with the `hexColor` function
