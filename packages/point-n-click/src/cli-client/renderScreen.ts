@@ -2,9 +2,9 @@ import {
   DisplayInfo,
   FormattedText,
   GameModelManager,
+  getPaletteColor,
   isContentPluginContent,
 } from "@point-n-click/engine";
-import { HexColor, PaletteColor } from "@point-n-click/state";
 import {
   ContentPluginContent,
   GameWorld,
@@ -19,13 +19,6 @@ const isDescriptionText = (
 ): item is ContentPluginContent & { text: FormattedText[] } =>
   item.pluginSource === "descriptionText" && item.type === "descriptionText";
 
-const getPaletteColor =
-  <Game extends GameWorld<number>>(gameModelManager: GameModelManager<Game>) =>
-  (color: PaletteColor | undefined): HexColor | undefined =>
-    color
-      ? gameModelManager.getModel().settings.colors.darkPalette[color]
-      : undefined;
-
 export const renderScreen = async <Game extends GameWorld>(
   info: DisplayInfo<Game>[],
   gameModelManager: GameModelManager<Game>,
@@ -36,7 +29,7 @@ export const renderScreen = async <Game extends GameWorld>(
     ? gameModelManager.getModel().settings.colors.defaultTextColor
     : undefined;
 
-  const getColor = getPaletteColor(gameModelManager);
+  const getColor = getPaletteColor(gameModelManager, "dark");
 
   for (const displayItem of info) {
     if (isContentPluginContent(displayItem)) {

@@ -13,3 +13,4 @@ export * from "./text/handleText";
 export * from "./translations";
 export * from "./theme";
 export * from "./contentPlugin";
+export * from "./getPaletteColor";

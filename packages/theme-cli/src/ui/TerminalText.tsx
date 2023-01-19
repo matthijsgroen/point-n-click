@@ -1,6 +1,7 @@
 import {
   DisplayInfo,
   GameModelManager,
+  getPaletteColor,
   isContentPluginContent,
 } from "@point-n-click/engine";
 import { GameWorld } from "@point-n-click/types";
@@ -16,6 +17,7 @@ export const TerminalText: React.FC<{
   settings: Settings;
   displayCursor?: boolean;
 }> = ({ item, gameModelManager, settings, displayCursor = false }) => {
+  const getColor = getPaletteColor(gameModelManager, "dark");
   if (isContentPluginContent(item)) {
     if (isDescriptionText(item)) {
       return (
@@ -24,9 +26,9 @@ export const TerminalText: React.FC<{
           style={
             settings.color
               ? ({
-                  "--color": `#${
-                    gameModelManager.getModel().settings.defaultTextColor
-                  }`,
+                  "--color": `#${getColor(
+                    gameModelManager.getModel().settings.colors.defaultTextColor
+                  )}`,
                 } as React.CSSProperties)
               : undefined
           }
@@ -48,9 +50,9 @@ export const TerminalText: React.FC<{
         style={
           settings.color
             ? ({
-                "--color": `#${
-                  gameModelManager.getModel().settings.defaultTextColor
-                }`,
+                "--color": `#${getColor(
+                  gameModelManager.getModel().settings.colors.defaultTextColor
+                )}`,
               } as React.CSSProperties)
             : undefined
         }
@@ -70,11 +72,11 @@ export const TerminalText: React.FC<{
         style={
           settings.color
             ? ({
-                "--color": `#${
+                "--color": `#${getColor(
                   gameModelManager.getModel().settings.characterConfigs[
                     item.character
                   ].textColor
-                }`,
+                )}`,
               } as React.CSSProperties)
             : undefined
         }

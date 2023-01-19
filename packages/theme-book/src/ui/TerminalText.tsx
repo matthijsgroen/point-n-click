@@ -1,6 +1,7 @@
 import {
   DisplayInfo,
   GameModelManager,
+  getPaletteColor,
   isContentPluginContent,
 } from "@point-n-click/engine";
 import { GameWorld } from "@point-n-click/types";
@@ -16,10 +17,20 @@ export const TerminalText: React.FC<{
   settings: Settings;
   displayCursor?: boolean;
 }> = ({ item, gameModelManager, settings, displayCursor = false }) => {
+  const getColor = getPaletteColor(gameModelManager, "light");
   if (isContentPluginContent(item)) {
     if (isDescriptionText(item)) {
       return (
-        <p className={`${styles.lines} ${displayCursor ? styles.cursor : ""}`}>
+        <p
+          className={`${styles.lines} ${displayCursor ? styles.cursor : ""}`}
+          style={
+            {
+              "--color": `#${getColor(
+                gameModelManager.getModel().settings.colors.defaultTextColor
+              )}`,
+            } as React.CSSProperties
+          }
+        >
           {item.text.map((formattedText, key) => (
             <span className={styles.line} key={key}>
               {formatText(formattedText)}
@@ -32,7 +43,16 @@ export const TerminalText: React.FC<{
   }
   if (item.type === "narratorText") {
     return (
-      <p className={`${styles.lines} ${displayCursor ? styles.cursor : ""}`}>
+      <p
+        className={`${styles.lines} ${displayCursor ? styles.cursor : ""}`}
+        style={
+          {
+            "--color": `#${getColor(
+              gameModelManager.getModel().settings.colors.defaultTextColor
+            )}`,
+          } as React.CSSProperties
+        }
+      >
         {item.text.map((formattedText, key) => (
           <span className={styles.line} key={key}>
             {formatText(formattedText)}
@@ -43,7 +63,18 @@ export const TerminalText: React.FC<{
   }
   if (item.type === "characterText") {
     return (
-      <p className={`${styles.lines} ${displayCursor ? styles.cursor : ""}`}>
+      <p
+        className={`${styles.lines} ${displayCursor ? styles.cursor : ""}`}
+        style={
+          {
+            "--color": `#${getColor(
+              gameModelManager.getModel().settings.characterConfigs[
+                item.character
+              ].textColor
+            )}`,
+          } as React.CSSProperties
+        }
+      >
         {item.text.map((textLine, index, list) => (
           <span className={styles.line} key={index}>
             {index === 0 ? (
