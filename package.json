@@ -1,17 +1,23 @@
 {
   "private": true,
+  "version": "1.0.0-alpha.4",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
     "build": "nx run-many --target=build",
-    "watch": "nx run-many --target=watch --parallel=7"
+    "watch": "nx run-many --target=watch --parallel=7",
+    "test": "jest"
   },
   "devDependencies": {
-    "nx": "15.0.1"
+    "jest": "^29.5.0",
+    "nx": "15.0.1",
+    "ts-jest": "^29.0.5"
   },
   "resolutions": {
     "typescript": "~4.7.3"
   },
-  "version": "1.0.0-alpha.4"
+  "jest": {
+      "preset": "ts-jest"
+  }
 }

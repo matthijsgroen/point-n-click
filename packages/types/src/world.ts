@@ -16,9 +16,9 @@ export type WorldObjectSettings = {
   /**
    *
    */
-  states?: unknown;
-  flags?: unknown;
-  counters?: unknown;
+  states?: string;
+  flags?: string;
+  counters?: string;
 };
 
 export type GameWorld<Version extends number = number> = {

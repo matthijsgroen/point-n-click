@@ -1,6 +1,27 @@
-import { GameWorld } from "./world";
+import { GameWorld, WorldObjectSettings } from "./world";
 
 export type StateObject = "item" | "location" | "character";
+
+export type ItemState<State extends WorldObjectSettings> =
+  (State["counters"] extends string
+    ? {
+        counters?: {
+          [key in State["counters"]]?: number;
+        };
+      }
+    : {}) &
+    (State["flags"] extends string
+      ? {
+          flags?: {
+            [key in State["flags"]]?: boolean;
+          };
+        }
+      : {}) &
+    (State["states"] extends string
+      ? {
+          state?: State["states"] | "unknown";
+        }
+      : {});
 
 export type GameState<Game extends GameWorld> = {
   currentLocation?: keyof Game["locations"];
@@ -13,11 +34,7 @@ export type GameState<Game extends GameWorld> = {
     skipMode: "tillChoice" | "screen" | "off";
   };
   items: {
-    [K in keyof Game["items"]]?: {
-      state: Game["items"][K]["states"] | "unknown";
-      flags: Record<string, boolean>;
-      counters: Record<string, number>;
-    };
+    [K in keyof Game["items"]]?: ItemState<Game["items"][K]>;
   };
   characters: {
     [K in keyof Game["characters"]]: {
