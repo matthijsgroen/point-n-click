@@ -3,6 +3,8 @@ import {
   NumberComparator,
   StateCondition,
   GameStateManager,
+  WorldObjectSettings,
+  GameObjectState,
 } from "@point-n-click/types";
 
 const numberCompare = (
@@ -22,6 +24,20 @@ const numberCompare = (
     case "moreThanOrEqual":
       return a >= b;
   }
+};
+
+const getCounters = (item: unknown): { [key: string]: number } => {
+  if (typeof item === "object" && item !== null && "counters" in item) {
+    return item.counters as { [key: string]: number };
+  }
+  return {};
+};
+
+const getFlags = (item: unknown): { [key: string]: boolean } => {
+  if (typeof item === "object" && item !== null && "flags" in item) {
+    return item.flags as { [key: string]: boolean };
+  }
+  return {};
 };
 
 export const testCondition = <Game extends GameWorld>(
@@ -46,18 +62,17 @@ export const testCondition = <Game extends GameWorld>(
     return expectedState === actualState;
   }
   if (condition.op === "IsFlagSet") {
-    return (
-      stateManager.getState()[`${condition.objectType}s`][condition.item]
-        ?.flags[String(condition.flag)] === true
-    );
+    const item =
+      stateManager.getState()[`${condition.objectType}s`][condition.item];
+    const flags = getFlags(item);
+    return flags[String(condition.flag)] === true;
   }
   if (condition.op === "CounterCompare") {
     const comp = condition.comparator;
-    const stateObject =
+    const item =
       stateManager.getState()[`${condition.objectType}s`][condition.item];
-    const stateValue = stateObject
-      ? stateObject.counters[String(condition.name)] ?? 0
-      : 0;
+    const counters = getCounters(item);
+    const stateValue = counters[String(condition.name)] ?? 0;
     return numberCompare(stateValue, comp, condition.value);
   }
   if (condition.op === "and") {

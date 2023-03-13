@@ -23,7 +23,11 @@ type TestGameWorld = GameDefinition<
         states: "in bed" | "dead";
       };
     };
-    items: {};
+    items: {
+      axe: {
+        states: "known" | "possession";
+      };
+    };
     overlays: {};
   }
 >;
@@ -35,7 +39,13 @@ describe("createDefaultState", () => {
         settings: {
           gameTitle: "Red riding hood",
           locales: { default: "de-DE", supported: { "de-DE": "German" } },
-          initialState: {},
+          initialState: {
+            items: {
+              axe: {
+                state: "unknown",
+              },
+            },
+          },
           colors: {
             lightPalette: {},
             darkPalette: {},

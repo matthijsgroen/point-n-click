@@ -64,6 +64,7 @@ type GameWorldDSL<Version extends number, Game extends GameWorld<Version>> = {
   globalInteraction: GlobalInteraction<Game>;
 
   text: (...sentences: string[]) => void;
+  describeLocation: () => void;
   openOverlay: (id: Game["overlays"]) => void;
 
   onState: EvaluateCondition<Game>;
@@ -239,6 +240,11 @@ export const world =
         addToActiveScript({
           statementType: "Text",
           sentences,
+        });
+      },
+      describeLocation: () => {
+        addToActiveScript({
+          statementType: "DescribeLocation",
         });
       },
       openOverlay: (id) => {

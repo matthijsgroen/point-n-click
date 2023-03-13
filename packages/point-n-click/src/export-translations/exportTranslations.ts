@@ -76,6 +76,18 @@ const processScript = <Game extends GameWorld>(
       processScript(statement.body, enterScriptScope, setTranslationKey);
       processScript(statement.elseBody, enterScriptScope, setTranslationKey);
     }
+    if (statement.statementType === "SetGameObjectText") {
+      setTranslationKey(
+        [
+          statement.objectType,
+          String(statement.stateItem),
+          "texts",
+          statement.name!,
+          statement.text,
+        ],
+        statement.text
+      );
+    }
   }
   for (const source in contentPluginStatementsPerSource) {
     const plugin = getContentPlugin(source);

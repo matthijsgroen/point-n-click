@@ -39,13 +39,21 @@ export const getDisplayInfo = <Game extends GameWorld>(
       }));
 
       displayInfo.push(
-        ...runScript<Game>(interactionData.script, stateManager)
+        ...runScript<Game>(
+          interactionData.script,
+          stateManager,
+          gameModelManager
+        )
       );
       const newOverlayData = getCurrentOverlay(gameModelManager, stateManager);
       if (currentOverlayData !== newOverlayData) {
         if (currentOverlayData) {
           displayInfo.push(
-            ...runScript(currentOverlayData.onLeave.script, stateManager)
+            ...runScript(
+              currentOverlayData.onLeave.script,
+              stateManager,
+              gameModelManager
+            )
           );
           stateManager.updateState((state) => ({
             ...state,
@@ -58,7 +66,11 @@ export const getDisplayInfo = <Game extends GameWorld>(
             currentOverlay: newOverlayData.id,
           }));
           displayInfo.push(
-            ...runScript(newOverlayData.onEnter.script, stateManager)
+            ...runScript(
+              newOverlayData.onEnter.script,
+              stateManager,
+              gameModelManager
+            )
           );
         } else {
           displayInfo.push(...describeLocation(gameModelManager, stateManager));

@@ -12,6 +12,10 @@ export const emptyGameModel = <Game extends GameWorld>(): GameModel<Game> => ({
     },
     initialState: {},
     characterConfigs: {} as Settings<Game>["characterConfigs"],
+    colors: {
+      lightPalette: {},
+      darkPalette: {},
+    },
   },
   locations: [],
   overlays: [],

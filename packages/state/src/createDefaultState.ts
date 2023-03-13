@@ -11,7 +11,7 @@ const mergeState = <T extends Record<string, unknown>>(
   const result = state;
 
   for (const [key, value] of Object.entries(updates)) {
-    const stateValue = result[key];
+    const stateValue = result[key] ?? {};
     (result as Record<string, unknown>)[key] = isObject(value)
       ? mergeState(stateValue as Record<string, unknown>, value)
       : value;
@@ -40,6 +40,7 @@ export const createDefaultState = <Game extends GameWorld>(
           state: "unknown",
           flags: {},
           counters: {},
+          texts: {},
           name: null,
           defaultName: settings.defaultName,
         },
@@ -54,6 +55,7 @@ export const createDefaultState = <Game extends GameWorld>(
           state: "unknown",
           flags: {},
           counters: {},
+          texts: {},
         },
       };
     }, {}) as GameState<Game>["locations"],

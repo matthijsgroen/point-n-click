@@ -76,8 +76,37 @@ export const applyState = <Game extends GameWorld>(
           value = characterName(character, state);
         }
         if (property === "counters") {
-          const valueKey = resolveStatePath[3];
-          value = String(state.characters[character].counters[valueKey] ?? 0);
+          const characterCounters = state.characters[character].counters;
+          type CounterKey = keyof typeof characterCounters;
+          const valueKey = resolveStatePath[3] as CounterKey;
+          value = String(characterCounters[valueKey] ?? 0);
+        }
+      }
+      if (resolveStatePath[0] === "item") {
+        const item = resolveStatePath[1] as keyof Game["items"];
+        const property = resolveStatePath[2];
+
+        if (!state.items[item]) {
+          throw error;
+        }
+        if (property === "counters") {
+          const itemCounter = state.items[item]?.counters;
+          type CounterKey = keyof typeof itemCounter;
+          const valueKey = resolveStatePath[3] as CounterKey;
+          value = String(itemCounter[valueKey] ?? 0);
+        }
+        if (property === "texts") {
+          const itemText = state.items[item]?.texts;
+          type TextKey = keyof typeof itemText;
+          const valueKey = resolveStatePath[3] as TextKey;
+          if (itemText) {
+            const text = itemText[valueKey];
+            value =
+              getTranslationText(
+                ["item", String(item), "texts", String(valueKey)],
+                text
+              ) || text;
+          }
         }
       }
       if (value === `STATE NOT FOUND '${element.value}'`) {

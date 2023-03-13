@@ -2,24 +2,29 @@ import { GameWorld, WorldObjectSettings } from "./world";
 
 export type StateObject = "item" | "location" | "character";
 
-export type ItemState<State extends WorldObjectSettings> =
+export type GameObjectState<State extends WorldObjectSettings> =
   (State["counters"] extends string
     ? {
-        counters?: {
+        counters: {
           [key in State["counters"]]?: number;
         };
       }
     : {}) &
     (State["flags"] extends string
       ? {
-          flags?: {
+          flags: {
             [key in State["flags"]]?: boolean;
           };
         }
       : {}) &
     (State["states"] extends string
       ? {
-          state?: State["states"] | "unknown";
+          state: State["states"] | "unknown";
+        }
+      : {}) &
+    (State["texts"] extends string
+      ? {
+          texts: { [key in State["texts"]]: string };
         }
       : {});
 
@@ -34,23 +39,16 @@ export type GameState<Game extends GameWorld> = {
     skipMode: "tillChoice" | "screen" | "off";
   };
   items: {
-    [K in keyof Game["items"]]?: ItemState<Game["items"][K]>;
+    [K in keyof Game["items"]]?: GameObjectState<Game["items"][K]>;
   };
   characters: {
-    [K in keyof Game["characters"]]: {
-      state: Game["characters"][K]["states"] | "unknown";
-      flags: Record<string, boolean>;
-      counters: Record<string, number>;
+    [K in keyof Game["characters"]]: GameObjectState<Game["characters"][K]> & {
       name: string | null;
       defaultName: string;
     };
   };
   locations: {
-    [K in keyof Game["locations"]]: {
-      state: Game["locations"][K]["states"] | "unknown";
-      flags: Record<string, boolean>;
-      counters: Record<string, number>;
-    };
+    [K in keyof Game["locations"]]: GameObjectState<Game["locations"][K]>;
   };
 };
 

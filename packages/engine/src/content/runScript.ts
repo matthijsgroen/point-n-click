@@ -1,6 +1,7 @@
 import produce from "immer";
 import {
   ContentPluginContent,
+  GameObjectState,
   GameState,
   GameStateManager,
   GameWorld,
@@ -20,6 +21,8 @@ import { characterName, StateError } from "../text/applyState";
 import { getTranslationText } from "../text/getTranslationText";
 import { getContentPlugin, isContentPluginStatement } from "../contentPlugin";
 import { handleTextContent } from "../text/handleText";
+import { getCurrentLocation } from "./getLocation";
+import { GameModelManager } from "../model/gameModel";
 
 type NarratorText = {
   type: "narratorText";
@@ -46,7 +49,8 @@ type StatementHandler<
   K extends ScriptStatement<Game>
 > = (
   statement: K,
-  stateManager: GameStateManager<Game>
+  stateManager: GameStateManager<Game>,
+  modelManager: GameModelManager<Game>
 ) => DisplayInfo<Game>[] | null;
 
 type StatementMap<Game extends GameWorld> = {
@@ -76,6 +80,46 @@ const statementHandler = <
 
       return [result];
     },
+    SetGameObjectText: (
+      { objectType, stateItem, name, text },
+      stateManager
+    ) => {
+      // const translatedSentence =
+      //   getTranslationText(textScope, sentence) || sentence;
+
+      stateManager.updateState(
+        produce((draft) => {
+          const item = (draft as GameState<Game>)[`${objectType}s`][stateItem];
+          if (item) {
+            if (item.texts === undefined) {
+              item.texts = {};
+            }
+            item.texts[name] = text;
+          } else if (objectType === "item") {
+            type ItemState = GameObjectState<Game["items"][typeof stateItem]>;
+            const itemState: ItemState = {
+              state: "unknown",
+              flags: {},
+              counters: {},
+              texts: { [name]: text },
+            } as unknown as ItemState;
+            (draft as GameState<Game>).items[stateItem as keyof Game["items"]] =
+              itemState;
+          }
+        })
+      );
+
+      return null;
+    },
+    DescribeLocation: (_statement, stateManager, gameModelManager) => {
+      const locationData = getCurrentLocation(gameModelManager, stateManager);
+      if (locationData === undefined) return null;
+      return runScript(
+        locationData.describe.script,
+        stateManager,
+        gameModelManager
+      );
+    },
     Travel: ({ destination }, stateManager) => {
       stateManager.updateState((state) => ({
         ...state,
@@ -93,11 +137,15 @@ const statementHandler = <
           if (item) {
             item.state = newState;
           } else if (objectType === "item") {
-            (draft as GameState<Game>).items[stateItem] = {
+            type ItemState = GameObjectState<Game["items"][typeof stateItem]>;
+            const itemState: ItemState = {
               state: newState,
               flags: {},
               counters: {},
-            };
+              texts: {},
+            } as unknown as ItemState;
+            (draft as GameState<Game>).items[stateItem as keyof Game["items"]] =
+              itemState;
           }
         })
       );
@@ -110,8 +158,8 @@ const statementHandler = <
       stateManager.updateState(
         produce((draft) => {
           const item = (draft as GameState<Game>)[`${objectType}s`][stateItem];
-          if (item) {
-            item.flags[String(flag)] = value;
+          if (item && item.flags) {
+            item.flags[String(flag) as keyof typeof item.flags] = value;
           } else if (objectType === "item") {
             (draft as GameState<Game>).items[stateItem] = {
               state: "unknown",
@@ -143,7 +191,7 @@ const statementHandler = <
             }
           })();
 
-          if (item) {
+          if (item && item.counters !== undefined) {
             item.counters[String(name)] = nextValue;
           } else {
             if (objectType === "item") {
@@ -227,11 +275,15 @@ const statementHandler = <
       }
       return [result];
     },
-    Condition: ({ condition, body, elseBody }, stateManager) => {
+    Condition: (
+      { condition, body, elseBody },
+      stateManager,
+      gameModelManager
+    ) => {
       if (testCondition(condition, stateManager)) {
-        return runScript(body, stateManager);
+        return runScript(body, stateManager, gameModelManager);
       } else {
-        return runScript(elseBody, stateManager);
+        return runScript(elseBody, stateManager, gameModelManager);
       }
     },
     OpenOverlay: (statement, stateManager) => {
@@ -255,13 +307,15 @@ const statementHandler = <
 
   return statementMap[statementType] as (
     statement: K,
-    stateManager: GameStateManager<Game>
+    stateManager: GameStateManager<Game>,
+    gameModelManager: GameModelManager<Game>
   ) => DisplayInfo<Game>[];
 };
 
 export const runScript = <Game extends GameWorld>(
   script: ScriptAST<Game>,
-  stateManager: GameStateManager<Game>
+  stateManager: GameStateManager<Game>,
+  gameModelManager: GameModelManager<Game>
 ): DisplayInfo<Game>[] => {
   const result: DisplayInfo<Game>[] = [];
   for (const statement of script) {
@@ -278,7 +332,11 @@ export const runScript = <Game extends GameWorld>(
       const handler = statementHandler<Game, ScriptStatement<Game>>(
         statement.statementType
       );
-      const statementResult = handler(statement, stateManager);
+      const statementResult = handler(
+        statement,
+        stateManager,
+        gameModelManager
+      );
       if (statementResult !== null) {
         result.push(...statementResult);
       }

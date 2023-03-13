@@ -74,17 +74,21 @@ export type ScriptAST<Game extends GameWorld> = (
 
 export type ScriptStatement<Game extends GameWorld> =
   | TextStatement
+  | DescribeLocationStatement
   | TravelStatement<Game>
   | ConditionStatement<Game>
   | UpdateState<Game>
   | UpdateCounter<Game>
   | UpdateFlag<Game>
   | UpdateCharacterName<Game>
+  | SetStateText<Game>
   | CharacterSay<Game>
   | OpenGameOverlay<Game>
   | CloseGameOverlay<Game>;
 
 export type TextStatement = { statementType: "Text"; sentences: string[] };
+
+export type DescribeLocationStatement = { statementType: "DescribeLocation" };
 
 export type OpenGameOverlay<Game extends GameWorld> = {
   statementType: "OpenOverlay";
@@ -140,7 +144,16 @@ export type UpdateCounter<
   transactionType: "set" | "increase" | "decrease";
   value: number;
 };
-
+export type SetStateText<
+  Game extends GameWorld,
+  ItemType extends StateObject = StateObject
+> = {
+  statementType: "SetGameObjectText";
+  objectType: ItemType;
+  stateItem: keyof Game[`${ItemType}s`];
+  name: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["texts"];
+  text: string;
+};
 export type UpdateCharacterName<Game extends GameWorld> = {
   statementType: "UpdateCharacterName";
   translatable: boolean;

@@ -15,10 +15,16 @@ export type ObjectStateDSL<
   setState: (newState: Game[`${T}s`][I]["states"] | "unknown") => void;
   setFlag: (flag: Game[`${T}s`][I]["flags"]) => void;
   clearFlag: (flag: Game[`${T}s`][I]["flags"]) => void;
-  setCounter: (flag: Game[`${T}s`][I]["counters"], value: number) => void;
-  increaseCounter: (flag: Game[`${T}s`][I]["counters"], value: number) => void;
-  decreaseCounter: (flag: Game[`${T}s`][I]["counters"], value: number) => void;
-
+  setCounter: (counter: Game[`${T}s`][I]["counters"], value: number) => void;
+  increaseCounter: (
+    counter: Game[`${T}s`][I]["counters"],
+    value: number
+  ) => void;
+  decreaseCounter: (
+    counter: Game[`${T}s`][I]["counters"],
+    value: number
+  ) => void;
+  setText: (key: Game[`${T}s`][I]["texts"], value: string) => void;
   hasState: (
     state: Game[`${T}s`][I]["states"] | "unknown"
   ) => GameObjectStateCondition<Game, T>;
@@ -97,6 +103,15 @@ export const objectStateManagement = <
       transactionType: "decrease",
       name,
       value,
+    });
+  },
+  setText: (name, text) => {
+    addToActiveScript({
+      statementType: "SetGameObjectText",
+      objectType,
+      stateItem: item,
+      name,
+      text,
     });
   },
   hasState: (state) => ({

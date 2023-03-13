@@ -19,6 +19,7 @@ export type WorldObjectSettings = {
   states?: string;
   flags?: string;
   counters?: string;
+  texts?: string;
 };
 
 export type GameWorld<Version extends number = number> = {
