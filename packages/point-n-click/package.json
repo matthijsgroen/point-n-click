@@ -25,7 +25,7 @@
     "@types/node": "16",
     "@types/react": "^18.0.21",
     "@types/react-dom": "^18.0.6",
-    "parcel": "^2.7.0",
+    "parcel": "2.7.0",
     "process": "^0.11.10",
     "ts-node": "^10.9.1",
     "tty-browserify": "^0.0.1",
@@ -34,10 +34,6 @@
     "util": "^0.12.4"
   },
   "dependencies": {
-    "@parcel/config-default": "^2.7.0",
-    "@parcel/core": "^2.7.0",
-    "@parcel/fs": "^2.7.0",
-    "@parcel/transformer-css": "^2.7.0",
     "@point-n-click/engine": "workspace:^",
     "@point-n-click/parcel-resolver": "workspace:^",
     "@point-n-click/state": "workspace:^",

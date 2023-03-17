@@ -18,9 +18,8 @@
   ],
   "devDependencies": {
     "@parcel/packager-ts": "2.7.0",
-    "@parcel/transformer-typescript-types": "2.7.0",
-    "@point-n-click/types": "^1.0.0-alpha.1",
-    "parcel": "^2.7.0",
+    "@point-n-click/types": "workspace:^",
+    "parcel": "2.7.0",
     "typescript": ">=3.0.0"
   },
   "resolutions": {
