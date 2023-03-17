@@ -84,9 +84,6 @@ const statementHandler = <
       { objectType, stateItem, name, text },
       stateManager
     ) => {
-      // const translatedSentence =
-      //   getTranslationText(textScope, sentence) || sentence;
-
       stateManager.updateState(
         produce((draft) => {
           const item = (draft as GameState<Game>)[`${objectType}s`][stateItem];

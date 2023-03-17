@@ -21,9 +21,9 @@
     "react-dom": "^18.2.0"
   },
   "dependencies": {
-    "@point-n-click/engine": "1.0.0-alpha.0",
-    "@point-n-click/state": "1.0.0-alpha.0",
-    "@point-n-click/themes": "1.0.0-alpha.0",
+    "@point-n-click/engine": "workspace:^",
+    "@point-n-click/state": "workspace:^",
+    "@point-n-click/themes": "workspace:^",
     "@tanstack/react-query": "^4.13.0"
   },
   "devDependencies": {

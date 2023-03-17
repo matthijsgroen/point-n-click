@@ -2,31 +2,24 @@ import { GameWorld, WorldObjectSettings } from "./world";
 
 export type StateObject = "item" | "location" | "character";
 
-export type GameObjectState<State extends WorldObjectSettings> =
-  (State["counters"] extends string
+export type GameObjectState<State extends WorldObjectSettings> = {
+  counters?: State["counters"] extends string
     ? {
-        counters: {
-          [key in State["counters"]]?: number;
-        };
+        [key in State["counters"]]?: number;
       }
-    : {}) &
-    (State["flags"] extends string
-      ? {
-          flags: {
-            [key in State["flags"]]?: boolean;
-          };
-        }
-      : {}) &
-    (State["states"] extends string
-      ? {
-          state: State["states"] | "unknown";
-        }
-      : {}) &
-    (State["texts"] extends string
-      ? {
-          texts: { [key in State["texts"]]: string };
-        }
-      : {});
+    : {};
+  flags?: State["flags"] extends string
+    ? {
+        [key in State["flags"]]?: boolean;
+      }
+    : {};
+  state?: State["states"] extends string
+    ? State["states"] | "unknown"
+    : "unknown";
+  texts?: State["texts"] extends string
+    ? { [key in State["texts"]]: string }
+    : {};
+};
 
 export type GameState<Game extends GameWorld> = {
   currentLocation?: keyof Game["locations"];

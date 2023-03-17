@@ -18,9 +18,7 @@ export type ConditionSet<Game extends GameWorld> = {
   or: (...conditions: StateCondition<Game>[]) => OrCondition<Game>;
   always: () => TrueCondition;
   never: () => FalseCondition;
-  isOverlayOpen: (
-    overlay?: keyof Game["overlays"]
-  ) => OverlayOpenCondition<Game>;
+  isOverlayOpen: (overlay?: Game["overlays"]) => OverlayOpenCondition<Game>;
 };
 
 export const dslStateConditions = <
@@ -40,7 +38,7 @@ export const dslStateConditions = <
   });
 
   const isOverlayOpen = (
-    overlay?: keyof Game["overlays"]
+    overlay?: Game["overlays"]
   ): OverlayOpenCondition<Game> => ({
     op: "OverlayOpen",
     overlay,

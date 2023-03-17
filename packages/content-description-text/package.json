@@ -24,7 +24,7 @@
     "typescript": "~4.7.3"
   },
   "dependencies": {
-    "@point-n-click/types": "^1.0.0-alpha.1",
-    "@point-n-click/engine": "^1.0.0-alpha.1"
+    "@point-n-click/engine": "workspace:^",
+    "@point-n-click/types": "workspace:^"
   }
 }

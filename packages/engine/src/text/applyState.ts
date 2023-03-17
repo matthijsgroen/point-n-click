@@ -7,6 +7,14 @@ export type StateError = Error & {
   stateKey: string;
 };
 
+const existingRootStates = ["items", "characters"];
+const existingCharacterProperties = [
+  "name",
+  "defaultName",
+  "counters",
+  "texts",
+];
+
 export const characterName = <Game extends GameWorld>(
   character: keyof Game["characters"],
   state: GameState<Game>
@@ -56,19 +64,44 @@ export const applyState = <Game extends GameWorld>(
           : statePath;
 
       const state = stateManager.getState();
-      const error = new Error(`STATE NOT FOUND '${element.value}'`);
-      (error as StateError).name = "StateError";
-      (error as StateError).stateKey = element.value;
+      const throwStateError = (message: string) => {
+        const error = new Error(message);
+        (error as StateError).name = "StateError";
+        (error as StateError).stateKey = element.value;
+        throw error;
+      };
 
       let value = `STATE NOT FOUND '${element.value}'`;
+      const rootLevel = resolveStatePath[0];
+      if (!existingRootStates.includes(rootLevel)) {
+        throwStateError(
+          `${value} ${rootLevel} does not exist. Do you mean one of ${existingRootStates.join(
+            ","
+          )}`
+        );
+      }
 
-      if (resolveStatePath[0] === "character") {
+      if (rootLevel === "characters") {
         const character = resolveStatePath[1] as keyof Game["characters"];
         const property = resolveStatePath[2];
 
         if (!state.characters[character]) {
-          throw error;
+          throwStateError(
+            `${value} ${String(
+              character
+            )} does not exist. Do you mean one of ${Object.keys(
+              state.characters
+            ).join(",")}`
+          );
         }
+        if (!existingCharacterProperties.includes(property)) {
+          throwStateError(
+            `${value} ${property} does not exist. Do you mean one of ${existingCharacterProperties.join(
+              ","
+            )}`
+          );
+        }
+
         if (property === "defaultName") {
           value = characterDefaultName(character, state);
         }
@@ -79,21 +112,38 @@ export const applyState = <Game extends GameWorld>(
           const characterCounters = state.characters[character].counters;
           type CounterKey = keyof typeof characterCounters;
           const valueKey = resolveStatePath[3] as CounterKey;
-          value = String(characterCounters[valueKey] ?? 0);
+          value = String(characterCounters?.[valueKey] ?? 0);
+        }
+        if (property === "texts") {
+          const itemText = state.characters[character]?.texts;
+          type TextKey = keyof typeof itemText;
+          const valueKey = resolveStatePath[3] as TextKey;
+          if (itemText) {
+            const text = String(itemText[valueKey] ?? false);
+            if (text) {
+              value =
+                getTranslationText(
+                  ["character", String(character), "texts", String(valueKey)],
+                  text
+                ) || text;
+            }
+          }
         }
       }
-      if (resolveStatePath[0] === "item") {
+      if (rootLevel === "items") {
         const item = resolveStatePath[1] as keyof Game["items"];
         const property = resolveStatePath[2];
 
         if (!state.items[item]) {
-          throw error;
+          throwStateError(value);
         }
         if (property === "counters") {
           const itemCounter = state.items[item]?.counters;
           type CounterKey = keyof typeof itemCounter;
-          const valueKey = resolveStatePath[3] as CounterKey;
-          value = String(itemCounter[valueKey] ?? 0);
+          if (itemCounter) {
+            const valueKey = resolveStatePath[3] as CounterKey;
+            value = String(itemCounter[valueKey] ?? 0);
+          }
         }
         if (property === "texts") {
           const itemText = state.items[item]?.texts;
@@ -110,7 +160,7 @@ export const applyState = <Game extends GameWorld>(
         }
       }
       if (value === `STATE NOT FOUND '${element.value}'`) {
-        throw error;
+        throwStateError(value);
       }
 
       result.push({

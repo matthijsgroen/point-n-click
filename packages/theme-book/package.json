@@ -18,11 +18,11 @@
   },
   "dependencies": {
     "@point-n-click/content-description-text": "^1.0.0-alpha.0",
-    "@point-n-click/web-engine": "^1.0.0-alpha.0",
-    "@point-n-click/engine": "^1.0.0-alpha.0",
-    "@point-n-click/state": "^1.0.0-alpha.0",
-    "@point-n-click/themes": "^1.0.0-alpha.0",
-    "@point-n-click/types": "^1.0.0-alpha.1"
+    "@point-n-click/engine": "workspace:^",
+    "@point-n-click/state": "workspace:^",
+    "@point-n-click/themes": "workspace:^",
+    "@point-n-click/types": "workspace:^",
+    "@point-n-click/web-engine": "workspace:^"
   },
   "peerDependencies": {
     "react": "^18.2.0",
