@@ -10,7 +10,6 @@
   "scripts": {
     "build": "parcel build",
     "prepublish": "yarn build",
-    "preprepublish": "yarn upgrade --pattern='@point-n-click/*' --latest",
     "watch": "parcel watch"
   },
   "bin": "./bin/point-n-click.js",
@@ -36,6 +35,7 @@
   "dependencies": {
     "@point-n-click/engine": "workspace:^",
     "@point-n-click/parcel-resolver": "workspace:^",
+    "@point-n-click/puzzle-dependency-diagram": "workspace:^",
     "@point-n-click/state": "workspace:^",
     "@point-n-click/themes": "workspace:^",
     "@point-n-click/types": "workspace:^",

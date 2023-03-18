@@ -1,8 +1,6 @@
 import { PuzzleDependencyDiagram, ValidationError } from "./types";
 
-export const validateDiagram = <
-  Diagram extends PuzzleDependencyDiagram<string>
->(
+export const validateDiagram = <Diagram extends PuzzleDependencyDiagram>(
   diagram: Diagram
 ): ValidationError[] => {
   const errors: ValidationError[] = [];

@@ -18,6 +18,7 @@ import { ConditionSet, dslStateConditions } from "./dsl-conditions";
 import { itemDSLFunctions, ItemInterface } from "./item";
 import { locationDSLFunctions, LocationInterface } from "./location";
 import { ThemeSettings } from "@point-n-click/themes";
+import { PuzzleDependencyDiagram } from "../../../puzzle-dependency-diagram/dist";
 
 type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) extends (
   x: infer R
@@ -60,6 +61,9 @@ type GameWorldDSL<Version extends number, Game extends GameWorld<Version>> = {
   defineLocation: <Location extends keyof Game["locations"]>(
     location: Location,
     script: LocationScript<Game, Location>
+  ) => void;
+  definePuzzleDependencies: <Diagram extends PuzzleDependencyDiagram>(
+    diagram: Diagram
   ) => void;
   globalInteraction: GlobalInteraction<Game>;
 
@@ -107,6 +111,8 @@ export const world =
       })),
     };
 
+    let pdd: PuzzleDependencyDiagram = { events: {} };
+
     let activeScriptScope: ScriptAST<Game> = [];
 
     const wrapScript = (execution: () => void): ScriptAST<Game> => {
@@ -139,7 +145,7 @@ export const world =
       activeScriptScope.push(statement);
     };
 
-    const basisDSL: GameWorldDSL<Game["version"], Game> = {
+    const baseDSL: GameWorldDSL<Game["version"], Game> = {
       defineOverlay: (
         id: Game["overlays"],
         handleOverlay: OverlayScript<Game>
@@ -223,6 +229,9 @@ export const world =
           locationAST as unknown as GameLocation<Game>
         );
       },
+      definePuzzleDependencies: (diagram) => {
+        pdd = diagram;
+      },
       globalInteraction: (text, shortcutKey, condition, script) => {
         worldModel.globalInteractions.push({
           label: text,
@@ -279,7 +288,7 @@ export const world =
       }
     }
 
-    return { ...basisDSL, ...pluginDSLFunctions } as unknown as GameWorldDSL<
+    return { ...baseDSL, ...pluginDSLFunctions } as unknown as GameWorldDSL<
       Game["version"],
       Game
     > &

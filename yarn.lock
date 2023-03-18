@@ -3492,8 +3492,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@point-n-click/engine@workspace:packages/engine"
   dependencies:
-    "@point-n-click/state": ^1.0.0-alpha.0
-    "@point-n-click/types": ^1.0.0-alpha.1
+    "@point-n-click/state": "workspace:^"
+    "@point-n-click/types": "workspace:^"
     immer: ^9.0.15
     parcel: 2.7.0
     typescript: ">=3.0.0"
@@ -3508,17 +3508,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@point-n-click/puzzle-dependency-chart@workspace:packages/puzzle-dependency-chart":
+"@point-n-click/puzzle-dependency-diagram@workspace:^, @point-n-click/puzzle-dependency-diagram@workspace:packages/puzzle-dependency-diagram":
   version: 0.0.0-use.local
-  resolution: "@point-n-click/puzzle-dependency-chart@workspace:packages/puzzle-dependency-chart"
+  resolution: "@point-n-click/puzzle-dependency-diagram@workspace:packages/puzzle-dependency-diagram"
   dependencies:
     "@parcel/packager-ts": 2.7.0
+    graphology: ^0.25.1
+    graphology-types: ^0.24.7
     parcel: 2.7.0
     typescript: ">=4.7.0"
   languageName: unknown
   linkType: soft
 
-"@point-n-click/state@^1.0.0-alpha.0, @point-n-click/state@workspace:^, @point-n-click/state@workspace:packages/state":
+"@point-n-click/state@workspace:^, @point-n-click/state@workspace:packages/state":
   version: 0.0.0-use.local
   resolution: "@point-n-click/state@workspace:packages/state"
   dependencies:
@@ -3581,7 +3583,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@point-n-click/types@^1.0.0-alpha.1, @point-n-click/types@workspace:^, @point-n-click/types@workspace:packages/types":
+"@point-n-click/types@workspace:^, @point-n-click/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@point-n-click/types@workspace:packages/types"
   dependencies:
@@ -7742,7 +7744,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"events@npm:^3.2.0":
+"events@npm:^3.2.0, events@npm:^3.3.0":
   version: 3.3.0
   resolution: "events@npm:3.3.0"
   checksum: f6f487ad2198aa41d878fa31452f1a3c00958f46e9019286ff4787c84aac329332ab45c9cdc8c445928fc6d7ded294b9e005a7fce9426488518017831b272780
@@ -8462,6 +8464,25 @@ __metadata:
   version: 1.0.4
   resolution: "grapheme-splitter@npm:1.0.4"
   checksum: 0c22ec54dee1b05cd480f78cf14f732cb5b108edc073572c4ec205df4cd63f30f8db8025afc5debc8835a8ddeacf648a1c7992fe3dcd6ad38f9a476d84906620
+  languageName: node
+  linkType: hard
+
+"graphology-types@npm:^0.24.7":
+  version: 0.24.7
+  resolution: "graphology-types@npm:0.24.7"
+  checksum: 352de48ee759dbe9b02765209c287f43e967b5513f216240dfd2af41f502d74e033f8b28f9a57c838b15d24aa3a0e598aaef90b718cf1510ff9de2b4e4ce240e
+  languageName: node
+  linkType: hard
+
+"graphology@npm:^0.25.1":
+  version: 0.25.1
+  resolution: "graphology@npm:0.25.1"
+  dependencies:
+    events: ^3.3.0
+    obliterator: ^2.0.2
+  peerDependencies:
+    graphology-types: ">=0.24.0"
+  checksum: 6f5b9391832d13aa39b68c87d815f0bdd848db6ca119b9576941c7654cd4aaaec17d1e388b0c88ca268500bcfc88eb24022f90a0f4cd5862b24b0c6d97f59ed8
   languageName: node
   linkType: hard
 
@@ -11749,6 +11770,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"obliterator@npm:^2.0.2":
+  version: 2.0.4
+  resolution: "obliterator@npm:2.0.4"
+  checksum: f28ad35b6d812089315f375dc3e6e5f9bebf958ebe4b10ccd471c7115cbcf595e74bdac4783ae758e5b1f47e3096427fdb37cfa7bed566b132df92ff317b9a7c
+  languageName: node
+  linkType: hard
+
 "obuf@npm:^1.0.0, obuf@npm:^1.1.2":
   version: 1.1.2
   resolution: "obuf@npm:1.1.2"
@@ -12099,7 +12127,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "point-n-click-repo@workspace:."
   dependencies:
-    "@parcel/transformer-typescript-types": 2.7.0
     jest: ^29.5.0
     nx: 15.0.1
     ts-jest: ^29.0.5
@@ -12115,6 +12142,7 @@ __metadata:
     "@parcel/transformer-typescript-types": 2.7.0
     "@point-n-click/engine": "workspace:^"
     "@point-n-click/parcel-resolver": "workspace:^"
+    "@point-n-click/puzzle-dependency-diagram": "workspace:^"
     "@point-n-click/state": "workspace:^"
     "@point-n-click/themes": "workspace:^"
     "@point-n-click/types": "workspace:^"

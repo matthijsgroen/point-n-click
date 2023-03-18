@@ -8,13 +8,17 @@ export type PuzzleEvent<
   type?: "puzzle" | "task";
 };
 
+export type EventStyle = {
+  color: `#${string}`;
+};
+
 export type PuzzleDependencyDiagram<
   PuzzleEventStates extends string = never,
   EventKey extends string = string
 > = {
   events: Record<EventKey, PuzzleEvent<PuzzleEventStates, EventKey>>;
   styles?: {
-    [Key in PuzzleEventStates]?: { color: `#${string}` };
+    [Key in PuzzleEventStates]?: EventStyle;
   };
 };
 

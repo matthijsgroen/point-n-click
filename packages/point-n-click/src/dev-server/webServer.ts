@@ -11,8 +11,11 @@ import Parcel, { createWorkerFarm } from "@parcel/core";
 import { PackagedBundle } from "@parcel/types";
 import { MemoryFS } from "@parcel/fs";
 import mime from "mime/lite";
-import { htmlFile } from "./templates/htmlFile";
-import { indexFile } from "./templates/indexFile";
+import { htmlFile, indexFile } from "./templates/game";
+import {
+  htmlFile as diagramHtmlFile,
+  indexFile as diagramIndexFile,
+} from "./templates/diagram";
 import { GameModel } from "@point-n-click/state";
 import { watch } from "fs";
 
@@ -64,7 +67,8 @@ export const startWebserver = async (
     }
   );
 
-  const entryFile = join(devServerPath, "index.html");
+  const gameEntryFile = join(devServerPath, "index.html");
+  const diagramEntryFile = join(devServerPath, "diagram.html");
 
   const buildWebFiles = async (model: GameModel<GameWorld>) => {
     const indexPromise = writeFile(
@@ -83,7 +87,7 @@ export const startWebserver = async (
     );
 
     const entryPromise = writeFile(
-      entryFile,
+      gameEntryFile,
       htmlFile({
         title: getTranslationText([], "title") ?? model.settings.gameTitle,
         lang: lang ?? model.settings.locales.default,
@@ -94,8 +98,27 @@ export const startWebserver = async (
     await Promise.all([configPromise, indexPromise, entryPromise]);
   };
 
+  const buildDiagramFiles = async () => {
+    const indexPromise = writeFile(
+      join(devServerPath, "diagram.tsx"),
+      diagramIndexFile(),
+      { encoding: "utf8" }
+    );
+
+    const entryPromise = writeFile(
+      diagramEntryFile,
+      diagramHtmlFile({
+        title: getTranslationText([], "title") ?? model.settings.gameTitle,
+        lang: lang ?? model.settings.locales.default,
+      }),
+      { encoding: "utf8" }
+    );
+
+    await Promise.all([configPromise, indexPromise, entryPromise]);
+  };
+
   const webappBundler = new Parcel({
-    entries: entryFile,
+    entries: [gameEntryFile, diagramEntryFile],
     defaultConfig: configFile,
     workerFarm,
     outputFS,
@@ -129,6 +152,7 @@ export const startWebserver = async (
   };
 
   await buildWebFiles(model);
+  await buildDiagramFiles();
 
   let watchAbort: AbortController = new AbortController();
   let watchPromise: Promise<void> = new Promise(() => {});
@@ -176,6 +200,7 @@ export const startWebserver = async (
         if (newModel && keepLoop) {
           updateWatch(newModel);
           await buildWebFiles(newModel);
+          await buildDiagramFiles();
           await bundleEngine();
         }
         if (!keepLoop) return;
