@@ -1,5 +1,5 @@
 import * as state from "@point-n-click/state";
-export type { PuzzleDependencyDiagram } from "../../puzzle-dependency-diagram/dist";
+export type { PuzzleDependencyDiagram } from "@point-n-click/puzzle-dependency-diagram";
 
 export { world } from "./dsl/dsl";
 export type { GameDefinition } from "./dsl/dsl";
