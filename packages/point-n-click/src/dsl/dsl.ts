@@ -109,9 +109,10 @@ export const world =
         name: t.name,
         settings: t.settings,
       })),
+      diagram: {
+        events: {},
+      },
     };
-
-    let pdd: PuzzleDependencyDiagram = { events: {} };
 
     let activeScriptScope: ScriptAST<Game> = [];
 
@@ -230,7 +231,7 @@ export const world =
         );
       },
       definePuzzleDependencies: (diagram) => {
-        pdd = diagram;
+        worldModel.diagram = diagram;
       },
       globalInteraction: (text, shortcutKey, condition, script) => {
         worldModel.globalInteractions.push({

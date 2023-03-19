@@ -1,10 +1,12 @@
 import Graph, { DirectedGraph } from "graphology";
+import random from "graphology-layout/random";
+
 import { EventStyle, PuzzleDependencyDiagram } from "./types";
 
 type NodeAttributes = {
   label: string;
   color?: string;
-  type: "act" | "task" | "puzzle";
+  // type: "act" | "task" | "puzzle";
 };
 
 type EdgeAttributes = {};
@@ -29,15 +31,19 @@ export const diagramToGraph = <Diagram extends PuzzleDependencyDiagram>(
     colorMap[style] = settings.color;
   }
 
-  graph.addNode("Start", { label: "start", type: "act" });
+  graph.addNode("-system-start", { label: "Start" });
 
   for (const [eventName, event] of Object.entries(diagram.events)) {
     graph.addNode(eventName, {
       label: event.name ?? eventName,
       color: colorMap[String(event.status)],
-      type: event.type ?? "puzzle",
+      // type: event.type ?? "puzzle",
     });
   }
+
+  // TODO Add Edges
+
+  random.assign(graph);
 
   return graph;
 };

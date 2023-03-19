@@ -13,7 +13,6 @@
   "scripts": {
     "build": "parcel build --no-content-hash",
     "prepublish": "yarn build",
-    "preprepublish": "yarn upgrade --pattern='@point-n-click/*' --latest",
     "watch": "parcel watch"
   },
   "dependencies": {

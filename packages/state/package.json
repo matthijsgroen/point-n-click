@@ -24,5 +24,8 @@
   },
   "resolutions": {
     "typescript": "~4.7"
+  },
+  "dependencies": {
+    "@point-n-click/puzzle-dependency-diagram": "workspace:^"
   }
 }

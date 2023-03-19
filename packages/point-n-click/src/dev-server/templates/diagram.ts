@@ -25,15 +25,14 @@ export const htmlFile = (settings: TemplateSettings) =>
 export const indexFile = () => {
   return `import React from "react";
 import { createRoot } from "react-dom/client";
+import { DiagramDisplay } from "@point-n-click/puzzle-dependency-diagram";
 
 const root = createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <div>
-      <p>Hello world!</p>
-    </div>
+    <DiagramDisplay />
   </React.StrictMode>
 );`;
 };

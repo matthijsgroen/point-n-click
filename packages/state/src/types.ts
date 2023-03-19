@@ -1,3 +1,4 @@
+import { PuzzleDependencyDiagram } from "@point-n-click/puzzle-dependency-diagram";
 import {
   GameInteraction,
   GameLocation,
@@ -78,4 +79,5 @@ export type GameModel<Game extends GameWorld> = {
   overlays: GameOverlay<Game>[];
   globalInteractions: GameInteraction<Game>[];
   themes: ThemeInfo[];
+  diagram: PuzzleDependencyDiagram;
 };

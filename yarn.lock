@@ -3513,10 +3513,17 @@ __metadata:
   resolution: "@point-n-click/puzzle-dependency-diagram@workspace:packages/puzzle-dependency-diagram"
   dependencies:
     "@parcel/packager-ts": 2.7.0
+    "@react-sigma/core": ^3.3.0
+    "@tanstack/react-query": ^4.27.0
     graphology: ^0.25.1
+    graphology-layout: ^0.6.1
     graphology-types: ^0.24.7
+    lodash: ^4.17.21
     parcel: 2.7.0
+    sigma: ^2.4.0
     typescript: ">=4.7.0"
+  peerDependencies:
+    react: ^18.2.0
   languageName: unknown
   linkType: soft
 
@@ -3525,6 +3532,7 @@ __metadata:
   resolution: "@point-n-click/state@workspace:packages/state"
   dependencies:
     "@parcel/packager-ts": 2.7.0
+    "@point-n-click/puzzle-dependency-diagram": "workspace:^"
     "@point-n-click/types": "workspace:^"
     parcel: 2.7.0
     typescript: ">=3.0.0"
@@ -3646,6 +3654,18 @@ __metadata:
     react-dom: ^18.2.0
   languageName: unknown
   linkType: soft
+
+"@react-sigma/core@npm:^3.3.0":
+  version: 3.3.0
+  resolution: "@react-sigma/core@npm:3.3.0"
+  peerDependencies:
+    graphology: ^0.25.1
+    lodash: ^4.17.21
+    react: ^17.0.0 || ^18.0.0
+    sigma: ^2.4.0
+  checksum: 7206f5ade5a7af9afaec55bcb7d0aa7ac28a537a1fcdae93249c5197b34ac0caad3b9436ee36dac6bd072f5982074f60c9443f8df91eed8ad2fd00ef3092a7d5
+  languageName: node
+  linkType: hard
 
 "@rollup/plugin-babel@npm:^5.2.0":
   version: 5.3.1
@@ -3921,6 +3941,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/query-core@npm:4.27.0":
+  version: 4.27.0
+  resolution: "@tanstack/query-core@npm:4.27.0"
+  checksum: 914b4f01ac75632f4603b650e9105f64c739b79250baf76aad16cee216f7bad6060c04eda0c70838fe61a5f6c17883e19fcc3075b2433a906539da95ce785796
+  languageName: node
+  linkType: hard
+
 "@tanstack/react-query@npm:^4.10.3, @tanstack/react-query@npm:^4.13.0":
   version: 4.26.1
   resolution: "@tanstack/react-query@npm:4.26.1"
@@ -3937,6 +3964,25 @@ __metadata:
     react-native:
       optional: true
   checksum: 3b43a5acc84841364c08ed7c7d0f495008214f1f39b7fb073a95a53528ce40b4841dbc407070b4c0082d73990277bbcf9bc88df40217e70c226be4931efaa081
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query@npm:^4.27.0":
+  version: 4.27.0
+  resolution: "@tanstack/react-query@npm:4.27.0"
+  dependencies:
+    "@tanstack/query-core": 4.27.0
+    use-sync-external-store: ^1.2.0
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-native: "*"
+  peerDependenciesMeta:
+    react-dom:
+      optional: true
+    react-native:
+      optional: true
+  checksum: 15cebe9ccb8df737548763223438ce0c28808e3a9f2434307d2ac966a6bb8da01f172019a5490966503797ccdf2482d1e488f5fe52de5da86dbdae20ef772e8c
   languageName: node
   linkType: hard
 
@@ -4797,6 +4843,13 @@ __metadata:
     js-yaml: ^3.10.0
     tslib: ^2.4.0
   checksum: 64df0d8dad4cd43af5fcff758b0cfc47e7dc56e00eed87e3bd6ce8a9ea265c41fe758c1e01607e630bae46c9f8324ca853bced58be3d1c93492e125757ab7f30
+  languageName: node
+  linkType: hard
+
+"@yomguithereal/helpers@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@yomguithereal/helpers@npm:1.1.1"
+  checksum: 901aa14a232d56a99c423ac5968dd7915954a4bb3e570169cb450f1f3d328456025977c9812df3a34b061c74757b4bbd673bd467b2449c660a2dea347dda402a
   languageName: node
   linkType: hard
 
@@ -8467,10 +8520,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"graphology-layout@npm:^0.6.1":
+  version: 0.6.1
+  resolution: "graphology-layout@npm:0.6.1"
+  dependencies:
+    graphology-utils: ^2.3.0
+    pandemonium: ^2.4.0
+  peerDependencies:
+    graphology-types: ">=0.19.0"
+  checksum: 5d5577c292702208e8455c241107362c3bad6c8dadb78509c0153f3bde5974fba00e94d1b4d91a6a80f39ff1075af05f90bf2b9c73267fc0650fc37291a877eb
+  languageName: node
+  linkType: hard
+
 "graphology-types@npm:^0.24.7":
   version: 0.24.7
   resolution: "graphology-types@npm:0.24.7"
   checksum: 352de48ee759dbe9b02765209c287f43e967b5513f216240dfd2af41f502d74e033f8b28f9a57c838b15d24aa3a0e598aaef90b718cf1510ff9de2b4e4ce240e
+  languageName: node
+  linkType: hard
+
+"graphology-utils@npm:^2.3.0, graphology-utils@npm:^2.5.0":
+  version: 2.5.2
+  resolution: "graphology-utils@npm:2.5.2"
+  peerDependencies:
+    graphology-types: ">=0.23.0"
+  checksum: 803e53795c073383416db73c6ae46bfac168aec0f810bbc531effc404fa3701ee1e7598b2be23174e25666e04d52df6bb8c11b1e742d9cefe76463eac43e7cc9
   languageName: node
   linkType: hard
 
@@ -11312,6 +11386,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mnemonist@npm:^0.39.2":
+  version: 0.39.5
+  resolution: "mnemonist@npm:0.39.5"
+  dependencies:
+    obliterator: ^2.0.1
+  checksum: 6669d687a434226924b2c84ee6eb7ce7d0f83dfc5caad8bcc164c73c0c11fb6d43cbe32636e710f068046f4b40a56c3032532554e93e02640aafc6ca3dd222e6
+  languageName: node
+  linkType: hard
+
 "ms@npm:2.0.0":
   version: 2.0.0
   resolution: "ms@npm:2.0.0"
@@ -11770,7 +11853,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"obliterator@npm:^2.0.2":
+"obliterator@npm:^2.0.1, obliterator@npm:^2.0.2":
   version: 2.0.4
   resolution: "obliterator@npm:2.0.4"
   checksum: f28ad35b6d812089315f375dc3e6e5f9bebf958ebe4b10ccd471c7115cbcf595e74bdac4783ae758e5b1f47e3096427fdb37cfa7bed566b132df92ff317b9a7c
@@ -11932,6 +12015,15 @@ __metadata:
   version: 2.2.0
   resolution: "p-try@npm:2.2.0"
   checksum: f8a8e9a7693659383f06aec604ad5ead237c7a261c18048a6e1b5b85a5f8a067e469aa24f5bc009b991ea3b058a87f5065ef4176793a200d4917349881216cae
+  languageName: node
+  linkType: hard
+
+"pandemonium@npm:^2.4.0":
+  version: 2.4.1
+  resolution: "pandemonium@npm:2.4.1"
+  dependencies:
+    mnemonist: ^0.39.2
+  checksum: ada32ba457a0dd3ae8eb656e381b71eae3e36a81cb18b71236fd3e1534ab48fa2243da47198647c4df60aca78cf372df8a180e65c3dcfeec4910d28956347974
   languageName: node
   linkType: hard
 
@@ -14174,6 +14266,17 @@ __metadata:
     get-intrinsic: ^1.0.2
     object-inspect: ^1.9.0
   checksum: 351e41b947079c10bd0858364f32bb3a7379514c399edb64ab3dce683933483fc63fb5e4efe0a15a2e8a7e3c436b6a91736ddb8d8c6591b0460a24bb4a1ee245
+  languageName: node
+  linkType: hard
+
+"sigma@npm:^2.4.0":
+  version: 2.4.0
+  resolution: "sigma@npm:2.4.0"
+  dependencies:
+    "@yomguithereal/helpers": ^1.1.1
+    events: ^3.3.0
+    graphology-utils: ^2.5.0
+  checksum: c9161859bb3dc2dbff8a918e6a400cec1f75e60de9fe7fb42ecf16ddc9d3f1e8a10a372f9876c674bb9e973006e0e852cdb9b4a0e525bc08eb3a959f475f99ce
   languageName: node
   linkType: hard
 

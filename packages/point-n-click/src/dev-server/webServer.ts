@@ -19,7 +19,11 @@ import {
 import { GameModel } from "@point-n-click/state";
 import { watch } from "fs";
 
-const defaultWatchList = ["@point-n-click/engine", "@point-n-click/web-engine"];
+const defaultWatchList = [
+  "@point-n-click/engine",
+  "@point-n-click/web-engine",
+  "@point-n-click/puzzle-dependency-diagram",
+];
 
 export const startWebserver = async (
   modelManager: GameModelManager<GameWorld>,

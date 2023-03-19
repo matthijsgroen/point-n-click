@@ -21,4 +21,7 @@ export const emptyGameModel = <Game extends GameWorld>(): GameModel<Game> => ({
   overlays: [],
   globalInteractions: [],
   themes: [],
+  diagram: {
+    events: {},
+  },
 });
