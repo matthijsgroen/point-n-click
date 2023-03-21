@@ -12,10 +12,7 @@ import { PackagedBundle } from "@parcel/types";
 import { MemoryFS } from "@parcel/fs";
 import mime from "mime/lite";
 import { htmlFile, indexFile } from "./templates/game";
-import {
-  htmlFile as diagramHtmlFile,
-  indexFile as diagramIndexFile,
-} from "./templates/diagram";
+import { htmlFile as diagramHtmlFile } from "./templates/diagram";
 import { GameModel } from "@point-n-click/state";
 import { watch } from "fs";
 
@@ -72,7 +69,9 @@ export const startWebserver = async (
   );
 
   const gameEntryFile = join(devServerPath, "index.html");
-  const diagramEntryFile = join(devServerPath, "diagram.html");
+  const diagramFolder = join(devServerPath, "diagram");
+  const diagramEntryFile = join(diagramFolder, "index.html");
+  await mkdir(diagramFolder);
 
   const buildWebFiles = async (model: GameModel<GameWorld>) => {
     const indexPromise = writeFile(
@@ -102,27 +101,22 @@ export const startWebserver = async (
     await Promise.all([configPromise, indexPromise, entryPromise]);
   };
 
-  const buildDiagramFiles = async () => {
-    const indexPromise = writeFile(
-      join(devServerPath, "diagram.tsx"),
-      diagramIndexFile(),
-      { encoding: "utf8" }
-    );
-
+  const buildDiagramFiles = async (model: GameModel<GameWorld>) => {
     const entryPromise = writeFile(
       diagramEntryFile,
       diagramHtmlFile({
         title: getTranslationText([], "title") ?? model.settings.gameTitle,
         lang: lang ?? model.settings.locales.default,
+        diagram: model.diagram,
       }),
       { encoding: "utf8" }
     );
 
-    await Promise.all([configPromise, indexPromise, entryPromise]);
+    await Promise.all([configPromise, entryPromise]);
   };
 
   const webappBundler = new Parcel({
-    entries: [gameEntryFile, diagramEntryFile],
+    entries: [gameEntryFile],
     defaultConfig: configFile,
     workerFarm,
     outputFS,
@@ -156,7 +150,7 @@ export const startWebserver = async (
   };
 
   await buildWebFiles(model);
-  await buildDiagramFiles();
+  await buildDiagramFiles(model);
 
   let watchAbort: AbortController = new AbortController();
   let watchPromise: Promise<void> = new Promise(() => {});
@@ -204,7 +198,7 @@ export const startWebserver = async (
         if (newModel && keepLoop) {
           updateWatch(newModel);
           await buildWebFiles(newModel);
-          await buildDiagramFiles();
+          await buildDiagramFiles(newModel);
           await bundleEngine();
         }
         if (!keepLoop) return;
@@ -249,6 +243,7 @@ export const startWebserver = async (
 
   const translationFilePath = join(process.cwd(), "src", "translations");
   app.use("/assets/lang/", express.static(translationFilePath));
+  app.use("/assets/diagram/", express.static(diagramFolder));
 
   const getBundle = (path: string): PackagedBundle | undefined => {
     const bundlePath = path === "/" ? "/index.html" : path;

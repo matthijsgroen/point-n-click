@@ -1,26 +1,21 @@
+export type BasePuzzleEventStates = Record<string, string>;
+
 export type PuzzleEvent<
-  PuzzleEventStates extends string,
+  PuzzleEventStates extends BasePuzzleEventStates = {},
   ValidDependencies extends string = string
 > = {
   name?: string;
   dependsOn?: ValidDependencies[];
-  status?: PuzzleEventStates;
-  type?: "puzzle" | "task";
-};
-
-export type EventStyle = {
-  color: `#${string}`;
+  type?: "puzzle" | "task" | "chapter";
+  tags?: {
+    [Key in keyof PuzzleEventStates]?: PuzzleEventStates[Key];
+  };
 };
 
 export type PuzzleDependencyDiagram<
-  PuzzleEventStates extends string = never,
+  PuzzleEventStates extends BasePuzzleEventStates = {},
   EventKey extends string = string
-> = {
-  events: Record<EventKey, PuzzleEvent<PuzzleEventStates, EventKey>>;
-  styles?: {
-    [Key in PuzzleEventStates]?: EventStyle;
-  };
-};
+> = Record<EventKey, PuzzleEvent<PuzzleEventStates, EventKey>>;
 
 export type ValidationError = {
   message: string;

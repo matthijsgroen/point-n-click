@@ -12,10 +12,8 @@ describe("validator", () => {
 
   it("reports an error if a dependency is missing", () => {
     const diagram: PuzzleDependencyDiagram = {
-      events: {
-        openDoor: {
-          dependsOn: ["getKey"],
-        },
+      openDoor: {
+        dependsOn: ["getKey"],
       },
     };
     const errors = validateDiagram(diagram);

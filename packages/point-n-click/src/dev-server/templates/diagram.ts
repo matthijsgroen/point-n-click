@@ -1,8 +1,12 @@
-import { ThemeInfo } from "@point-n-click/state";
+import {
+  PuzzleDependencyDiagram,
+  diagramToMermaid,
+} from "@point-n-click/puzzle-dependency-diagram";
 
 type TemplateSettings = {
   title: string;
   lang: string;
+  diagram: PuzzleDependencyDiagram;
 };
 
 export const htmlFile = (settings: TemplateSettings) =>
@@ -16,23 +20,12 @@ export const htmlFile = (settings: TemplateSettings) =>
     <title>${settings.title} Puzzle Dependency Chart</title>
   </head>
   <body data-environment="development">
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <script type="module" src="./diagram.tsx" />
+    <pre class="mermaid">
+${diagramToMermaid(settings.diagram)}
+    </pre>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true });
+    </script>
   </body>
 </html>`;
-
-export const indexFile = () => {
-  return `import React from "react";
-import { createRoot } from "react-dom/client";
-import { DiagramDisplay } from "@point-n-click/puzzle-dependency-diagram";
-
-const root = createRoot(
-  document.getElementById("root") as HTMLElement
-);
-root.render(
-  <React.StrictMode>
-    <DiagramDisplay />
-  </React.StrictMode>
-);`;
-};
