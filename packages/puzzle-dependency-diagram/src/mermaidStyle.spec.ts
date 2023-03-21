@@ -5,7 +5,7 @@ describe(styleToMermaidString, () => {
     {
       name: "border-color",
       style: { border: { color: "#fff" } },
-      expected: "stroke-color: #fff",
+      expected: "stroke: #fff",
     },
     {
       name: "border-width",
@@ -35,12 +35,12 @@ describe(styleToMermaidString, () => {
     {
       name: "background-color",
       style: { background: { color: "#fff" } },
-      expected: "fill-color: #fff",
+      expected: "fill: #fff",
     },
     {
       name: "multiple properties",
       style: { background: { color: "#fff" }, border: { color: "#777" } },
-      expected: "stroke-color: #777,fill-color: #fff",
+      expected: "stroke: #777,fill: #fff",
     },
   ])("supports $name", ({ style, expected }) => {
     const result = styleToMermaidString(style);

@@ -19,7 +19,7 @@ export const styleToMermaidString = (style: NodeStyle) => {
 
   if (style.border) {
     if (style.border.color) {
-      props.push(`stroke-color: ${style.border.color}`);
+      props.push(`stroke: ${style.border.color}`);
     }
     if (style.border.width) {
       props.push(`stroke-width: ${style.border.width}px`);
@@ -33,7 +33,7 @@ export const styleToMermaidString = (style: NodeStyle) => {
   }
   if (style.background) {
     if (style.background.color) {
-      props.push(`fill-color: ${style.background.color}`);
+      props.push(`fill: ${style.background.color}`);
     }
   }
   if (style.text) {

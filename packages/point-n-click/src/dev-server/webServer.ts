@@ -9,10 +9,10 @@ import { mkdir } from "./mkdir";
 import { writeFile } from "node:fs/promises";
 import Parcel, { createWorkerFarm } from "@parcel/core";
 import { PackagedBundle } from "@parcel/types";
-import { MemoryFS } from "@parcel/fs";
-import mime from "mime/lite";
+// import { MemoryFS } from "@parcel/fs";
+// import mime from "mime/lite";
 import { htmlFile, indexFile } from "./templates/game";
-import { htmlFile as diagramHtmlFile } from "./templates/diagram";
+import { htmlFile as diagramHtmlFile, scriptFile } from "./templates/diagram";
 import { GameModel } from "@point-n-click/state";
 import { watch } from "fs";
 
@@ -36,10 +36,12 @@ export const startWebserver = async (
   }
 ): Promise<[stopServer: () => Promise<void>, runningPort: number]> => {
   const devServerPath = join(CACHE_FOLDER, "dev-build");
+  const devServerOutputPath = join(CACHE_FOLDER, "dev-dist");
   await mkdir(devServerPath);
+  await mkdir(devServerOutputPath);
 
-  const workerFarm = createWorkerFarm();
-  const outputFS = new MemoryFS(workerFarm);
+  // const workerFarm = createWorkerFarm();
+  // const outputFS = new MemoryFS(workerFarm);
 
   let model = modelManager.getModel();
   while (!modelManager.hasModel()) {
@@ -69,9 +71,7 @@ export const startWebserver = async (
   );
 
   const gameEntryFile = join(devServerPath, "index.html");
-  const diagramFolder = join(devServerPath, "diagram");
-  const diagramEntryFile = join(diagramFolder, "index.html");
-  await mkdir(diagramFolder);
+  const diagramEntryFile = join(devServerPath, "diagram.html");
 
   const buildWebFiles = async (model: GameModel<GameWorld>) => {
     const indexPromise = writeFile(
@@ -102,34 +102,38 @@ export const startWebserver = async (
   };
 
   const buildDiagramFiles = async (model: GameModel<GameWorld>) => {
+    const indexPromise = writeFile(
+      join(devServerPath, "diagram.tsx"),
+      scriptFile(),
+      { encoding: "utf8" }
+    );
+
     const entryPromise = writeFile(
       diagramEntryFile,
       diagramHtmlFile({
         title: getTranslationText([], "title") ?? model.settings.gameTitle,
         lang: lang ?? model.settings.locales.default,
-        diagram: model.diagram,
       }),
       { encoding: "utf8" }
     );
 
-    await Promise.all([configPromise, entryPromise]);
+    await Promise.all([configPromise, indexPromise, entryPromise]);
   };
 
   const webappBundler = new Parcel({
-    entries: [gameEntryFile],
+    entries: [gameEntryFile, diagramEntryFile],
     defaultConfig: configFile,
-    workerFarm,
-    outputFS,
+    // workerFarm,
+    // outputFS,
     mode: "production",
     env: {
       NODE_ENV: "production",
     },
 
     shouldAutoInstall: false,
-    shouldDisableCache: true,
     targets: {
       main: {
-        distDir: "./",
+        distDir: devServerOutputPath,
         publicUrl: "/",
         context: "browser",
         sourceMap: true,
@@ -145,6 +149,7 @@ export const startWebserver = async (
     const bundles = bundleGraph.getBundles();
     for (const bundle of bundles) {
       const path = relative(process.cwd(), bundle.filePath);
+      console.log(path);
       bundleMap[`/${path}`] = bundle;
     }
   };
@@ -243,29 +248,29 @@ export const startWebserver = async (
 
   const translationFilePath = join(process.cwd(), "src", "translations");
   app.use("/assets/lang/", express.static(translationFilePath));
-  app.use("/assets/diagram/", express.static(diagramFolder));
+  app.use("/", express.static(devServerOutputPath));
 
-  const getBundle = (path: string): PackagedBundle | undefined => {
-    const bundlePath = path === "/" ? "/index.html" : path;
-    return bundleMap[bundlePath];
-  };
+  // const getBundle = (path: string): PackagedBundle | undefined => {
+  //   const bundlePath = path === "/" ? "/index.html" : path;
+  //   return bundleMap[bundlePath];
+  // };
 
-  app.use((req, res, next) => {
-    const bundle = getBundle(req.path);
-    if (bundle) {
-      const filePath = bundle.filePath;
-      const stats = outputFS.statSync(filePath);
-      const mimeType = mime.getType(filePath);
-      res.set({
-        "Content-type": mimeType,
-        "Content-length": stats.size,
-      });
-      outputFS.createReadStream(filePath).pipe(res);
-      return;
-    }
+  // app.use((req, res, next) => {
+  //   const bundle = getBundle(req.path);
+  //   if (bundle) {
+  //     const filePath = bundle.filePath;
+  //     const stats = outputFS.statSync(filePath);
+  //     const mimeType = mime.getType(filePath);
+  //     res.set({
+  //       "Content-type": mimeType,
+  //       "Content-length": stats.size,
+  //     });
+  //     outputFS.createReadStream(filePath).pipe(res);
+  //     return;
+  //   }
 
-    next();
-  });
+  //   next();
+  // });
 
   const server = app.listen(port, () => {
     serverStartResolver();
@@ -276,7 +281,7 @@ export const startWebserver = async (
   return [
     async () => {
       watchAbort?.abort();
-      await workerFarm.end();
+      // await workerFarm.end();
       server.close();
       stopRebuild();
     },

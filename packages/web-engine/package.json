@@ -3,6 +3,7 @@
   "version": "1.0.0-alpha.0",
   "description": "Web engine for Point 'n Click",
   "main": "dist/index.js",
+  "module": "dist/module.mjs",
   "author": "Matthijs Groen",
   "license": "MIT",
   "source": "src/index.tsx",
@@ -21,9 +22,11 @@
   },
   "dependencies": {
     "@point-n-click/engine": "workspace:^",
+    "@point-n-click/puzzle-dependency-diagram": "workspace:^",
     "@point-n-click/state": "workspace:^",
     "@point-n-click/themes": "workspace:^",
-    "@tanstack/react-query": "^4.13.0"
+    "@tanstack/react-query": "^4.13.0",
+    "mermaid": "^10.0.2"
   },
   "devDependencies": {
     "@types/react": "^18.0.21",

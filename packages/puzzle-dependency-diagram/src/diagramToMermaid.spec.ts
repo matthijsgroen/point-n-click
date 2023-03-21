@@ -81,7 +81,7 @@ describe(diagramToMermaid, () => {
       "  _start{{Start}}",
       "  openDoor(open the door)",
       "  getStrong:::missingDep ---x openDoor",
-      `  classDef missingDep ${styleToMermaidString(ERROR_STYLE)};`,
+      `  classDef missingDep ${styleToMermaidString(ERROR_STYLE)}`,
     ]);
   });
 
@@ -107,7 +107,7 @@ describe(diagramToMermaid, () => {
         "  openDoor(open the door):::filtered",
         "  _start --> getKey",
         "  getKey -.-> openDoor",
-        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)};`,
+        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
       ]);
     });
 
@@ -130,7 +130,7 @@ describe(diagramToMermaid, () => {
         "  openDoor(open the door)",
         "  _start -.-> getKey",
         "  getKey -.-> openDoor",
-        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)};`,
+        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
       ]);
     });
   });

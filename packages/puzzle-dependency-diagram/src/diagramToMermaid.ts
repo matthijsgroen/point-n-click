@@ -23,6 +23,7 @@ export const FILTERED_STYLE: NodeStyle = {
 export const ERROR_STYLE: NodeStyle = {
   background: { color: "#f99" },
   border: { color: "#333" },
+  text: { color: "#000" },
 };
 
 export const diagramToMermaid = <Diagram extends PuzzleDependencyDiagram>(
@@ -73,7 +74,7 @@ export const diagramToMermaid = <Diagram extends PuzzleDependencyDiagram>(
   });
 
   const classList = Object.entries(classes).map(
-    ([className, styling]) => `classDef ${className} ${styling};`
+    ([className, styling]) => `classDef ${className} ${styling}`
   );
 
   return [
