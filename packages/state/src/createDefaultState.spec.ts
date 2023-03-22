@@ -63,6 +63,7 @@ describe("createDefaultState", () => {
         overlays: [],
         globalInteractions: [],
         themes: [],
+        diagram: {},
       });
 
       expect(result.characters).toEqual({
@@ -72,6 +73,7 @@ describe("createDefaultState", () => {
           flags: {},
           name: null,
           state: "unknown",
+          texts: {},
         },
         wolf: {
           counters: {},
@@ -79,6 +81,7 @@ describe("createDefaultState", () => {
           flags: {},
           name: null,
           state: "unknown",
+          texts: {},
         },
       });
     });
@@ -117,6 +120,7 @@ describe("createDefaultState", () => {
         overlays: [],
         globalInteractions: [],
         themes: [],
+        diagram: {},
       });
 
       expect(result.characters).toEqual({
@@ -126,6 +130,7 @@ describe("createDefaultState", () => {
           flags: {},
           name: null,
           state: "unknown",
+          texts: {},
         },
         wolf: {
           counters: {},
@@ -133,6 +138,7 @@ describe("createDefaultState", () => {
           flags: {},
           name: null,
           state: "in bed",
+          texts: {},
         },
       });
     });

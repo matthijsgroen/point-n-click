@@ -1,4 +1,5 @@
 import {
+  CHAPTER_STYLE,
   diagramToMermaid,
   ERROR_STYLE,
   FILTERED_STYLE,
@@ -71,6 +72,27 @@ describe(diagramToMermaid, () => {
     ]);
   });
 
+  it("supports chapter as puzzle type", () => {
+    const diagram: PuzzleDependencyDiagram = {
+      threeTrials: { type: "task" },
+      buyShip: {},
+      startJourney: { dependsOn: ["buyShip", "threeTrials"], type: "chapter" },
+    };
+    const result = diagramToMermaid(diagram);
+    expect(result.split("\n")).toEqual([
+      "flowchart TD",
+      "  _start{{Start}}",
+      "  threeTrials[[threeTrials]]",
+      "  buyShip(buyShip)",
+      "  startJourney{{startJourney}}:::chapter",
+      "  _start --> threeTrials",
+      "  _start --> buyShip",
+      "  buyShip --> startJourney",
+      "  threeTrials --> startJourney",
+      `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+    ]);
+  });
+
   it("shows missing dependencies", () => {
     const diagram: PuzzleDependencyDiagram = {
       openDoor: { dependsOn: ["getStrong"], name: "open the door" },
@@ -87,7 +109,8 @@ describe(diagramToMermaid, () => {
 
   describe("filtering", () => {
     type MetaData = {
-      state: "todo" | "done";
+      state: "todo" | "done" | "progress";
+      location: "farm" | "hills";
     };
 
     it("shows items not matching filter as dotted", () => {
@@ -99,7 +122,7 @@ describe(diagramToMermaid, () => {
         },
         openDoor: { dependsOn: ["getKey"], name: "open the door" },
       };
-      const result = diagramToMermaid(diagram, { state: "done" });
+      const result = diagramToMermaid(diagram, { state: ["done"] });
       expect(result.split("\n")).toEqual([
         "flowchart TD",
         "  _start{{Start}}",
@@ -122,7 +145,7 @@ describe(diagramToMermaid, () => {
           },
         },
       };
-      const result = diagramToMermaid(diagram, { state: "done" });
+      const result = diagramToMermaid(diagram, { state: ["done"] });
       expect(result.split("\n")).toEqual([
         "flowchart TD",
         "  _start{{Start}}",
@@ -130,6 +153,108 @@ describe(diagramToMermaid, () => {
         "  openDoor(open the door)",
         "  _start -.-> getKey",
         "  getKey -.-> openDoor",
+        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
+      ]);
+    });
+
+    it("matches either value of the same filter", () => {
+      const diagram: PuzzleDependencyDiagram<MetaData> = {
+        getKey: {},
+        openDoor: {
+          dependsOn: ["getKey"],
+          name: "open the door",
+          tags: {
+            state: "done",
+          },
+        },
+        startAdventure: {
+          dependsOn: ["openDoor"],
+          tags: {
+            state: "progress",
+          },
+        },
+      };
+      const result = diagramToMermaid(diagram, { state: ["done", "progress"] });
+      expect(result.split("\n")).toEqual([
+        "flowchart TD",
+        "  _start{{Start}}",
+        "  getKey(getKey):::filtered",
+        "  openDoor(open the door)",
+        "  startAdventure(startAdventure)",
+        "  _start -.-> getKey",
+        "  getKey -.-> openDoor",
+        "  openDoor --> startAdventure",
+        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
+      ]);
+    });
+
+    it("matches all set filters", () => {
+      const diagram: PuzzleDependencyDiagram<MetaData> = {
+        getKey: {},
+        openDoor: {
+          dependsOn: ["getKey"],
+          name: "open the door",
+          tags: {
+            state: "done",
+            location: "farm",
+          },
+        },
+        startAdventure: {
+          dependsOn: ["openDoor"],
+          tags: {
+            state: "done",
+            location: "hills",
+          },
+        },
+      };
+      const result = diagramToMermaid(diagram, {
+        state: ["done", "progress"],
+        location: ["farm"],
+      });
+      expect(result.split("\n")).toEqual([
+        "flowchart TD",
+        "  _start{{Start}}",
+        "  getKey(getKey):::filtered",
+        "  openDoor(open the door)",
+        "  startAdventure(startAdventure):::filtered",
+        "  _start -.-> getKey",
+        "  getKey -.-> openDoor",
+        "  openDoor -.-> startAdventure",
+        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
+      ]);
+    });
+
+    it("you can use _all to match unset values", () => {
+      const diagram: PuzzleDependencyDiagram<MetaData> = {
+        getKey: {},
+        openDoor: {
+          dependsOn: ["getKey"],
+          name: "open the door",
+          tags: {
+            state: "done",
+            location: "farm",
+          },
+        },
+        startAdventure: {
+          dependsOn: ["openDoor"],
+          tags: {
+            state: "done",
+            location: "hills",
+          },
+        },
+      };
+      const result = diagramToMermaid(diagram, {
+        state: ["_all"],
+      });
+      expect(result.split("\n")).toEqual([
+        "flowchart TD",
+        "  _start{{Start}}",
+        "  getKey(getKey)",
+        "  openDoor(open the door):::filtered",
+        "  startAdventure(startAdventure):::filtered",
+        "  _start --> getKey",
+        "  getKey -.-> openDoor",
+        "  openDoor -.-> startAdventure",
         `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
       ]);
     });

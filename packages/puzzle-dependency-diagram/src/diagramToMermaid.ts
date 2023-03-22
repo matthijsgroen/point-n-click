@@ -1,41 +1,48 @@
+import { FilterOptions } from "./diagramToFilterOptions";
 import { NodeStyle, styleToMermaidString } from "./mermaidStyle";
 import { PuzzleDependencyDiagram, PuzzleEvent } from "./types";
 
 const shape = (type: PuzzleEvent["type"], label: string): string =>
-  type === "task" ? `[[${label}]]` : `(${label})`;
-
-export type DiagramFilter<Diagram extends PuzzleDependencyDiagram> =
-  Diagram extends PuzzleDependencyDiagram<infer State>
-    ? {
-        [Key in keyof State]?: State[Key];
-      }
-    : {};
+  type === "task"
+    ? `[[${label}]]`
+    : type === "chapter"
+    ? `{{${label}}}`
+    : `(${label})`;
 
 export const FILTERED_STYLE: NodeStyle = {
   border: {
     width: 1,
-    style: "dotted",
+    style: "dashed",
   },
-  background: { color: "#fff" },
-  text: { color: "#555" },
+  background: { color: "#111" },
+  text: { color: "#666" },
 };
 
 export const ERROR_STYLE: NodeStyle = {
-  background: { color: "#f99" },
+  background: { color: "#933" },
   border: { color: "#333" },
+  text: { color: "#000" },
+};
+
+export const CHAPTER_STYLE: NodeStyle = {
+  background: { color: "#393" },
+  border: { color: "#3f3" },
   text: { color: "#000" },
 };
 
 export const diagramToMermaid = <Diagram extends PuzzleDependencyDiagram>(
   diagram: Diagram,
-  filter?: DiagramFilter<Diagram>
+  filter?: FilterOptions<Diagram>
 ): string => {
   const matchFilter = (nodeName: string): boolean => {
     const item = diagram[nodeName];
     if (!item) return false;
-    return Object.entries(filter ?? {}).every(
-      ([key, value]) =>
-        item.tags && (item.tags as Record<string, string>)[key] === value
+    const tags = item.tags as Record<string, string> | undefined;
+    return Object.entries<string[]>(filter ?? {}).every(
+      ([key, values]) =>
+        (values.includes("_all") &&
+          (tags === undefined || tags[key] === undefined)) ||
+        (tags && values.includes(tags[key]))
     );
   };
   const evenList = Object.keys(diagram);
@@ -48,9 +55,12 @@ export const diagramToMermaid = <Diagram extends PuzzleDependencyDiagram>(
       if (filtered) {
         classes["filtered"] = styleToMermaidString(FILTERED_STYLE);
       }
+      if (data.type === "chapter") {
+        classes["chapter"] = styleToMermaidString(CHAPTER_STYLE);
+      }
 
       return `${key}${shape(data.type, data.name ?? key)}${
-        filtered ? ":::filtered" : ""
+        filtered ? ":::filtered" : data.type === "chapter" ? ":::chapter" : ""
       }`;
     }),
   ];

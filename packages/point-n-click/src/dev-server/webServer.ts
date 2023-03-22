@@ -149,7 +149,6 @@ export const startWebserver = async (
     const bundles = bundleGraph.getBundles();
     for (const bundle of bundles) {
       const path = relative(process.cwd(), bundle.filePath);
-      console.log(path);
       bundleMap[`/${path}`] = bundle;
     }
   };
@@ -202,9 +201,14 @@ export const startWebserver = async (
         const newModel = modelManager.getModel();
         if (newModel && keepLoop) {
           updateWatch(newModel);
+          // const start = new Date().getTime();
           await buildWebFiles(newModel);
           await buildDiagramFiles(newModel);
           await bundleEngine();
+          // const end = new Date().getTime();
+          // console.log(
+          //   `🎉 rebuild web client in ${Math.ceil((end - start) / 100) / 10}s`
+          // );
         }
         if (!keepLoop) return;
         await Promise.race([modelManager.waitForChange(), watchPromise]);

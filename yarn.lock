@@ -3646,6 +3646,7 @@ __metadata:
     "@point-n-click/themes": "workspace:^"
     "@tanstack/react-query": ^4.13.0
     "@types/react": ^18.0.21
+    immer: ^9.0.19
     mermaid: ^10.0.2
     parcel: 2.7.0
     typescript: 4.7.3
@@ -9306,7 +9307,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"immer@npm:^9.0.15, immer@npm:^9.0.7":
+"immer@npm:^9.0.15, immer@npm:^9.0.19, immer@npm:^9.0.7":
   version: 9.0.19
   resolution: "immer@npm:9.0.19"
   checksum: f02ee53989989c287cd548a3d817fccf0bfe56db919755ee94a72ea3ae78a00363fba93ee6c010fe54a664380c29c53d44ed4091c6a86cae60957ad2cfabc010

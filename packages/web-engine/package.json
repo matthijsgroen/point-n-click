@@ -26,6 +26,7 @@
     "@point-n-click/state": "workspace:^",
     "@point-n-click/themes": "workspace:^",
     "@tanstack/react-query": "^4.13.0",
+    "immer": "^9.0.19",
     "mermaid": "^10.0.2"
   },
   "devDependencies": {

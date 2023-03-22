@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useGameContent } from "../content/ContentProvider";
-import { DisplayDiagram } from "./DisplayDiagram";
+import { DiagramView } from "./DiagramView";
 
 export const WireDiagram = () => {
   const content = useGameContent();
@@ -14,5 +14,5 @@ export const WireDiagram = () => {
     });
   }, [diagram]);
 
-  return <DisplayDiagram diagram={diagram} />;
+  return <DiagramView diagram={diagram} />;
 };
