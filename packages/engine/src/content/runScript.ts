@@ -256,7 +256,7 @@ const statementHandler = <
         try {
           result.text.push(
             getDisplayText(sentence, stateManager, textScope, [
-              "character",
+              "characters",
               String(character),
             ])
           );

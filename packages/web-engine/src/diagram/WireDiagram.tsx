@@ -7,10 +7,8 @@ export const WireDiagram = () => {
   const [diagram, setDiagram] = useState(content.getModel().diagram);
 
   useEffect(() => {
-    content.waitForChange().then((change) => {
-      if (change) {
-        setDiagram(content.getModel().diagram);
-      }
+    content.waitForChange().then(() => {
+      setDiagram(content.getModel().diagram);
     });
   }, [diagram]);
 

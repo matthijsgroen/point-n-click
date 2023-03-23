@@ -9,7 +9,6 @@ export const App: React.FC = () => (
   <QueryClientProvider client={queryClient}>
     <ContentProvider>
       <div style={{ color: "white" }}>
-        <p>Hello world! We're back!</p>
         <WireDiagram />
       </div>
     </ContentProvider>

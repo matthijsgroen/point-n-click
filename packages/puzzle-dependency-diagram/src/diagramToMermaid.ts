@@ -18,6 +18,12 @@ export const FILTERED_STYLE: NodeStyle = {
   text: { color: "#666" },
 };
 
+export const LOGIC_OR_STYLE: NodeStyle = {
+  background: { color: "#999" },
+  border: { color: "#000" },
+  text: { color: "#000" },
+};
+
 export const ERROR_STYLE: NodeStyle = {
   background: { color: "#933" },
   border: { color: "#333" },
@@ -46,17 +52,16 @@ export const diagramToMermaid = <Diagram extends PuzzleDependencyDiagram>(
     );
   };
   const evenList = Object.keys(diagram);
-  const classes: Record<string, string> = {};
+  const classes: Record<string, string> = {
+    chapter: styleToMermaidString(CHAPTER_STYLE),
+  };
 
   const nodes = [
-    "_start{{Start}}",
+    "_start{{Start}}:::chapter",
     ...Object.entries(diagram).map(([key, data]) => {
       const filtered = !matchFilter(key);
       if (filtered) {
         classes["filtered"] = styleToMermaidString(FILTERED_STYLE);
-      }
-      if (data.type === "chapter") {
-        classes["chapter"] = styleToMermaidString(CHAPTER_STYLE);
       }
 
       return `${key}${shape(data.type, data.name ?? key)}${
@@ -68,19 +73,38 @@ export const diagramToMermaid = <Diagram extends PuzzleDependencyDiagram>(
   const edges = Object.entries(diagram).flatMap(([key, data]) => {
     const dependencies = data.dependsOn ?? [];
     const matchesFilter = matchFilter(key);
+    const orCondition = data.dependencyType === "or";
 
-    return dependencies.length === 0
-      ? [matchesFilter ? `_start --> ${key}` : `_start -.-> ${key}`]
-      : dependencies.map((dep) => {
-          if (!evenList.includes(dep)) {
-            classes["missingDep"] = styleToMermaidString(ERROR_STYLE);
-            return `${dep}:::missingDep ---x ${key}`;
-          }
-          if (matchFilter(dep) && matchesFilter) {
-            return `${dep} --> ${key}`;
-          }
-          return `${dep} -.-> ${key}`;
-        });
+    const intermediateNodes: string[] = [];
+    if (orCondition) {
+      intermediateNodes.push(`_or_${key}{Or}:::logicOr`);
+      classes["logicOr"] = styleToMermaidString(LOGIC_OR_STYLE);
+    }
+
+    const dependencyResult =
+      dependencies.length === 0
+        ? [matchesFilter ? `_start --> ${key}` : `_start -.-> ${key}`]
+        : dependencies.map((dep) => {
+            if (!evenList.includes(dep)) {
+              classes["missingDep"] = styleToMermaidString(ERROR_STYLE);
+              return orCondition
+                ? `${dep}:::missingDep -.-x _or_${key}`
+                : `${dep}:::missingDep ---x ${key}`;
+            }
+            if (matchFilter(dep) && matchesFilter && !orCondition) {
+              return `${dep} --> ${key}`;
+            }
+            if (orCondition) {
+              return `${dep} -.-> _or_${key}`;
+            }
+            return `${dep} -.-> ${key}`;
+          });
+
+    if (orCondition) {
+      dependencyResult.push(`_or_${key} --> ${key}`);
+    }
+
+    return [...intermediateNodes, ...dependencyResult];
   });
 
   const classList = Object.entries(classes).map(

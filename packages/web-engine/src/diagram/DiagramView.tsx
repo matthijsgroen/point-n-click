@@ -36,7 +36,10 @@ export const DiagramView: React.FC<{
             <fieldset key={name}>
               <h3>{name}</h3>
               {options.map((option) => (
-                <label key={option}>
+                <label
+                  key={option}
+                  style={{ display: "block", textTransform: "capitalize" }}
+                >
                   <input
                     name={name}
                     value={option}
