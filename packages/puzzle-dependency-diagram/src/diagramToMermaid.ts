@@ -1,5 +1,12 @@
 import { FilterOptions } from "./diagramToFilterOptions";
-import { NodeStyle, styleToMermaidString } from "./mermaidStyle";
+import { styleToMermaidString } from "./mermaidStyle";
+import {
+  CHAPTER_STYLE,
+  ERROR_STYLE,
+  FILTERED_STYLE,
+  GROUP_STYLE,
+  LOGIC_OR_STYLE,
+} from "./styles";
 import { PuzzleDependencyDiagram, PuzzleEvent } from "./types";
 
 const shape = (type: PuzzleEvent["type"], label: string): string =>
@@ -9,112 +16,196 @@ const shape = (type: PuzzleEvent["type"], label: string): string =>
     ? `{{${label}}}`
     : `(${label})`;
 
-export const FILTERED_STYLE: NodeStyle = {
-  border: {
-    width: 1,
-    style: "dashed",
-  },
-  background: { color: "#111" },
-  text: { color: "#666" },
+type RenderOptions<Diagram extends PuzzleDependencyDiagram> = {
+  filter?: FilterOptions<Diagram>;
+  renderHierarchy?: boolean;
 };
 
-export const LOGIC_OR_STYLE: NodeStyle = {
-  background: { color: "#999" },
-  border: { color: "#000" },
-  text: { color: "#000" },
-};
+const m = (text: TemplateStringsArray, ...values: string[]): string =>
+  text
+    .map((term, index, list) => {
+      if (index < list.length - 1) {
+        const sanitizedValue =
+          values[index] === "end" ? "_end_" : values[index];
 
-export const ERROR_STYLE: NodeStyle = {
-  background: { color: "#933" },
-  border: { color: "#333" },
-  text: { color: "#000" },
-};
+        return `${term}${sanitizedValue}`;
+      }
+      return term;
+    })
+    .join("");
 
-export const CHAPTER_STYLE: NodeStyle = {
-  background: { color: "#393" },
-  border: { color: "#3f3" },
-  text: { color: "#000" },
-};
-
-export const diagramToMermaid = <Diagram extends PuzzleDependencyDiagram>(
+const getMatchFilter = <Diagram extends PuzzleDependencyDiagram>(
   diagram: Diagram,
-  filter?: FilterOptions<Diagram>
-): string => {
-  const matchFilter = (nodeName: string): boolean => {
-    const item = diagram[nodeName];
-    if (!item) return false;
-    const tags = item.tags as Record<string, string> | undefined;
-    return Object.entries<string[]>(filter ?? {}).every(
+  options?: RenderOptions<Diagram>
+) => {
+  const filter: FilterOptions<Diagram> =
+    options?.filter ?? ({} as FilterOptions<Diagram>);
+  return (nodeName: string): boolean => {
+    const node = diagram[nodeName];
+    if (!node) return false;
+    const tags = node.tags as Record<string, string> | undefined;
+    return Object.entries<string[]>(filter).every(
       ([key, values]) =>
         (values.includes("_all") &&
           (tags === undefined || tags[key] === undefined)) ||
-        (tags && values.includes(tags[key]))
+        (tags &&
+          values.some((value) =>
+            typeof tags[key] === "string"
+              ? tags[key] === value
+              : tags[key].includes(value)
+          ))
     );
   };
+};
+
+const defineClasses = (classes: Record<string, string>): string[] =>
+  Object.entries(classes).map(
+    ([className, styling]) => `classDef ${className} ${styling}`
+  );
+
+const defineEdges = <Diagram extends PuzzleDependencyDiagram>(
+  diagram: Diagram,
+  options?: RenderOptions<Diagram>
+): string[] => {
+  const matchFilter = getMatchFilter(diagram, options);
   const evenList = Object.keys(diagram);
+  const classes: Record<string, string> = {};
+
+  return [
+    ...Object.entries(diagram).flatMap(([key, data]) => {
+      const dependencies = data.dependsOn ?? [];
+      const matchesFilter = matchFilter(key);
+      const orCondition = data.dependencyType === "or";
+
+      const dependencyResult =
+        dependencies.length === 0
+          ? [matchesFilter ? m`_start --> ${key}` : m`_start -.-> ${key}`]
+          : dependencies.map((dep) => {
+              if (!evenList.includes(dep)) {
+                classes["missingDep"] = styleToMermaidString(ERROR_STYLE);
+                return orCondition
+                  ? m`${dep}:::missingDep -.-x _or_${key}`
+                  : m`${dep}:::missingDep ---x ${key}`;
+              }
+              if (matchFilter(dep) && matchesFilter && !orCondition) {
+                return m`${dep} --> ${key}`;
+              }
+              if (orCondition) {
+                return m`${dep} -.-> _or_${key}`;
+              }
+              return m`${dep} -.-> ${key}`;
+            });
+
+      if (orCondition) {
+        dependencyResult.push(m`_or_${key} --> ${key}`);
+      }
+
+      return dependencyResult;
+    }),
+    ...defineClasses(classes),
+  ];
+};
+
+type TreeNode = {
+  nodes: string[];
+  subTrees: {
+    [key: string]: TreeNode;
+  };
+};
+
+const renderTreeNodes = (tree: TreeNode): string[] => {
+  const result = tree.nodes;
+  const nestings = Object.entries(tree.subTrees).flatMap(
+    ([subTreeName, tree]) => [
+      `subgraph ${subTreeName}`,
+      ...renderTreeNodes(tree).map((l) => `  ${l}`),
+      "end",
+    ]
+  );
+  return result.concat(nestings);
+};
+
+const unique = <T>(t: T, i: number, l: T[]): boolean => l.indexOf(t) === i;
+
+const defineNodes = <Diagram extends PuzzleDependencyDiagram>(
+  diagram: Diagram,
+  options?: RenderOptions<Diagram>
+): string[] => {
+  const renderHierarchy = options?.renderHierarchy ?? false;
+  const matchFilter = getMatchFilter(diagram, options);
   const classes: Record<string, string> = {
     chapter: styleToMermaidString(CHAPTER_STYLE),
   };
 
-  const nodes = [
-    "_start{{Start}}:::chapter",
-    ...Object.entries(diagram).map(([key, data]) => {
-      const filtered = !matchFilter(key);
-      if (filtered) {
-        classes["filtered"] = styleToMermaidString(FILTERED_STYLE);
-      }
+  const tree: TreeNode = {
+    nodes: [],
+    subTrees: {},
+  };
 
-      return `${key}${shape(data.type, data.name ?? key)}${
-        filtered ? ":::filtered" : data.type === "chapter" ? ":::chapter" : ""
-      }`;
-    }),
-  ];
+  const getTreeNode = (
+    tree: TreeNode,
+    [head, ...tail]: string[] = []
+  ): TreeNode => {
+    if (!head) {
+      return tree;
+    }
+    const subTree = (tree.subTrees[head] = tree.subTrees[head] ?? {
+      nodes: [],
+      subTrees: {},
+    });
+    return getTreeNode(subTree, tail);
+  };
+  const groupClasses: string[] = [];
 
-  const edges = Object.entries(diagram).flatMap(([key, data]) => {
-    const dependencies = data.dependsOn ?? [];
-    const matchesFilter = matchFilter(key);
-    const orCondition = data.dependencyType === "or";
+  Object.entries(diagram).forEach(([key, data]) => {
+    const filtered = !matchFilter(key);
+    if (filtered) {
+      classes["filtered"] = styleToMermaidString(FILTERED_STYLE);
+    }
 
-    const intermediateNodes: string[] = [];
-    if (orCondition) {
-      intermediateNodes.push(`_or_${key}{Or}:::logicOr`);
+    const node = m`${key}${shape(data.type, data.name ?? key)}${
+      filtered ? ":::filtered" : data.type === "chapter" ? ":::chapter" : ""
+    }`;
+
+    if (data.hierarchy && renderHierarchy) groupClasses.push(...data.hierarchy);
+
+    const treeNode = getTreeNode(tree, renderHierarchy ? data.hierarchy : []);
+    if (data.dependencyType === "or") {
+      treeNode.nodes.push(m`_or_${key}{Or}:::logicOr`);
       classes["logicOr"] = styleToMermaidString(LOGIC_OR_STYLE);
     }
 
-    const dependencyResult =
-      dependencies.length === 0
-        ? [matchesFilter ? `_start --> ${key}` : `_start -.-> ${key}`]
-        : dependencies.map((dep) => {
-            if (!evenList.includes(dep)) {
-              classes["missingDep"] = styleToMermaidString(ERROR_STYLE);
-              return orCondition
-                ? `${dep}:::missingDep -.-x _or_${key}`
-                : `${dep}:::missingDep ---x ${key}`;
-            }
-            if (matchFilter(dep) && matchesFilter && !orCondition) {
-              return `${dep} --> ${key}`;
-            }
-            if (orCondition) {
-              return `${dep} -.-> _or_${key}`;
-            }
-            return `${dep} -.-> ${key}`;
-          });
-
-    if (orCondition) {
-      dependencyResult.push(`_or_${key} --> ${key}`);
-    }
-
-    return [...intermediateNodes, ...dependencyResult];
+    treeNode.nodes.push(node);
   });
 
-  const classList = Object.entries(classes).map(
-    ([className, styling]) => `classDef ${className} ${styling}`
-  );
+  const groupIds = groupClasses.filter(unique);
+  if (groupIds.length > 0) {
+    classes["group"] = styleToMermaidString(GROUP_STYLE);
+  }
+
+  const classList: string[] =
+    groupIds.length > 0 ? [`class ${groupIds.join(",")} group`] : [];
+
+  const nodes = [
+    "_start{{Start}}:::chapter",
+    ...renderTreeNodes(tree),
+    ...classList,
+    ...defineClasses(classes),
+  ];
+
+  return nodes;
+};
+
+export const diagramToMermaid = <Diagram extends PuzzleDependencyDiagram>(
+  diagram: Diagram,
+  options?: RenderOptions<Diagram>
+): string => {
+  const nodes = defineNodes(diagram, options);
+  const edges = defineEdges(diagram, options);
 
   return [
     "flowchart TD",
     ...nodes.map((node) => `  ${node}`),
     ...edges.map((edge) => `  ${edge}`),
-    ...classList.map((classStyling) => `  ${classStyling}`),
   ].join("\n");
 };

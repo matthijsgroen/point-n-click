@@ -15,7 +15,12 @@ export const DiagramView: React.FC<{
   const [diagramFilter, setDiagramFilter] =
     useState<Record<string, string[]>>(filterOptions);
 
-  const mermaidDiagram = diagramToMermaid(diagram, diagramFilter);
+  const [renderHierarchy, setRenderHierarchy] = useState(false);
+
+  const mermaidDiagram = diagramToMermaid(diagram, {
+    filter: diagramFilter,
+    renderHierarchy,
+  });
 
   const createEventHandler =
     (name: string, value: string): ChangeEventHandler<HTMLInputElement> =>
@@ -37,6 +42,17 @@ export const DiagramView: React.FC<{
           <DisplayDiagram diagram={mermaidDiagram} />
         </React.Suspense>
         <div>
+          <h2>Options:</h2>
+          <label style={{ display: "block", textTransform: "capitalize" }}>
+            <input
+              name={"renderHierarchy"}
+              type="checkbox"
+              checked={renderHierarchy}
+              onChange={(event) => setRenderHierarchy(event.target.checked)}
+            ></input>
+            Render Hierarchy
+          </label>
+
           <h2>Filters:</h2>
           {Object.entries<string[]>(filterOptions).map(([name, options]) => {
             return (

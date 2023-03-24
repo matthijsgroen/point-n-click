@@ -18,7 +18,10 @@ import { ConditionSet, dslStateConditions } from "./dsl-conditions";
 import { itemDSLFunctions, ItemInterface } from "./item";
 import { locationDSLFunctions, LocationInterface } from "./location";
 import { ThemeSettings } from "@point-n-click/themes";
-import { PuzzleDependencyDiagram } from "../../../puzzle-dependency-diagram/dist";
+import {
+  BasePuzzleEventStates,
+  PuzzleDependencyDiagram,
+} from "@point-n-click/puzzle-dependency-diagram";
 
 type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) extends (
   x: infer R
@@ -62,8 +65,8 @@ type GameWorldDSL<Version extends number, Game extends GameWorld<Version>> = {
     location: Location,
     script: LocationScript<Game, Location>
   ) => void;
-  definePuzzleDependencies: <Diagram extends PuzzleDependencyDiagram>(
-    diagram: Diagram
+  definePuzzleDependencies: <MetaData extends BasePuzzleEventStates>(
+    diagram: PuzzleDependencyDiagram<MetaData>
   ) => void;
   globalInteraction: GlobalInteraction<Game>;
 

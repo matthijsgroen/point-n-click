@@ -1,11 +1,12 @@
+import { diagramToMermaid } from "./diagramToMermaid";
+import { styleToMermaidString } from "./mermaidStyle";
 import {
   CHAPTER_STYLE,
-  diagramToMermaid,
   ERROR_STYLE,
   FILTERED_STYLE,
+  GROUP_STYLE,
   LOGIC_OR_STYLE,
-} from "./diagramToMermaid";
-import { styleToMermaidString } from "./mermaidStyle";
+} from "./styles";
 import { PuzzleDependencyDiagram } from "./types";
 
 describe(diagramToMermaid, () => {
@@ -28,8 +29,8 @@ describe(diagramToMermaid, () => {
       "flowchart TD",
       "  _start{{Start}}:::chapter",
       "  openDoor(openDoor)",
-      "  _start --> openDoor",
       `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+      "  _start --> openDoor",
     ]);
   });
 
@@ -42,8 +43,8 @@ describe(diagramToMermaid, () => {
       "flowchart TD",
       "  _start{{Start}}:::chapter",
       "  openDoor(open the door)",
-      "  _start --> openDoor",
       `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+      "  _start --> openDoor",
     ]);
   });
 
@@ -58,9 +59,9 @@ describe(diagramToMermaid, () => {
       "  _start{{Start}}:::chapter",
       "  getKey(getKey)",
       "  openDoor(open the door)",
+      `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
       "  _start --> getKey",
       "  getKey --> openDoor",
-      `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
     ]);
   });
 
@@ -75,9 +76,9 @@ describe(diagramToMermaid, () => {
       "  _start{{Start}}:::chapter",
       "  getStrong[[getStrong]]",
       "  openDoor(open the door)",
+      `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
       "  _start --> getStrong",
       "  getStrong --> openDoor",
-      `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
     ]);
   });
 
@@ -94,11 +95,11 @@ describe(diagramToMermaid, () => {
       "  threeTrials[[threeTrials]]",
       "  buyShip(buyShip)",
       "  startJourney{{startJourney}}:::chapter",
+      `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
       "  _start --> threeTrials",
       "  _start --> buyShip",
       "  buyShip --> startJourney",
       "  threeTrials --> startJourney",
-      `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
     ]);
   });
 
@@ -111,8 +112,8 @@ describe(diagramToMermaid, () => {
       "flowchart TD",
       "  _start{{Start}}:::chapter",
       "  openDoor(open the door)",
-      "  getStrong:::missingDep ---x openDoor",
       `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+      "  getStrong:::missingDep ---x openDoor",
       `  classDef missingDep ${styleToMermaidString(ERROR_STYLE)}`,
     ]);
   });
@@ -133,15 +134,15 @@ describe(diagramToMermaid, () => {
         "  _start{{Start}}:::chapter",
         "  threeTrials(threeTrials)",
         "  buyShip(buyShip)",
+        "  _or_startJourney{Or}:::logicOr",
         "  startJourney(startJourney)",
+        `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+        `  classDef logicOr ${styleToMermaidString(LOGIC_OR_STYLE)}`,
         "  _start --> threeTrials",
         "  _start --> buyShip",
-        "  _or_startJourney{Or}:::logicOr",
         "  buyShip -.-> _or_startJourney",
         "  threeTrials -.-> _or_startJourney",
         "  _or_startJourney --> startJourney",
-        `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
-        `  classDef logicOr ${styleToMermaidString(LOGIC_OR_STYLE)}`,
       ]);
     });
 
@@ -158,17 +159,34 @@ describe(diagramToMermaid, () => {
         "flowchart TD",
         "  _start{{Start}}:::chapter",
         "  threeTrials(threeTrials)",
-        "  startJourney(startJourney)",
-        "  _start --> threeTrials",
         "  _or_startJourney{Or}:::logicOr",
+        "  startJourney(startJourney)",
+        `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+        `  classDef logicOr ${styleToMermaidString(LOGIC_OR_STYLE)}`,
+        "  _start --> threeTrials",
         "  buyShip:::missingDep -.-x _or_startJourney",
         "  threeTrials -.-> _or_startJourney",
         "  _or_startJourney --> startJourney",
-        `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
-        `  classDef logicOr ${styleToMermaidString(LOGIC_OR_STYLE)}`,
         `  classDef missingDep ${styleToMermaidString(ERROR_STYLE)}`,
       ]);
     });
+  });
+
+  it("avoids placing the word 'end' in the diagram, since it is a reserved term", () => {
+    const diagram: PuzzleDependencyDiagram = {
+      end: {},
+      openDoor: { dependsOn: ["end"] },
+    };
+    const result = diagramToMermaid(diagram);
+    expect(result.split("\n")).toEqual([
+      "flowchart TD",
+      "  _start{{Start}}:::chapter",
+      "  _end_(end)",
+      "  openDoor(openDoor)",
+      `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+      "  _start --> _end_",
+      "  _end_ --> openDoor",
+    ]);
   });
 
   describe("filtering", () => {
@@ -186,16 +204,16 @@ describe(diagramToMermaid, () => {
         },
         openDoor: { dependsOn: ["getKey"], name: "open the door" },
       };
-      const result = diagramToMermaid(diagram, { state: ["done"] });
+      const result = diagramToMermaid(diagram, { filter: { state: ["done"] } });
       expect(result.split("\n")).toEqual([
         "flowchart TD",
         "  _start{{Start}}:::chapter",
         "  getKey(getKey)",
         "  openDoor(open the door):::filtered",
-        "  _start --> getKey",
-        "  getKey -.-> openDoor",
         `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
         `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
+        "  _start --> getKey",
+        "  getKey -.-> openDoor",
       ]);
     });
 
@@ -210,16 +228,16 @@ describe(diagramToMermaid, () => {
           },
         },
       };
-      const result = diagramToMermaid(diagram, { state: ["done"] });
+      const result = diagramToMermaid(diagram, { filter: { state: ["done"] } });
       expect(result.split("\n")).toEqual([
         "flowchart TD",
         "  _start{{Start}}:::chapter",
         "  getKey(getKey):::filtered",
         "  openDoor(open the door)",
-        "  _start -.-> getKey",
-        "  getKey -.-> openDoor",
         `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
         `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
+        "  _start -.-> getKey",
+        "  getKey -.-> openDoor",
       ]);
     });
 
@@ -240,18 +258,54 @@ describe(diagramToMermaid, () => {
           },
         },
       };
-      const result = diagramToMermaid(diagram, { state: ["done", "progress"] });
+      const result = diagramToMermaid(diagram, {
+        filter: { state: ["done", "progress"] },
+      });
       expect(result.split("\n")).toEqual([
         "flowchart TD",
         "  _start{{Start}}:::chapter",
         "  getKey(getKey):::filtered",
         "  openDoor(open the door)",
         "  startAdventure(startAdventure)",
+        `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
         "  _start -.-> getKey",
         "  getKey -.-> openDoor",
         "  openDoor --> startAdventure",
+      ]);
+    });
+
+    it("matches either value of the same filter (multiple tag values)", () => {
+      const diagram: PuzzleDependencyDiagram<MetaData> = {
+        getKey: {},
+        openDoor: {
+          dependsOn: ["getKey"],
+          name: "open the door",
+          tags: {
+            state: ["done", "progress"],
+          },
+        },
+        startAdventure: {
+          dependsOn: ["openDoor"],
+          tags: {
+            state: "progress",
+          },
+        },
+      };
+      const result = diagramToMermaid(diagram, {
+        filter: { state: ["progress"] },
+      });
+      expect(result.split("\n")).toEqual([
+        "flowchart TD",
+        "  _start{{Start}}:::chapter",
+        "  getKey(getKey):::filtered",
+        "  openDoor(open the door)",
+        "  startAdventure(startAdventure)",
         `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
         `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
+        "  _start -.-> getKey",
+        "  getKey -.-> openDoor",
+        "  openDoor --> startAdventure",
       ]);
     });
 
@@ -275,8 +329,10 @@ describe(diagramToMermaid, () => {
         },
       };
       const result = diagramToMermaid(diagram, {
-        state: ["done", "progress"],
-        location: ["farm"],
+        filter: {
+          state: ["done", "progress"],
+          location: ["farm"],
+        },
       });
       expect(result.split("\n")).toEqual([
         "flowchart TD",
@@ -284,11 +340,11 @@ describe(diagramToMermaid, () => {
         "  getKey(getKey):::filtered",
         "  openDoor(open the door)",
         "  startAdventure(startAdventure):::filtered",
+        `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
         "  _start -.-> getKey",
         "  getKey -.-> openDoor",
         "  openDoor -.-> startAdventure",
-        `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
-        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
       ]);
     });
 
@@ -312,7 +368,9 @@ describe(diagramToMermaid, () => {
         },
       };
       const result = diagramToMermaid(diagram, {
-        state: ["_all"],
+        filter: {
+          state: ["_all"],
+        },
       });
       expect(result.split("\n")).toEqual([
         "flowchart TD",
@@ -320,12 +378,144 @@ describe(diagramToMermaid, () => {
         "  getKey(getKey)",
         "  openDoor(open the door):::filtered",
         "  startAdventure(startAdventure):::filtered",
+        `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
         "  _start --> getKey",
         "  getKey -.-> openDoor",
         "  openDoor -.-> startAdventure",
-        `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
-        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
       ]);
+    });
+  });
+
+  describe("hierarchy", () => {
+    it("supports render option to show hierarchies, set to false", () => {
+      const diagram: PuzzleDependencyDiagram = {
+        getKey: { hierarchy: ["tower"] },
+        openDoor: {
+          dependsOn: ["getKey"],
+          hierarchy: ["dungeon"],
+        },
+        startAdventure: {
+          dependsOn: ["openDoor"],
+        },
+      };
+      const result = diagramToMermaid(diagram, {
+        renderHierarchy: false,
+      });
+      expect(result.split("\n")).toEqual([
+        "flowchart TD",
+        "  _start{{Start}}:::chapter",
+        "  getKey(getKey)",
+        "  openDoor(openDoor)",
+        "  startAdventure(startAdventure)",
+        `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+        "  _start --> getKey",
+        "  getKey --> openDoor",
+        "  openDoor --> startAdventure",
+      ]);
+    });
+
+    it("supports render option to show hierarchies, set to true", () => {
+      const diagram: PuzzleDependencyDiagram = {
+        getKey: { hierarchy: ["tower"] },
+        openDoor: {
+          dependsOn: ["getKey"],
+          hierarchy: ["dungeon"],
+        },
+        startAdventure: {
+          dependsOn: ["openDoor"],
+        },
+      };
+      const result = diagramToMermaid(diagram, {
+        renderHierarchy: true,
+      });
+      expect(result.split("\n")).toEqual([
+        "flowchart TD",
+        "  _start{{Start}}:::chapter",
+        "  startAdventure(startAdventure)",
+        "  subgraph tower",
+        "    getKey(getKey)",
+        "  end",
+        "  subgraph dungeon",
+        "    openDoor(openDoor)",
+        "  end",
+        "  class tower,dungeon group",
+        `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+        `  classDef group ${styleToMermaidString(GROUP_STYLE)}`,
+        "  _start --> getKey",
+        "  getKey --> openDoor",
+        "  openDoor --> startAdventure",
+      ]);
+    });
+
+    it("supports render option to show hierarchies deep hierarchies", () => {
+      const diagram: PuzzleDependencyDiagram = {
+        getKey: { hierarchy: ["tower"] },
+        openDoor: {
+          dependsOn: ["getKey"],
+          hierarchy: ["castle", "dungeon"],
+        },
+        startAdventure: {
+          dependsOn: ["openDoor"],
+          hierarchy: ["tower"],
+        },
+      };
+      const result = diagramToMermaid(diagram, {
+        renderHierarchy: true,
+      });
+      expect(result.split("\n")).toEqual([
+        "flowchart TD",
+        "  _start{{Start}}:::chapter",
+        "  subgraph tower",
+        "    getKey(getKey)",
+        "    startAdventure(startAdventure)",
+        "  end",
+        "  subgraph castle",
+        "    subgraph dungeon",
+        "      openDoor(openDoor)",
+        "    end",
+        "  end",
+        "  class tower,castle,dungeon group",
+        `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+        `  classDef group ${styleToMermaidString(GROUP_STYLE)}`,
+        "  _start --> getKey",
+        "  getKey --> openDoor",
+        "  openDoor --> startAdventure",
+      ]);
+    });
+
+    describe("'or' conditions", () => {
+      it("add a logic gate in between on same hierarchy level", () => {
+        const diagram: PuzzleDependencyDiagram = {
+          threeTrials: {},
+          buyShip: {},
+          startJourney: {
+            dependsOn: ["buyShip", "threeTrials"],
+            dependencyType: "or",
+            hierarchy: ["harbor"],
+          },
+        };
+        const result = diagramToMermaid(diagram, { renderHierarchy: true });
+        expect(result.split("\n")).toEqual([
+          "flowchart TD",
+          "  _start{{Start}}:::chapter",
+          "  threeTrials(threeTrials)",
+          "  buyShip(buyShip)",
+          "  subgraph harbor",
+          "    _or_startJourney{Or}:::logicOr",
+          "    startJourney(startJourney)",
+          "  end",
+          "  class harbor group",
+          `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+          `  classDef logicOr ${styleToMermaidString(LOGIC_OR_STYLE)}`,
+          `  classDef group ${styleToMermaidString(GROUP_STYLE)}`,
+          "  _start --> threeTrials",
+          "  _start --> buyShip",
+          "  buyShip -.-> _or_startJourney",
+          "  threeTrials -.-> _or_startJourney",
+          "  _or_startJourney --> startJourney",
+        ]);
+      });
     });
   });
 });
