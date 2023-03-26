@@ -27,7 +27,10 @@
     "@point-n-click/themes": "workspace:^",
     "@tanstack/react-query": "^4.13.0",
     "immer": "^9.0.19",
-    "mermaid": "^10.0.2"
+    "jotai": "^2.0.3",
+    "jotai-optics": "^0.3.0",
+    "mermaid": "^10.0.2",
+    "optics-ts": "^2.4.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.21",

@@ -3647,7 +3647,10 @@ __metadata:
     "@tanstack/react-query": ^4.13.0
     "@types/react": ^18.0.21
     immer: ^9.0.19
+    jotai: ^2.0.3
+    jotai-optics: ^0.3.0
     mermaid: ^10.0.2
+    optics-ts: ^2.4.0
     parcel: 2.7.0
     typescript: 4.7.3
   peerDependencies:
@@ -10854,6 +10857,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jotai-optics@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "jotai-optics@npm:0.3.0"
+  peerDependencies:
+    jotai: ">=1.11.0"
+    optics-ts: "*"
+  checksum: 446fb07780ce8bc5e85862a1921d9621dc273a096ec8c3fec8d525612bc14964600ade28e4f272f7cf490918d3e362218141cd13cdae9def47be45c20f5dc544
+  languageName: node
+  linkType: hard
+
+"jotai@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "jotai@npm:2.0.3"
+  peerDependencies:
+    react: ">=17.0.0"
+  peerDependenciesMeta:
+    react:
+      optional: true
+  checksum: 3ad1d6a9b7e40a8dd8cdc423441164c25852a328c98806ed0e2a283a4e07af661f4a88b50528367aeae582932171bc8979e45cbc9023af30b9f4a348faeed567
+  languageName: node
+  linkType: hard
+
 "js-sdsl@npm:^4.1.4":
   version: 4.3.0
   resolution: "js-sdsl@npm:4.3.0"
@@ -12290,6 +12315,13 @@ __metadata:
     is-docker: ^2.1.1
     is-wsl: ^2.2.0
   checksum: 6388bfff21b40cb9bd8f913f9130d107f2ed4724ea81a8fd29798ee322b361ca31fa2cdfb491a5c31e43a3996cfe9566741238c7a741ada8d7af1cb78d85cf26
+  languageName: node
+  linkType: hard
+
+"optics-ts@npm:^2.4.0":
+  version: 2.4.0
+  resolution: "optics-ts@npm:2.4.0"
+  checksum: 99f7af4ee4972152a1289eb472ac77f73d322fcd4ee4a7efdd56311343711ce40fc647565a51aff203ce83310c5c6bf7462a87c2bdd2e61d875da027e528dc7f
   languageName: node
   linkType: hard
 

@@ -13,7 +13,14 @@ const DisplayMermaid: React.FC<{
     });
   }, [diagram]);
 
-  return <div dangerouslySetInnerHTML={{ __html: image }}></div>;
+  return (
+    <div style={{ position: "relative", width: "100%" }}>
+      <div
+        style={{ position: "absolute", top: 0, left: 0, width: "100%" }}
+        dangerouslySetInnerHTML={{ __html: image }}
+      ></div>
+    </div>
+  );
 };
 
 export default DisplayMermaid;

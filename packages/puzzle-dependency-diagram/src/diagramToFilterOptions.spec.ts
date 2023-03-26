@@ -14,23 +14,24 @@ describe(diagramToFilterOptions, () => {
       const result = diagramToFilterOptions(diagram);
       expect(result).toEqual({});
     });
+
     it("returns  model based on encountered values", () => {
       const diagram: PuzzleDependencyDiagram<{
-        state: "todo" | "progress";
+        state: "todo" | "progress" | "done";
         release: "1.0" | "2.0";
         unused: "so not available";
       }> = {
         hello: { tags: { state: "todo" } },
-        bye: { tags: { state: "progress", release: "1.0" } },
+        bye: { tags: { state: ["progress", "done"], release: "1.0" } },
         something: {
           dependsOn: ["hello"],
-          tags: { release: "1.0" },
+          tags: { release: "1.0", state: "progress" },
         },
       };
 
       const result = diagramToFilterOptions(diagram);
       expect(result).toEqual({
-        state: ["_all", "todo", "progress"],
+        state: ["_all", "todo", "progress", "done"],
         release: ["_all", "1.0"],
       });
     });

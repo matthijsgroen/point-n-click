@@ -49,6 +49,7 @@ const getMatchFilter = <Diagram extends PuzzleDependencyDiagram>(
         (values.includes("_all") &&
           (tags === undefined || tags[key] === undefined)) ||
         (tags &&
+          tags[key] &&
           values.some((value) =>
             typeof tags[key] === "string"
               ? tags[key] === value

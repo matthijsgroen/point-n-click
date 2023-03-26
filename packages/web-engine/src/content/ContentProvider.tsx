@@ -33,6 +33,8 @@ import {
   subscribeClientSettings,
 } from "../settings";
 import styles from "./ContentProvider.module.css";
+import { useSetAtom } from "jotai";
+import { gameContentAtom } from "./gameContent";
 
 const defaultModel = emptyGameModel();
 
@@ -114,7 +116,7 @@ const REFETCH_INTERVAL = 3000;
 const USE_DEFAULT_LANGUAGE = "DEFAULT_LANG" as const;
 
 export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
-  const { isInitialLoading, data } = useQuery(
+  const { isInitialLoading, data: gameContent } = useQuery(
     ["gameContent"],
     async (): Promise<GameModel<GameWorld>> => {
       const data = await fetch("/assets/contents.json");
@@ -127,17 +129,21 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
         }
       : {}
   );
+  const setGameContent = useSetAtom(gameContentAtom);
+  if (gameContent) {
+    setGameContent(gameContent);
+  }
 
   const { data: languageData } = useQuery(
     ["languageContent"],
     async (): Promise<
       TranslationFile | typeof USE_DEFAULT_LANGUAGE | undefined
     > => {
-      if (!data) {
+      if (!gameContent) {
         return undefined;
       }
       const currentLocale = getClientSettings().currentLocale;
-      if (currentLocale !== data.settings.locales.default) {
+      if (currentLocale !== gameContent.settings.locales.default) {
         const data = await fetch(`/assets/lang/${currentLocale}.json`);
         return data.json();
       }
@@ -147,12 +153,12 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
       ? {
           refetchInterval: REFETCH_INTERVAL,
           refetchIntervalInBackground: true,
-          enabled: !!data,
+          enabled: !!gameContent,
         }
-      : { enabled: !!data }
+      : { enabled: !!gameContent }
   );
 
-  const [, rerender] = useState(0);
+  // const [, rerender] = useState(0);
   const queryClient = useQueryClient();
   const [gameSavePointState, setGameSavePointState] = useState<
     GameState<GameWorld> | undefined
@@ -174,14 +180,14 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
     );
     if (saveData !== gameSavePointState) {
       gameStateRef.current = saveData;
-      modelManager.setNewModel(data);
+      modelManager.setNewModel(gameContent);
       setGameSavePointState(saveData);
     }
   } else {
-    if (data && !gameSavePointState) {
-      const startState = createDefaultState(data);
+    if (gameContent && !gameSavePointState) {
+      const startState = createDefaultState(gameContent);
       gameStateRef.current = startState;
-      modelManager.setNewModel(data);
+      modelManager.setNewModel(gameContent);
       setGameSavePointState(startState);
     }
   }
@@ -220,22 +226,23 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
     if (gameStateRef.current) {
       setClientSettings({ skipMode: true });
-      modelManager.setNewModel(data);
-      rerender((s) => (s + 1) % 100);
+      console.log("provide new game content");
+      modelManager.setNewModel(gameContent);
+      // rerender((s) => (s + 1) % 100);
     }
-  }, [data, languageData]);
+  }, [gameContent, languageData]);
 
   useEffect(() => {
     const unsubscribe = subscribeClientSettings((newSettings, oldSettings) => {
       if (newSettings.currentLocale !== oldSettings.currentLocale) {
         queryClient.invalidateQueries(["languageContent"]);
-        rerender((s) => (s + 1) % 100);
+        // rerender((s) => (s + 1) % 100);
       }
     });
     return unsubscribe;
   }, [queryClient]);
 
-  if (isInitialLoading || !data || !gameStateRef.current) {
+  if (isInitialLoading || !gameContent || !gameStateRef.current) {
     return (
       <div className={styles.loading}>
         <p>Loading...</p>
