@@ -146,7 +146,7 @@ export const exportTranslations = async <Game extends GameWorld>(
   }
 
   for (const location of gameModel.locations) {
-    const locationScope = ["location", String(location.id)];
+    const locationScope = ["locations", String(location.id)];
     for (const enterScript of location.onEnter) {
       processScript(enterScript.script, locationScope, setTranslationKey);
     }

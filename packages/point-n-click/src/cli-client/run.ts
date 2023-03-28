@@ -18,10 +18,10 @@ export const runGame = async <Game extends GameWorld>(
   updateSettings({ color });
   updateTranslation({ translationData });
 
-  let model = gameModelManager.getModel();
+  // let model = gameModelManager.getModel();
   while (!gameModelManager.hasModel()) {
     await gameModelManager.waitForChange();
-    model = gameModelManager.getModel();
+    // model = gameModelManager.getModel();
   }
 
   enableKeyPresses();

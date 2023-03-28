@@ -44,7 +44,7 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
     cls();
     setColor(hexColor("ffff00"));
     console.log(
-      `Server running at: http://localhost:${runningPort}. Press space to skip, press q to quit.`
+      `Server running at: http://localhost:${runningPort}. Press space to skip, press q to quit. Lang: ${options.lang}`
     );
     resetStyling();
     console.log("");

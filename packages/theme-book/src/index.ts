@@ -3,10 +3,9 @@ import { Theme } from "@point-n-click/themes";
 import packageDef from "../package.json";
 import descriptionText from "@point-n-click/content-description-text";
 
-const bookTheme: Theme<Settings, [typeof descriptionText]> = (
-  name,
-  settings
-) => ({
+const extensions = [descriptionText] as const;
+
+const bookTheme: Theme<Settings, typeof extensions> = (name, settings) => ({
   name,
   author: packageDef.author,
   version: packageDef.version,
@@ -23,7 +22,7 @@ const bookTheme: Theme<Settings, [typeof descriptionText]> = (
     loadGame: "Load game",
   }),
   settings: { coverColor: "red", ...settings },
-  extensions: [descriptionText],
+  extensions,
 });
 
 export default bookTheme;

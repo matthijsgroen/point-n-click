@@ -26,7 +26,7 @@ export type ThemeRenderer<Settings extends ThemeSettings> = React.FC<{
 
 export type ThemeDefinition<
   Settings extends ThemeSettings,
-  Extensions extends ContentPlugin<DSLExtension>[]
+  Extensions extends readonly ContentPlugin<DSLExtension>[]
 > = {
   name: string;
   version: string;
@@ -42,7 +42,7 @@ export type ThemeDefinition<
 
 export type Theme<
   Settings extends ThemeSettings,
-  Extensions extends ContentPlugin<DSLExtension>[]
+  Extensions extends readonly ContentPlugin<DSLExtension>[]
 > = (
   name: string,
   settings: Partial<Settings>
