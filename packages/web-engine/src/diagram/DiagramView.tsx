@@ -26,7 +26,7 @@ const getPercentage = (
     }
   });
 
-  return (counter / totalCount) * 100;
+  return `${(counter / totalCount) * 100}`.slice(0, 5);
 };
 
 const scales = [0.5, 0.65, 0.75, 0.85, 1.0, 1.25, 1.5, 2.0, 2.5, 3, 4, 5, 7];
@@ -66,7 +66,6 @@ export const DiagramView: React.FC<{
   ];
 
   useEffect(() => {
-    console.log(scrollPos);
     // diagram updated, fix scroll pos
     scrollContainerRef.current?.scrollTo({
       left: scrollPos[0],
@@ -95,7 +94,7 @@ export const DiagramView: React.FC<{
         </div>
         <div>
           <h2>Options:</h2>
-          <label style={{ display: "block", textTransform: "capitalize" }}>
+          <div style={{ textTransform: "capitalize" }}>
             <button
               disabled={scaleIndex <= 0}
               onClick={() => setScaleIndex((index) => index - 1)}
@@ -109,7 +108,7 @@ export const DiagramView: React.FC<{
               +
             </button>
             Zoom
-          </label>
+          </div>
           <label style={{ display: "block", textTransform: "capitalize" }}>
             <input
               name={"renderHierarchy"}
