@@ -125,7 +125,7 @@ describe(diagramToMermaid, () => {
         buyShip: {},
         startJourney: {
           dependsOn: ["buyShip", "threeTrials"],
-          dependencyType: "or",
+          gateType: "or",
         },
       };
       const result = diagramToMermaid(diagram);
@@ -151,7 +151,7 @@ describe(diagramToMermaid, () => {
         threeTrials: {},
         startJourney: {
           dependsOn: ["buyShip", "threeTrials"],
-          dependencyType: "or",
+          gateType: "or",
         },
       };
       const result = diagramToMermaid(diagram);
@@ -491,7 +491,7 @@ describe(diagramToMermaid, () => {
           buyShip: {},
           startJourney: {
             dependsOn: ["buyShip", "threeTrials"],
-            dependencyType: "or",
+            gateType: "or",
             hierarchy: ["harbor"],
           },
         };

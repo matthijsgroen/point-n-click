@@ -76,7 +76,7 @@ const defineEdges = <Diagram extends PuzzleDependencyDiagram>(
     ...Object.entries(diagram).flatMap(([key, data]) => {
       const dependencies = data.dependsOn ?? [];
       const matchesFilter = matchFilter(key);
-      const orCondition = data.dependencyType === "or";
+      const orCondition = data.gateType === "or";
 
       const dependencyResult =
         dependencies.length === 0
@@ -171,7 +171,7 @@ const defineNodes = <Diagram extends PuzzleDependencyDiagram>(
     if (data.hierarchy && renderHierarchy) groupClasses.push(...data.hierarchy);
 
     const treeNode = getTreeNode(tree, renderHierarchy ? data.hierarchy : []);
-    if (data.dependencyType === "or") {
+    if (data.gateType === "or") {
       treeNode.nodes.push(m`_or_${key}{Or}:::logicOr`);
       classes["logicOr"] = styleToMermaidString(LOGIC_OR_STYLE);
     }

@@ -6,6 +6,12 @@ export type PuzzleEvent<PuzzleEventStates extends BasePuzzleEventStates = {}> =
      * Human readable name for this puzzle event
      */
     name?: string;
+
+    /**
+     * Larger description of the puzzle
+     */
+    description?: string;
+
     /**
      * List of puzzles that must be solved first
      */
@@ -14,7 +20,7 @@ export type PuzzleEvent<PuzzleEventStates extends BasePuzzleEventStates = {}> =
      * Must all dependencies be solved or only one.
      * @default "and"
      */
-    dependencyType?: "and" | "or";
+    gateType?: "and" | "or";
     /**
      * Type of puzzle
      * - Task means a repeatable puzzle
