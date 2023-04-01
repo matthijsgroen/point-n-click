@@ -20,6 +20,7 @@ const terminalTheme: Theme<Settings, typeof extensions> = (name, settings) => ({
     continuePlaying: "Continue playing",
     saveGame: "Save game",
     loadGame: "Load game",
+    close: "Close",
   }),
   settings: { color: true, ...settings },
   extensions,

@@ -108,6 +108,7 @@ export const exportTranslations = async <Game extends GameWorld>(
 ) => {
   const translationObject: TranslationFile = {};
   const setTranslationKey = (key: string[], value: string) => {
+    if (value === "") return;
     let obj = translationObject;
     const path = key.slice(0, -1);
     const tail = key.slice(-1)[0];

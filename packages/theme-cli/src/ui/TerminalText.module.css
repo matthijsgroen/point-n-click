@@ -10,6 +10,13 @@
 .lines span.line strong {
   text-shadow: var(--color, #fff) 0 0 10px;
 }
+.chatIndent {
+  text-indent: 2ch;
+}
+.autoIndent {
+  text-indent: -2ch;
+  padding-left: 2ch;
+}
 
 .cursor span.line:last-of-type {
   opacity: 1;

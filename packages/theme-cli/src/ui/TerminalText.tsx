@@ -5,6 +5,8 @@ import {
   isContentPluginContent,
 } from "@point-n-click/engine";
 import { GameWorld } from "@point-n-click/types";
+import classNames from "classnames";
+import classnames from "classnames";
 import React from "react";
 import { isDescriptionText } from "../isDescriptionText";
 import { Settings } from "../types";
@@ -22,7 +24,9 @@ export const TerminalText: React.FC<{
     if (isDescriptionText(item)) {
       return (
         <p
-          className={`${styles.lines} ${displayCursor ? styles.cursor : ""}`}
+          className={classNames(styles.lines, {
+            [styles.cursor]: displayCursor,
+          })}
           style={
             settings.color
               ? ({
@@ -46,7 +50,7 @@ export const TerminalText: React.FC<{
   if (item.type === "narratorText") {
     return (
       <p
-        className={`${styles.lines} ${displayCursor ? styles.cursor : ""}`}
+        className={classNames(styles.lines, { [styles.cursor]: displayCursor })}
         style={
           settings.color
             ? ({
@@ -68,7 +72,7 @@ export const TerminalText: React.FC<{
   if (item.type === "characterText") {
     return (
       <p
-        className={`${styles.lines} ${displayCursor ? styles.cursor : ""}`}
+        className={classNames(styles.lines, { [styles.cursor]: displayCursor })}
         style={
           settings.color
             ? ({
@@ -82,12 +86,17 @@ export const TerminalText: React.FC<{
         }
       >
         {item.text.map((textLine, index, list) => (
-          <span className={styles.line} key={index}>
-            {index === 0 ? (
-              `${item.displayName}: "`
-            ) : (
-              <span style={{ paddingLeft: "2ch" }}></span>
+          <span
+            className={classnames(
+              {
+                [styles.chatIndent]: index !== 0,
+                [styles.autoIndent]: index === 0,
+              },
+              styles.line
             )}
+            key={index}
+          >
+            {index === 0 && `${item.displayName}: "`}
             {formatText(textLine)}
             {index === list.length - 1 ? '"' : ""}
           </span>

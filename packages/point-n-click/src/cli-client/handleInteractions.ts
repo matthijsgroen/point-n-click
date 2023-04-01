@@ -28,6 +28,7 @@ export const handleInteractions = async <Game extends GameWorld>(
   modelManager: GameModelManager<Game>,
   clearScreen: () => void
 ) => {
+  console.log("");
   console.log(interactions.prompt);
   console.log("");
 

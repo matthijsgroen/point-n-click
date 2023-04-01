@@ -30,26 +30,35 @@ export const renderScreen = async <Game extends GameWorld>(
     : undefined;
 
   const getColor = getPaletteColor(gameModelManager, "dark");
+  let viewKey: string = "";
+
+  const setKey = (key: string) => {
+    if (key === viewKey) return;
+    if (viewKey !== key && viewKey !== "") {
+      console.log("");
+    }
+    viewKey = key;
+  };
 
   for (const displayItem of info) {
     if (isContentPluginContent(displayItem)) {
       if (isDescriptionText(displayItem)) {
+        setKey("text");
         for (const sentence of displayItem.text) {
           const cpm = stateManager.getState().settings.cpm;
           const color = getColor(textColor);
           await renderText(sentence, cpm, { color });
         }
-        console.log("");
         resetStyling();
       }
       continue;
     }
     if (displayItem.type === "narratorText") {
+      setKey("text");
       for (const sentence of displayItem.text) {
         const color = getColor(textColor);
         await renderText(sentence, displayItem.cpm, { color });
       }
-      console.log("");
       resetStyling();
     } else if (displayItem.type === "characterText") {
       if (
@@ -72,6 +81,7 @@ export const renderScreen = async <Game extends GameWorld>(
             displayItem.character
           ].textColor
         : undefined;
+      setKey(`char:${name}`);
 
       for (const index in displayItem.text) {
         let text: FormattedText = [];
@@ -89,7 +99,6 @@ export const renderScreen = async <Game extends GameWorld>(
         const c = getColor(color);
         await renderText(text, displayItem.cpm, { color: c });
       }
-      console.log("");
       resetStyling();
     } else if (displayItem.type === "error") {
       stateManager.setPlayState("reloading");

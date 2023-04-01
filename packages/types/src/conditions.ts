@@ -48,6 +48,11 @@ export type OverlayOpenCondition<Game extends GameWorld> = {
   overlay?: Game["overlays"];
 };
 
+export type LocationCondition<Game extends GameWorld> = {
+  op: "IsLocation";
+  location: keyof Game["locations"];
+};
+
 export type GameObjectStateCondition<
   Game extends GameWorld,
   ItemType extends StateObject
@@ -79,6 +84,7 @@ export type StateCondition<Game extends GameWorld> =
   | GameObjectCounterCondition<Game, "item">
   | GameObjectCounterCondition<Game, "location">
   | OverlayOpenCondition<Game>
+  | LocationCondition<Game>
   | TrueCondition
   | FalseCondition
   | NegateCondition<Game>

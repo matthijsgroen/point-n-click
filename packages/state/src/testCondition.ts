@@ -3,8 +3,6 @@ import {
   NumberComparator,
   StateCondition,
   GameStateManager,
-  WorldObjectSettings,
-  GameObjectState,
 } from "@point-n-click/types";
 
 const numberCompare = (
@@ -92,6 +90,9 @@ export const testCondition = <Game extends GameWorld>(
     } else {
       return openOverlays.length > 0;
     }
+  }
+  if (condition.op === "IsLocation") {
+    return stateManager.getState().currentLocation === condition.location;
   }
 
   return true;

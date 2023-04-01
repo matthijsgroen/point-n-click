@@ -21,7 +21,8 @@
     "@point-n-click/state": "workspace:^",
     "@point-n-click/themes": "workspace:^",
     "@point-n-click/types": "workspace:^",
-    "@point-n-click/web-engine": "workspace:^"
+    "@point-n-click/web-engine": "workspace:^",
+    "classnames": "^2.3.2"
   },
   "peerDependencies": {
     "react": "^18.2.0",

@@ -56,7 +56,7 @@ export const SettingsDialog = forwardRef<HTMLDialogElement, Props>(
           </ButtonGroup>
           <ButtonGroup>
             <DialogButton value="close" onClick={onClose}>
-              Close
+              {translations["close"] as string}
             </DialogButton>
           </ButtonGroup>
         </form>
