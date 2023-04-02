@@ -10,7 +10,8 @@ import { renderScreen } from "./renderScreen";
 export const runLocation = async <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
   stateManager: GameStateManager<Game>,
-  clearScreen: () => void
+  clearScreen: () => void,
+  { lightMode }: { lightMode: boolean }
 ) => {
   const currentLocation = stateManager.getState().currentLocation;
 
@@ -29,7 +30,9 @@ export const runLocation = async <Game extends GameWorld>(
       return;
     }
 
-    await renderScreen(displayInfo, gameModelManager, stateManager);
+    await renderScreen(displayInfo, gameModelManager, stateManager, {
+      lightMode,
+    });
 
     if (stateManager.isAborting()) {
       return;

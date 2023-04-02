@@ -12,6 +12,7 @@ import { join } from "node:path";
 
 type ServerOptions = {
   lang: string;
+  lightMode: boolean;
   port: number;
   resolver: (packageName: string) => string;
 };
@@ -55,7 +56,7 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
   };
 
   await runGame(
-    { color: true, translationData },
+    { color: true, translationData, lightMode: options.lightMode },
     modelManager,
     gameStateManager,
     clearScreen

@@ -16,6 +16,7 @@ export const cli = (
   program
     .command("dev [source]")
     .option("-l, --lang <language>")
+    .option("--light", "light mode (terminal with light background)")
     .option(
       "-p, --port <portnumber>",
       "port to run the dev server on",
@@ -23,8 +24,12 @@ export const cli = (
       3456
     )
     .description("start build server and game")
-    .action((source, options) => {
-      devServer(source, { ...options, resolver });
+    .action((source, { light, ...options }) => {
+      devServer(source, {
+        ...options,
+        lightMode: options.light ?? false,
+        resolver,
+      });
     });
 
   program.parse(args);

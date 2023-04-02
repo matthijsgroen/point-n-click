@@ -4,6 +4,7 @@ import { MemoryFS } from "@parcel/fs";
 import {
   clearRegisteredThemes,
   GameModelManager,
+  getTranslation,
   registerTheme,
 } from "@point-n-click/engine";
 import { GameModel, Locale } from "@point-n-click/state";
@@ -38,9 +39,15 @@ const watchTranslations = <Game extends GameWorld>(
     "translations",
     `${locale}.json`
   );
-  watch(fileName, { signal }, async () => {
+  watch(fileName, { signal }, async (eventType) => {
+    const translationBefore = getTranslation();
     await loadTranslationData(locale);
-    gameModelManager.restoreModel();
+    const translationAfter = getTranslation();
+    if (
+      JSON.stringify(translationBefore) !== JSON.stringify(translationAfter)
+    ) {
+      gameModelManager.restoreModel();
+    }
   });
 
   return ac;

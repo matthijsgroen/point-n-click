@@ -10,7 +10,11 @@ import {
 } from "@point-n-click/engine";
 
 export const runGame = async <Game extends GameWorld>(
-  { color = true, translationData }: CLISettings & TranslationSettings,
+  {
+    color = true,
+    translationData,
+    lightMode,
+  }: CLISettings & TranslationSettings & { lightMode: boolean },
   gameModelManager: GameModelManager<Game>,
   stateManager: GameStateManager<Game>,
   clearScreen: () => void
@@ -18,10 +22,8 @@ export const runGame = async <Game extends GameWorld>(
   updateSettings({ color });
   updateTranslation({ translationData });
 
-  // let model = gameModelManager.getModel();
   while (!gameModelManager.hasModel()) {
     await gameModelManager.waitForChange();
-    // model = gameModelManager.getModel();
   }
 
   enableKeyPresses();
@@ -29,7 +31,9 @@ export const runGame = async <Game extends GameWorld>(
   clearScreen();
 
   while (stateManager.getPlayState() !== "quitting") {
-    await runLocation(gameModelManager, stateManager, clearScreen);
+    await runLocation(gameModelManager, stateManager, clearScreen, {
+      lightMode,
+    });
     if (stateManager.getPlayState() === "reloading") {
       let model = gameModelManager.getModel();
       while (!gameModelManager.hasModel()) {

@@ -9,8 +9,6 @@ import { mkdir } from "./mkdir";
 import { writeFile } from "node:fs/promises";
 import Parcel, { createWorkerFarm } from "@parcel/core";
 import { PackagedBundle } from "@parcel/types";
-// import { MemoryFS } from "@parcel/fs";
-// import mime from "mime/lite";
 import { htmlFile, indexFile } from "./templates/game";
 import { htmlFile as diagramHtmlFile, scriptFile } from "./templates/diagram";
 import { GameModel } from "@point-n-click/state";
@@ -39,9 +37,6 @@ export const startWebserver = async (
   const devServerOutputPath = join(CACHE_FOLDER, "dev-dist");
   await mkdir(devServerPath);
   await mkdir(devServerOutputPath);
-
-  // const workerFarm = createWorkerFarm();
-  // const outputFS = new MemoryFS(workerFarm);
 
   let model = modelManager.getModel();
   while (!modelManager.hasModel()) {
@@ -253,28 +248,6 @@ export const startWebserver = async (
   const translationFilePath = join(process.cwd(), "src", "translations");
   app.use("/assets/lang/", express.static(translationFilePath));
   app.use("/", express.static(devServerOutputPath));
-
-  // const getBundle = (path: string): PackagedBundle | undefined => {
-  //   const bundlePath = path === "/" ? "/index.html" : path;
-  //   return bundleMap[bundlePath];
-  // };
-
-  // app.use((req, res, next) => {
-  //   const bundle = getBundle(req.path);
-  //   if (bundle) {
-  //     const filePath = bundle.filePath;
-  //     const stats = outputFS.statSync(filePath);
-  //     const mimeType = mime.getType(filePath);
-  //     res.set({
-  //       "Content-type": mimeType,
-  //       "Content-length": stats.size,
-  //     });
-  //     outputFS.createReadStream(filePath).pipe(res);
-  //     return;
-  //   }
-
-  //   next();
-  // });
 
   const server = app.listen(port, () => {
     serverStartResolver();

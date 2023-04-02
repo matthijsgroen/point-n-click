@@ -22,14 +22,18 @@ const isDescriptionText = (
 export const renderScreen = async <Game extends GameWorld>(
   info: DisplayInfo<Game>[],
   gameModelManager: GameModelManager<Game>,
-  stateManager: GameStateManager<Game>
+  stateManager: GameStateManager<Game>,
+  { lightMode }: { lightMode: boolean }
 ): Promise<void> => {
   const useColor = getSettings().color;
   const textColor = useColor
     ? gameModelManager.getModel().settings.colors.defaultTextColor
     : undefined;
 
-  const getColor = getPaletteColor(gameModelManager, "dark");
+  const getColor = getPaletteColor(
+    gameModelManager,
+    lightMode ? "light" : "dark"
+  );
   let viewKey: string = "";
 
   const setKey = (key: string) => {
