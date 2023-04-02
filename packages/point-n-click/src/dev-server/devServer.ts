@@ -40,6 +40,10 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
     options
   );
 
+  process.stdout.on("resize", () => {
+    modelManager.restoreModel();
+  });
+
   const clearScreen = () => {
     cls();
     setColor(hexColor("ffff00"));

@@ -97,7 +97,7 @@ export const renderScreen = async <Game extends GameWorld>(
           text.push({ type: "text", text: '"' });
         }
         const c = getColor(color);
-        await renderText(text, displayItem.cpm, { color: c });
+        await renderText(text, displayItem.cpm, { color: c, indent: 2 });
       }
       resetStyling();
     } else if (displayItem.type === "error") {

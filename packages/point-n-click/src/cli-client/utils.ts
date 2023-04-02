@@ -8,6 +8,7 @@ export type TextStyling = {
   bold?: boolean;
   strikeThrough?: boolean;
   italic?: boolean;
+  indent?: number;
 };
 
 export const setColor = (color: HexColor) => {
