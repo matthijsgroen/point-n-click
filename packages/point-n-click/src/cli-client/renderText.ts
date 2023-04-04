@@ -5,19 +5,34 @@ import { wait, resetStyling, setStyling, TextStyling } from "./utils";
 
 const minute = 60e3;
 
+const getTextLength = (text: FormattedText): number =>
+  text.reduce(
+    (r, e) =>
+      e.type === "text" ? r + e.text.length : r + getTextLength(e.contents),
+    0
+  );
+
 export const splitLines = (
   text: FormattedText,
-  indent: number,
+  styling: TextStyling,
   maxWidth: number
 ): FormattedText => {
-  let current = 0;
+  const prefix = styling.prefix ?? [];
+  const postfix = styling.postfix ?? [];
+  const prefLength = getTextLength(prefix);
+  const postLength = getTextLength(postfix);
+  let current = prefLength;
+  const indent = styling.indent ?? 0;
+
+  const formattedText = [...prefix, ...text];
 
   const handleText = (t: FormattedText) => {
+    const result: FormattedText = [];
     for (let i = 0; i < t.length; i++) {
       const element = t[i];
       if (element.type === "text") {
         const chars = element.text;
-        if (chars.length + current > maxWidth) {
+        if (chars.length + current + postLength > maxWidth) {
           let sentence = "";
           let word = "";
           for (const char of chars.split("")) {
@@ -25,8 +40,20 @@ export const splitLines = (
               word += char;
 
               if (current + word.length > maxWidth) {
-                sentence += `\n${Array(indent).fill(" ").join("")}`;
-                current = indent;
+                result.push({ type: "text", text: sentence });
+                if (styling.postfix) {
+                  const spacing = maxWidth - current;
+                  result.push({
+                    type: "text",
+                    text: Array(spacing).fill(" ").join(""),
+                  });
+                  result.push(...postfix);
+                }
+                result.push({ type: "text", text: "\n" });
+                result.push(...prefix);
+
+                sentence = `${Array(indent).fill(" ").join("")}`;
+                current = indent + prefLength + postLength;
               }
 
               sentence += word;
@@ -37,26 +64,48 @@ export const splitLines = (
             }
           }
           if (current + word.length > maxWidth) {
-            sentence += `\n${Array(indent).fill(" ").join("")}`;
-            current = indent;
+            result.push({ type: "text", text: sentence });
+            if (styling.postfix) {
+              const spacing = maxWidth - current;
+              result.push({
+                type: "text",
+                text: Array(spacing).fill(" ").join(""),
+              });
+              result.push(...postfix);
+            }
+            result.push({ type: "text", text: "\n" });
+            result.push(...prefix);
+
+            sentence = `${Array(indent).fill(" ").join("")}`;
+            current = indent + prefLength + postLength;
           }
           sentence += word;
           current += word.length;
 
-          element.text = sentence;
+          result.push({ type: "text", text: sentence });
         } else {
           current += chars.length;
+          result.push({ type: "text", text: element.text });
         }
       }
       if (element.type === "formatting") {
-        handleText(element.contents);
+        const formattedText = handleText(element.contents);
+        result.push({ ...element, contents: formattedText });
       }
     }
+    return result;
   };
 
-  handleText(text);
-
-  return text;
+  const res = handleText(formattedText);
+  if (styling.postfix) {
+    const spacing = maxWidth - current;
+    res.push({
+      type: "text",
+      text: Array(spacing).fill(" ").join(""),
+    });
+    res.push(...postfix);
+  }
+  return res;
 };
 
 export const renderText = async (
@@ -66,8 +115,7 @@ export const renderText = async (
   addNewline = true
 ) => {
   const width = process.stdout.columns ?? Infinity;
-  const line = splitLines(text, styling.indent ?? 0, width);
-  // const line = text;
+  const line = splitLines(text, styling, width);
   await renderLine(line, cpm, styling);
 
   if (addNewline) {
@@ -116,7 +164,7 @@ export const renderLine = async (
       if (element.format === "color" && element.value) {
         newStyling.color = hexColor(element.value);
       }
-      await renderText(element.contents, cpm, newStyling, false);
+      await renderLine(element.contents, cpm, newStyling);
       if (getSettings().color) {
         resetStyling();
         setStyling(styling);

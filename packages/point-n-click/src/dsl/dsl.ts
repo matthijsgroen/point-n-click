@@ -11,6 +11,7 @@ import {
   ContentPlugin,
   DSLExtension,
   SystemInterface,
+  Script,
 } from "@point-n-click/types";
 import { GameModel, Settings, ThemeInfo } from "@point-n-click/state";
 import { characterDSLFunctions, CharacterInterface } from "./character";
@@ -74,6 +75,7 @@ type GameWorldDSL<Version extends number, Game extends GameWorld<Version>> = {
   globalInteraction: GlobalInteraction<Game>;
 
   text: (...sentences: string[]) => void;
+  contentDecoration: (type: string, script: Script) => void;
   describeLocation: () => void;
   openOverlay: (id: Game["overlays"]) => void;
 
@@ -127,7 +129,7 @@ export const world =
 
     let activeScriptScope: ScriptAST<Game> = [];
 
-    const wrapScript = (execution: () => void): ScriptAST<Game> => {
+    const wrapScript = (execution: Script): ScriptAST<Game> => {
       const previousScript = activeScriptScope;
       const script: ScriptAST<Game> = [];
 
@@ -241,6 +243,13 @@ export const world =
           locationAST as unknown as GameLocation<Game>
         );
       },
+      contentDecoration: (decorationType: string, script: Script) => {
+        addToActiveScript({
+          statementType: "ContentDecoration",
+          decorationType,
+          content: wrapScript(script),
+        });
+      },
       definePuzzleDependencies: (diagram) => {
         worldModel.diagram = diagram;
       },
@@ -282,9 +291,14 @@ export const world =
     const createSystemInterface = (
       contentPlugin: ContentPlugin<DSLExtension>
     ): SystemInterface => ({
-      addContent: (item) => {
+      addPluginContent: (item) => {
         activeScriptScope.push({ ...item, source: contentPlugin.pluginType });
       },
+      addBaseContent: (item) => {
+        activeScriptScope.push(item as unknown as ScriptStatement<Game>);
+      },
+      wrapScript: (execution: Script) =>
+        wrapScript(execution) as ScriptAST<GameWorld>,
     });
 
     const pluginDSLFunctions: Record<string, (...args: any[]) => void> = {};

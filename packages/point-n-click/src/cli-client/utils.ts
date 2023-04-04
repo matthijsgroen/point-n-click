@@ -1,3 +1,4 @@
+import { FormattedText } from "@point-n-click/engine";
 import { HexColor } from "@point-n-click/state";
 
 export const cls = () => process.stdout.write("\x1Bc");
@@ -9,6 +10,8 @@ export type TextStyling = {
   strikeThrough?: boolean;
   italic?: boolean;
   indent?: number;
+  prefix?: FormattedText;
+  postfix?: FormattedText;
 };
 
 export const setColor = (color: HexColor) => {

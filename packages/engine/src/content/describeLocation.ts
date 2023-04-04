@@ -28,7 +28,9 @@ export const describeLocation = <Game extends GameWorld>(
         (item) => item.to === currentLocation
       );
       if (exitScript) {
-        result.push(...runScript<Game>(exitScript.script, stateManager));
+        result.push(
+          ...runScript<Game>(exitScript.script, stateManager, gameModelManager)
+        );
       }
     }
 
@@ -40,12 +42,18 @@ export const describeLocation = <Game extends GameWorld>(
       previousLocation: currentLocation,
     }));
     if (enterScript) {
-      result.push(...runScript<Game>(enterScript.script, stateManager));
+      result.push(
+        ...runScript<Game>(enterScript.script, stateManager, gameModelManager)
+      );
     }
   }
 
   result.push(
-    ...runScript<Game>(locationData?.describe.script || [], stateManager)
+    ...runScript<Game>(
+      locationData?.describe.script || [],
+      stateManager,
+      gameModelManager
+    )
   );
 
   return result;

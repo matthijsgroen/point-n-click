@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@point-n-click/content-description-text": "workspace:^",
+    "@point-n-click/content-note-letter": "workspace:^",
     "@point-n-click/engine": "workspace:^",
     "@point-n-click/state": "workspace:^",
     "@point-n-click/themes": "workspace:^",

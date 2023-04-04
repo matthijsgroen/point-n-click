@@ -1,6 +1,7 @@
 import { DisplayErrorText } from "@point-n-click/engine";
 import { GameStateManager } from "./state";
 import { GameWorld } from "./world";
+import { Script, ScriptAST, ScriptStatement } from "./ast";
 
 export interface ContentStatement {
   statementType: string;
@@ -11,7 +12,9 @@ export interface ContentPluginStatement extends ContentStatement {
 }
 
 export type SystemInterface = {
-  addContent: <Item extends ContentStatement>(item: Item) => void;
+  addPluginContent: <Item extends ContentStatement>(item: Item) => void;
+  addBaseContent: (item: ScriptStatement<GameWorld>) => void;
+  wrapScript: (execution: Script) => ScriptAST<GameWorld>;
 };
 
 export type DSLExtension = Record<

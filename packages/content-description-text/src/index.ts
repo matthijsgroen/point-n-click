@@ -1,6 +1,7 @@
 import {
   ContentPlugin,
   ContentStatement,
+  GameWorld,
   SystemInterface,
 } from "@point-n-click/types";
 import { FormattedText, handleTextContent } from "@point-n-click/engine";
@@ -23,7 +24,10 @@ const isTextStatement = (item: ContentStatement): item is TextStatement =>
 
 const textDslFunctions = {
   descriptionText: (system: SystemInterface, ...sentences: string[]) => {
-    system.addContent({ statementType: "descriptionText", content: sentences });
+    system.addPluginContent({
+      statementType: "descriptionText",
+      content: sentences,
+    });
   },
 } as const;
 

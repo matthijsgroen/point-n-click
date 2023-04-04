@@ -19,11 +19,18 @@ const isDescriptionText = (
 ): item is ContentPluginContent & { text: FormattedText[] } =>
   item.pluginSource === "descriptionText" && item.type === "descriptionText";
 
+const isListItem = (text: FormattedText): boolean =>
+  text[0].type === "text" && text[0].text.startsWith("- ");
+
 export const renderScreen = async <Game extends GameWorld>(
   info: DisplayInfo<Game>[],
   gameModelManager: GameModelManager<Game>,
   stateManager: GameStateManager<Game>,
-  { lightMode }: { lightMode: boolean }
+  {
+    lightMode,
+    prefix,
+    postfix,
+  }: { lightMode: boolean; prefix?: FormattedText; postfix?: FormattedText }
 ): Promise<void> => {
   const useColor = getSettings().color;
   const textColor = useColor
@@ -51,7 +58,12 @@ export const renderScreen = async <Game extends GameWorld>(
         for (const sentence of displayItem.text) {
           const cpm = stateManager.getState().settings.cpm;
           const color = getColor(textColor);
-          await renderText(sentence, cpm, { color });
+          await renderText(sentence, cpm, {
+            color,
+            prefix,
+            postfix,
+            indent: isListItem(sentence) ? 2 : 0,
+          });
         }
         resetStyling();
       }
@@ -61,7 +73,12 @@ export const renderScreen = async <Game extends GameWorld>(
       setKey("text");
       for (const sentence of displayItem.text) {
         const color = getColor(textColor);
-        await renderText(sentence, displayItem.cpm, { color });
+        await renderText(sentence, displayItem.cpm, {
+          color,
+          prefix,
+          postfix,
+          indent: isListItem(sentence) ? 2 : 0,
+        });
       }
       resetStyling();
     } else if (displayItem.type === "characterText") {
@@ -101,9 +118,52 @@ export const renderScreen = async <Game extends GameWorld>(
           text.push({ type: "text", text: '"' });
         }
         const c = getColor(color);
-        await renderText(text, displayItem.cpm, { color: c, indent: 2 });
+
+        await renderText(text, displayItem.cpm, {
+          color: c,
+          indent: 2,
+          prefix,
+          postfix,
+        });
       }
+
       resetStyling();
+    } else if (displayItem.type === "contentDecoration") {
+      console.log("\n");
+      if (displayItem.decorationType === "note") {
+        const width = process.stdout.columns - 6;
+
+        await renderText(
+          [{ type: "text", text: `  /${Array(width).fill("-").join("")}\\  ` }],
+          0,
+          {}
+        );
+        await renderScreen(
+          displayItem.content,
+          gameModelManager,
+          stateManager,
+          {
+            lightMode,
+            prefix: [{ type: "text", text: "  | " }],
+            postfix: [{ type: "text", text: " |  " }],
+          }
+        );
+        await renderText(
+          [{ type: "text", text: `  \\${Array(width).fill("-").join("")}/  ` }],
+          0,
+          {}
+        );
+      } else {
+        await renderScreen(
+          displayItem.content,
+          gameModelManager,
+          stateManager,
+          {
+            lightMode,
+          }
+        );
+      }
+      console.log("\n");
     } else if (displayItem.type === "error") {
       stateManager.setPlayState("reloading");
       gameModelManager.backupModel();

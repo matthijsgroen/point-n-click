@@ -38,10 +38,17 @@ type CharacterText<Game extends GameWorld> = {
   displayName?: string;
 };
 
+type ContentDecoration<Game extends GameWorld> = {
+  type: "contentDecoration";
+  decorationType: string;
+  content: DisplayInfo<Game>[];
+};
+
 export type DisplayInfo<Game extends GameWorld> =
   | DisplayErrorText
   | NarratorText
   | CharacterText<Game>
+  | ContentDecoration<Game>
   | ContentPluginContent;
 
 type StatementHandler<
@@ -86,19 +93,21 @@ const statementHandler = <
     ) => {
       stateManager.updateState(
         produce((draft) => {
-          const item = (draft as GameState<Game>)[`${objectType}s`][stateItem];
+          const item = (draft as GameState<Game>)[`${objectType}s`][
+            stateItem
+          ] as { texts?: Record<string, string> };
           if (item) {
             if (item.texts === undefined) {
               item.texts = {};
             }
-            item.texts[name] = text;
+            item.texts[name as string] = text;
           } else if (objectType === "item") {
             type ItemState = GameObjectState<Game["items"][typeof stateItem]>;
             const itemState: ItemState = {
               state: "unknown",
               flags: {},
               counters: {},
-              texts: { [name]: text },
+              texts: { [name as string]: text },
             } as unknown as ItemState;
             (draft as GameState<Game>).items[stateItem as keyof Game["items"]] =
               itemState;
@@ -130,17 +139,19 @@ const statementHandler = <
     ) => {
       stateManager.updateState(
         produce((draft) => {
-          const item = (draft as GameState<Game>)[`${objectType}s`][stateItem];
+          const item = (draft as GameState<Game>)[`${objectType}s`][
+            stateItem
+          ] as { state?: string };
           if (item) {
             item.state = newState;
           } else if (objectType === "item") {
             type ItemState = GameObjectState<Game["items"][typeof stateItem]>;
             const itemState: ItemState = {
-              state: newState,
+              state: newState as ItemState["state"],
               flags: {},
               counters: {},
-              texts: {},
-            } as unknown as ItemState;
+              texts: {} as ItemState["texts"],
+            };
             (draft as GameState<Game>).items[stateItem as keyof Game["items"]] =
               itemState;
           }
@@ -154,15 +165,21 @@ const statementHandler = <
     ) => {
       stateManager.updateState(
         produce((draft) => {
-          const item = (draft as GameState<Game>)[`${objectType}s`][stateItem];
+          const item = (draft as GameState<Game>)[`${objectType}s`][
+            stateItem
+          ] as { flags?: Record<string, boolean> };
           if (item && item.flags) {
-            item.flags[String(flag) as keyof typeof item.flags] = value;
+            item.flags[String(flag)] = value;
           } else if (objectType === "item") {
-            (draft as GameState<Game>).items[stateItem] = {
+            type ItemState = GameObjectState<Game["items"][typeof stateItem]>;
+            const itemState: ItemState = {
               state: "unknown",
-              flags: { [String(flag)]: value },
+              flags: { [String(flag)]: value } as ItemState["flags"],
               counters: {},
+              texts: {} as ItemState["texts"],
             };
+            (draft as GameState<Game>).items[stateItem as keyof Game["items"]] =
+              itemState;
           }
         })
       );
@@ -174,7 +191,9 @@ const statementHandler = <
     ) => {
       stateManager.updateState(
         produce((draft) => {
-          const item = (draft as GameState<Game>)[`${objectType}s`][stateItem];
+          const item = (draft as GameState<Game>)[`${objectType}s`][
+            stateItem
+          ] as { counters: Record<string, number> };
           const prevValue = item ? item.counters[String(name)] : 0;
 
           const nextValue = (() => {
@@ -192,11 +211,18 @@ const statementHandler = <
             item.counters[String(name)] = nextValue;
           } else {
             if (objectType === "item") {
-              (draft as GameState<Game>).items[stateItem] = {
+              type ItemState = GameObjectState<Game["items"][typeof stateItem]>;
+              const itemState: ItemState = {
                 state: "unknown",
                 flags: {},
-                counters: { [String(name)]: nextValue },
+                counters: {
+                  [String(name)]: nextValue,
+                } as ItemState["counters"],
+                texts: {} as ItemState["texts"],
               };
+              (draft as GameState<Game>).items[
+                stateItem as keyof Game["items"]
+              ] = itemState;
             }
           }
         })
@@ -299,6 +325,19 @@ const statementHandler = <
         })
       );
       return null;
+    },
+    ContentDecoration: (
+      statement,
+      stateManager,
+      gameModelManager
+    ): DisplayInfo<Game>[] => {
+      return [
+        {
+          type: "contentDecoration",
+          decorationType: statement.decorationType,
+          content: runScript(statement.content, stateManager, gameModelManager),
+        },
+      ];
     },
   };
 

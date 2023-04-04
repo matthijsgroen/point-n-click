@@ -3495,6 +3495,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@point-n-click/content-note-letter@workspace:^, @point-n-click/content-note-letter@workspace:packages/content-note-letter":
+  version: 0.0.0-use.local
+  resolution: "@point-n-click/content-note-letter@workspace:packages/content-note-letter"
+  dependencies:
+    "@point-n-click/engine": "workspace:^"
+    "@point-n-click/types": "workspace:^"
+    parcel: 2.7.0
+    typescript: ~4.7.3
+  languageName: unknown
+  linkType: soft
+
 "@point-n-click/engine@workspace:^, @point-n-click/engine@workspace:packages/engine":
   version: 0.0.0-use.local
   resolution: "@point-n-click/engine@workspace:packages/engine"
@@ -3542,6 +3553,7 @@ __metadata:
   resolution: "@point-n-click/theme-book@workspace:packages/theme-book"
   dependencies:
     "@point-n-click/content-description-text": "workspace:^"
+    "@point-n-click/content-note-letter": "workspace:^"
     "@point-n-click/engine": "workspace:^"
     "@point-n-click/state": "workspace:^"
     "@point-n-click/themes": "workspace:^"
@@ -3561,6 +3573,7 @@ __metadata:
   resolution: "@point-n-click/theme-cli@workspace:packages/theme-cli"
   dependencies:
     "@point-n-click/content-description-text": "workspace:^"
+    "@point-n-click/content-note-letter": "workspace:^"
     "@point-n-click/engine": "workspace:^"
     "@point-n-click/state": "workspace:^"
     "@point-n-click/themes": "workspace:^"
