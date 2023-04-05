@@ -20,7 +20,7 @@ const isDescriptionText = (
   item.pluginSource === "descriptionText" && item.type === "descriptionText";
 
 const isListItem = (text: FormattedText): boolean =>
-  text[0].type === "text" && text[0].text.startsWith("- ");
+  text[0] && text[0].type === "text" && text[0].text.startsWith("- ");
 
 export const renderScreen = async <Game extends GameWorld>(
   info: DisplayInfo<Game>[],
@@ -129,12 +129,17 @@ export const renderScreen = async <Game extends GameWorld>(
 
       resetStyling();
     } else if (displayItem.type === "contentDecoration") {
-      console.log("\n");
       if (displayItem.decorationType === "note") {
         const width = process.stdout.columns - 6;
+        console.log(" ");
 
         await renderText(
-          [{ type: "text", text: `  /${Array(width).fill("-").join("")}\\  ` }],
+          [
+            {
+              type: "text",
+              text: `  \u256D${Array(width).fill("\u2500").join("")}\u256E  `,
+            },
+          ],
           0,
           {}
         );
@@ -144,16 +149,23 @@ export const renderScreen = async <Game extends GameWorld>(
           stateManager,
           {
             lightMode,
-            prefix: [{ type: "text", text: "  | " }],
-            postfix: [{ type: "text", text: " |  " }],
+            prefix: [{ type: "text", text: "  \u2502 " }],
+            postfix: [{ type: "text", text: " \u2502  " }],
           }
         );
         await renderText(
-          [{ type: "text", text: `  \\${Array(width).fill("-").join("")}/  ` }],
+          [
+            {
+              type: "text",
+              text: `  \u2570${Array(width).fill("\u2500").join("")}\u256F  `,
+            },
+          ],
           0,
           {}
         );
+        console.log(" ");
       } else {
+        console.log(" ");
         await renderScreen(
           displayItem.content,
           gameModelManager,
@@ -162,8 +174,8 @@ export const renderScreen = async <Game extends GameWorld>(
             lightMode,
           }
         );
+        console.log(" ");
       }
-      console.log("\n");
     } else if (displayItem.type === "error") {
       stateManager.setPlayState("reloading");
       gameModelManager.backupModel();
