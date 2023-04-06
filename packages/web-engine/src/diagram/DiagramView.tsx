@@ -21,6 +21,9 @@ const getPercentage = (
     const tag =
       puzzle.tags &&
       (puzzle.tags as Record<string, string | string[]>)[tagName];
+    if (tag === undefined && tagValue === "_all") {
+      counter++;
+    }
     if (tag && (tag === tagValue || tag.includes(tagValue))) {
       counter++;
     }
