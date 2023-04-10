@@ -1,6 +1,7 @@
 import { GameWorld, GameStateManager, GameState } from "@point-n-click/types";
 import { getTranslationText } from "./getTranslationText";
 import { FormattedText, ParsedText } from "./types";
+import { GameModel } from "@point-n-click/state";
 
 export type StateError = Error & {
   name: "StateError";
@@ -17,7 +18,8 @@ const existingCharacterProperties = [
 
 export const characterName = <Game extends GameWorld>(
   character: keyof Game["characters"],
-  state: GameState<Game>
+  state: GameState<Game>,
+  model: GameModel<Game>
 ): string => {
   const stateName = state.characters[character]?.name;
   const name =
@@ -28,21 +30,21 @@ export const characterName = <Game extends GameWorld>(
         )
       : null) ??
     stateName ??
-    state.characters[character]?.name ??
-    characterDefaultName(character, state);
+    characterDefaultName(character, model);
   return name;
 };
 
 export const characterDefaultName = <Game extends GameWorld>(
   character: keyof Game["characters"],
-  state: GameState<Game>
+  model: GameModel<Game>
 ): string =>
   getTranslationText(["characters", String(character)], "defaultName") ??
-  state.characters[character].defaultName;
+  model.settings.characterConfigs[character].defaultName;
 
 export const applyState = <Game extends GameWorld>(
   text: ParsedText,
   stateManager: GameStateManager<Game>,
+  model: GameModel<Game>,
   stateScope: string[]
 ): FormattedText => {
   const result: FormattedText = [];
@@ -53,7 +55,7 @@ export const applyState = <Game extends GameWorld>(
     if (element.type === "formatting") {
       result.push({
         ...element,
-        contents: applyState(element.contents, stateManager, stateScope),
+        contents: applyState(element.contents, stateManager, model, stateScope),
       });
     }
     if (element.type === "interpolation") {
@@ -103,10 +105,10 @@ export const applyState = <Game extends GameWorld>(
         }
 
         if (property === "defaultName") {
-          value = characterDefaultName(character, state);
+          value = characterDefaultName(character, model);
         }
         if (property === "name") {
-          value = characterName(character, state);
+          value = characterName(character, state, model);
         }
         if (property === "counters") {
           const characterCounters = state.characters[character].counters;

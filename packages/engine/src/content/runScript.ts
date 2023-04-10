@@ -23,6 +23,7 @@ import { getContentPlugin, isContentPluginStatement } from "../contentPlugin";
 import { handleTextContent } from "../text/handleText";
 import { getCurrentLocation } from "./getLocation";
 import { GameModelManager } from "../model/gameModel";
+import { gameModelManager } from "../../dist";
 
 type NarratorText = {
   type: "narratorText";
@@ -71,7 +72,7 @@ const statementHandler = <
   statementType: K["statementType"]
 ): StatementHandler<Game, K> => {
   const statementMap: StatementMap<Game> = {
-    Text: (statement, stateManager) => {
+    Text: (statement, stateManager, gameModelManager) => {
       const cpm = stateManager.getState().settings.cpm;
       const result: NarratorText = {
         type: "narratorText",
@@ -79,7 +80,12 @@ const statementHandler = <
         text: [],
       };
 
-      const text = handleTextContent(stateManager, statement.sentences, "text");
+      const text = handleTextContent(
+        stateManager,
+        gameModelManager.getModel(),
+        statement.sentences,
+        "text"
+      );
       result.text = text.result;
       if (text.error) {
         return [result, text.error];
@@ -250,7 +256,11 @@ const statementHandler = <
       );
       return null;
     },
-    CharacterSay: ({ character, sentences }, stateManager) => {
+    CharacterSay: (
+      { character, sentences },
+      stateManager,
+      gameModelManager
+    ) => {
       if (!Object.hasOwn(stateManager.getState().characters, character)) {
         const error: DisplayErrorText = {
           type: "error",
@@ -265,7 +275,11 @@ const statementHandler = <
         };
         return [error];
       }
-      const name = characterName(character, stateManager.getState());
+      const name = characterName(
+        character,
+        stateManager.getState(),
+        gameModelManager.getModel()
+      );
 
       const textScope = determineTextScope(stateManager, String(character));
 
@@ -281,10 +295,13 @@ const statementHandler = <
       for (const sentence of sentences) {
         try {
           result.text.push(
-            getDisplayText(sentence, stateManager, textScope, [
-              "characters",
-              String(character),
-            ])
+            getDisplayText(
+              sentence,
+              stateManager,
+              gameModelManager.getModel(),
+              textScope,
+              ["characters", String(character)]
+            )
           );
         } catch (e) {
           if ((e as ParseSyntaxError).name === "SyntaxError") {

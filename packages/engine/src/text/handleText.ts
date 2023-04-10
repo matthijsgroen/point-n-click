@@ -8,9 +8,11 @@ import { StateError } from "./applyState";
 import { determineTextScope } from "./determineTextScope";
 import { getDisplayText, ParseSyntaxError } from "./processText";
 import { FormattedText } from "./types";
+import { GameModel } from "@point-n-click/state";
 
 export const handleTextContent = <Game extends GameWorld>(
   stateManager: GameStateManager<Game>,
+  model: GameModel<Game>,
   sentences: string[],
   textScope: string
 ): { result: FormattedText[]; error: DisplayErrorText | null } => {
@@ -19,7 +21,13 @@ export const handleTextContent = <Game extends GameWorld>(
   for (const sentence of sentences) {
     try {
       text.push(
-        getDisplayText(sentence, stateManager, fullTextScope, fullTextScope)
+        getDisplayText(
+          sentence,
+          stateManager,
+          model,
+          fullTextScope,
+          fullTextScope
+        )
       );
     } catch (e) {
       if ((e as ParseSyntaxError).name === "SyntaxError") {

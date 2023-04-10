@@ -3,6 +3,7 @@ import { getTranslationText } from "./getTranslationText";
 import { parse } from "./parser";
 import { FormattedText, ParsedText } from "./types";
 import { applyState } from "./applyState";
+import { GameModel } from "@point-n-click/state";
 
 export const parseText = (text: string): ParsedText => {
   try {
@@ -19,12 +20,13 @@ export const parseText = (text: string): ParsedText => {
 export const getDisplayText = <Game extends GameWorld>(
   sentence: string,
   stateManager: GameStateManager<Game>,
+  model: GameModel<Game>,
   textScope: string[],
   stateScope: string[]
 ): FormattedText => {
   const renderSentence = getTranslationText(textScope, sentence) || sentence;
   const parsedText = parseText(renderSentence);
-  return applyState(parsedText, stateManager, stateScope);
+  return applyState(parsedText, stateManager, model, stateScope);
 };
 
 export type ParseSyntaxError = Error & {

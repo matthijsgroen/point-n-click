@@ -48,6 +48,7 @@ export const getInteractions = <Game extends GameWorld>(
       label: getDisplayText(
         getTranslationText(["global", "interactions", label], "label") || label,
         stateManager,
+        gameModelManager.getModel(),
         [],
         textScope
       ),
@@ -61,7 +62,13 @@ export const getInteractions = <Game extends GameWorld>(
   const possibleInteractions = interactions
     .filter((interaction) => testCondition(interaction.condition, stateManager))
     .map<InteractionAction>(({ label }) => ({
-      label: getDisplayText(label, stateManager, textScope, textScope),
+      label: getDisplayText(
+        label,
+        stateManager,
+        gameModelManager.getModel(),
+        textScope,
+        textScope
+      ),
       isGlobal: false,
       id: label,
     }));
