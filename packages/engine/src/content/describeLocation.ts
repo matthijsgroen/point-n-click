@@ -56,6 +56,12 @@ export const describeLocation = <Game extends GameWorld>(
       gameModelManager
     )
   );
+  // When location changes happen during a location description,
+  // this needs to be updated to get the proper translation key
+  stateManager.updateState((state) => ({
+    ...state,
+    previousLocation: state.currentLocation,
+  }));
   let newOverlayData = getCurrentOverlay(gameModelManager, stateManager);
 
   if (newOverlayData) {
