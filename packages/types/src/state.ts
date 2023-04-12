@@ -1,6 +1,6 @@
 import { GameWorld, WorldObjectSettings } from "./world";
 
-export type StateObject = "item" | "location" | "character";
+export type StateObject = "item" | "location" | "character" | "overlay";
 
 export type GameObjectState<State extends WorldObjectSettings> = {
   counters?: State["counters"] extends string
@@ -25,8 +25,8 @@ export type GameState<Game extends GameWorld> = {
   currentLocation?: keyof Game["locations"];
   previousLocation?: keyof Game["locations"];
   currentInteraction?: string;
-  overlayStack: Game["overlays"][];
-  currentOverlay?: Game["overlays"];
+  overlayStack: (keyof Game["overlays"])[];
+  currentOverlay?: keyof Game["overlays"];
   settings: {
     cpm: number;
     skipMode: "tillChoice" | "screen" | "off";
@@ -42,6 +42,9 @@ export type GameState<Game extends GameWorld> = {
   };
   locations: {
     [K in keyof Game["locations"]]: GameObjectState<Game["locations"][K]>;
+  };
+  overlays: {
+    [K in keyof Game["overlays"]]: GameObjectState<Game["overlays"][K]>;
   };
 };
 

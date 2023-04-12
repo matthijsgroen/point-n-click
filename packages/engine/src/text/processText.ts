@@ -1,9 +1,8 @@
-import { GameWorld, GameStateManager } from "@point-n-click/types";
+import { GameWorld, GameStateManager, GameModel } from "@point-n-click/types";
 import { getTranslationText } from "./getTranslationText";
 import { parse } from "./parser";
 import { FormattedText, ParsedText } from "./types";
 import { applyState } from "./applyState";
-import { GameModel } from "@point-n-click/state";
 
 export const parseText = (text: string): ParsedText => {
   try {

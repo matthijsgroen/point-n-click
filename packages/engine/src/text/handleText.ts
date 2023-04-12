@@ -1,14 +1,14 @@
-import { GameWorld, GameStateManager } from "@point-n-click/types";
 import {
+  GameWorld,
+  GameStateManager,
   DisplayErrorText,
-  formatParserError,
-  formatStateError,
-} from "../errors/formatErrors";
+  GameModel,
+} from "@point-n-click/types";
+import { formatParserError, formatStateError } from "../errors/formatErrors";
 import { StateError } from "./applyState";
 import { determineTextScope } from "./determineTextScope";
 import { getDisplayText, ParseSyntaxError } from "./processText";
 import { FormattedText } from "./types";
-import { GameModel } from "@point-n-click/state";
 
 export const handleTextContent = <Game extends GameWorld>(
   stateManager: GameStateManager<Game>,

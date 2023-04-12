@@ -1,7 +1,8 @@
-import { DisplayErrorText } from "@point-n-click/engine";
 import { GameStateManager } from "./state";
 import { GameWorld } from "./world";
 import { Script, ScriptAST, ScriptStatement } from "./ast";
+import { GameModel } from "./model";
+import { DisplayErrorText } from "./text";
 
 export interface ContentStatement {
   statementType: string;
@@ -37,7 +38,8 @@ export type ContentPlugin<Extension extends DSLExtension> = {
   unloadContent?: (content: ContentStatement[]) => Promise<void>;
   handleContent: <Game extends GameWorld>(
     content: ContentStatement,
-    stateManager: GameStateManager<Game>
+    stateManager: GameStateManager<Game>,
+    model: GameModel<Game>
   ) => (ContentPluginContent | DisplayErrorText)[];
   translationContent?: (content: ContentStatement[]) => TranslationFile;
   dslFunctions: Extension;

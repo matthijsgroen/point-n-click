@@ -1,7 +1,7 @@
 import { FormattedText } from "@point-n-click/engine";
-import { HexColor } from "@point-n-click/state";
+import { HexColor } from "@point-n-click/types";
 
-export const cls = () => process.stdout.write("\x1Bc");
+export const cls = () => process.stdout.write("\x1bc");
 
 export type TextStyling = {
   color?: HexColor;
@@ -20,10 +20,10 @@ export const setColor = (color: HexColor) => {
   const blue = parseInt(color.slice(4, 6), 16);
   process.stdout.write(`\x1b[38;2;${red};${green};${blue}m`);
 };
-export const bold = () => process.stdout.write("\033[1m");
-export const italic = () => process.stdout.write("\033[3m");
-export const underline = () => process.stdout.write("\033[4m");
-export const strikeThrough = () => process.stdout.write("\033[9m");
+export const bold = () => process.stdout.write("\x1b[1m");
+export const italic = () => process.stdout.write("\x1b[3m");
+export const underline = () => process.stdout.write("\x1b[4m");
+export const strikeThrough = () => process.stdout.write("\x1b[9m");
 
 export const setStyling = (styling: TextStyling) => {
   const sequence: string[] = [];
@@ -39,14 +39,14 @@ export const setStyling = (styling: TextStyling) => {
   if (styling.strikeThrough) {
     sequence.push("9");
   }
-  process.stdout.write("\033[" + sequence.join(";") + "m");
+  process.stdout.write("\x1b[" + sequence.join(";") + "m");
 
   if (styling.color) {
     setColor(styling.color);
   }
 };
 
-export const resetStyling = () => process.stdout.write("\033[0m");
+export const resetStyling = () => process.stdout.write("\x1b[0m");
 
 export const exitGame = (code = 0) => {
   process.exit(code);

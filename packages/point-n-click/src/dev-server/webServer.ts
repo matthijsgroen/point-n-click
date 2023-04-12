@@ -1,5 +1,5 @@
 import { GameModelManager, getTranslationText } from "@point-n-click/engine";
-import { GameStateManager, GameWorld } from "@point-n-click/types";
+import { GameModel, GameStateManager, GameWorld } from "@point-n-click/types";
 import express from "express";
 import { dirname, join, relative } from "node:path";
 import bodyParser from "body-parser";
@@ -11,7 +11,6 @@ import Parcel, { createWorkerFarm } from "@parcel/core";
 import { PackagedBundle } from "@parcel/types";
 import { htmlFile, indexFile } from "./templates/game";
 import { htmlFile as diagramHtmlFile, scriptFile } from "./templates/diagram";
-import { GameModel } from "@point-n-click/state";
 import { watch } from "fs";
 
 const defaultWatchList = [
@@ -184,12 +183,17 @@ export const startWebserver = async (
     });
   };
 
-  const rebuildOnModelOrEngineChange = () => {
+  const rebuildOnModelOrEngineChange = (): [VoidFunction, Promise<void>] => {
     let keepLoop = true;
 
     const stopLoop = () => {
       keepLoop = false;
     };
+
+    let resolve: VoidFunction;
+    const initialBuildPromise = new Promise<void>((resolver) => {
+      resolve = resolver;
+    });
 
     const run = async () => {
       while (keepLoop) {
@@ -204,16 +208,17 @@ export const startWebserver = async (
           // console.log(
           //   `🎉 rebuild web client in ${Math.ceil((end - start) / 100) / 10}s`
           // );
+          resolve();
         }
         if (!keepLoop) return;
         await Promise.race([modelManager.waitForChange(), watchPromise]);
       }
     };
     run();
-    return stopLoop;
+    return [stopLoop, initialBuildPromise];
   };
 
-  const stopRebuild = rebuildOnModelOrEngineChange();
+  const [stopRebuild, initialBuildPromise] = rebuildOnModelOrEngineChange();
 
   const app = express();
 
@@ -254,6 +259,7 @@ export const startWebserver = async (
   });
 
   await startupPromise;
+  await initialBuildPromise;
 
   return [
     async () => {

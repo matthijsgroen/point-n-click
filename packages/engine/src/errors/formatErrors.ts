@@ -2,11 +2,6 @@ import { StateError } from "../text/applyState";
 import { ParseSyntaxError } from "../text/processText";
 import { FormattedText } from "../text/types";
 
-export type DisplayErrorText = {
-  type: "error";
-  message: FormattedText[];
-};
-
 export const formatParserError = (e: ParseSyntaxError): DisplayErrorText => ({
   type: "error",
   message: [

@@ -1,12 +1,8 @@
 import { PuzzleDependencyDiagram } from "@point-n-click/puzzle-dependency-diagram";
-import {
-  GameInteraction,
-  GameLocation,
-  GameOverlay,
-  GameState,
-  GameWorld,
-} from "@point-n-click/types";
+import { GameInteraction, GameLocation, GameOverlay } from "./ast";
 import { ColorPalette, PaletteColor } from "./colorPalette";
+import { GameWorld } from "./world";
+import { GameState } from "./state";
 
 export type RecursivePartial<T extends Record<string, unknown>> = {
   [Key in keyof T]?: T[Key] extends Record<string, unknown>

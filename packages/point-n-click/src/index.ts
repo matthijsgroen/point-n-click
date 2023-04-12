@@ -1,9 +1,9 @@
-import * as state from "@point-n-click/state";
+import * as types from "@point-n-click/types";
 export type { PuzzleDependencyDiagram } from "@point-n-click/puzzle-dependency-diagram";
 
 export { world } from "./dsl/dsl";
 export type { GameDefinition } from "./dsl/dsl";
 export { cli } from "./cli";
 
-export const hexColor = state.hexColor;
-export const createColorPalette = state.createColorPalette;
+export const hexColor = types.hexColor;
+export const createColorPalette = types.createColorPalette;

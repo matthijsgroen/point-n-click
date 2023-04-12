@@ -1,4 +1,4 @@
-import { StateCondition } from "./conditions";
+import { GameObjectStateCondition, StateCondition } from "./conditions";
 import { ContentPluginStatement } from "./contentPlugin";
 import { StateObject } from "./state";
 import { GameWorld } from "./world";
@@ -19,13 +19,26 @@ export type LocationScript<
   ) => void;
   describe: (script: Script) => void;
   interaction: Interaction<Game>;
+  hasState: (
+    state: Game["locations"][Location]["states"] | "unknown"
+  ) => GameObjectStateCondition<Game, "location">;
+  setState: (
+    newState: Game["locations"][Location]["states"] | "unknown"
+  ) => void;
 }) => void;
 
-export type OverlayScript<Game extends GameWorld> = (events: {
+export type OverlayScript<
+  Game extends GameWorld,
+  Overlay extends keyof Game["overlays"]
+> = (events: {
   onEnter: (script: Script) => void;
   onLeave: (script: Script) => void;
   interaction: Interaction<Game>;
   closeOverlay: () => void;
+  hasState: (
+    state: Game["overlays"][Overlay]["states"] | "unknown"
+  ) => GameObjectStateCondition<Game, "overlay">;
+  setState: (newState: Game["overlays"][Overlay]["states"] | "unknown") => void;
 }) => void;
 
 export type EvaluateCondition<Game extends GameWorld> = (
@@ -62,7 +75,7 @@ export type GameLocation<Game extends GameWorld> = {
   interactions: GameInteraction<Game>[];
 };
 export type GameOverlay<Game extends GameWorld> = {
-  id: Game["overlays"];
+  id: keyof Game["overlays"];
   onEnter: { script: ScriptAST<Game> };
   onLeave: { script: ScriptAST<Game> };
   interactions: GameInteraction<Game>[];
@@ -93,12 +106,12 @@ export type DescribeLocationStatement = { statementType: "DescribeLocation" };
 
 export type OpenGameOverlay<Game extends GameWorld> = {
   statementType: "OpenOverlay";
-  overlayId: Game["overlays"];
+  overlayId: keyof Game["overlays"];
 };
 
 export type CloseGameOverlay<Game extends GameWorld> = {
   statementType: "CloseOverlay";
-  overlayId: Game["overlays"];
+  overlayId: keyof Game["overlays"];
 };
 
 export type TravelStatement<Game extends GameWorld> = {

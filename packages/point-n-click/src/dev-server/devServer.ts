@@ -9,6 +9,7 @@ import { cls, resetStyling, setColor } from "../cli-client/utils";
 import { hexColor } from "..";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { progressSpinner } from "./spinner";
 
 type ServerOptions = {
   lang: string;
@@ -35,10 +36,9 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
     gameStateManager.updateSaveState();
   } catch (e) {}
 
-  const [stopServer, runningPort] = await startWebserver(
-    modelManager,
-    gameStateManager,
-    options
+  const [stopServer, runningPort] = await progressSpinner(
+    "Awaiting initial build...",
+    startWebserver(modelManager, gameStateManager, options)
   );
 
   process.stdout.on("resize", () => {

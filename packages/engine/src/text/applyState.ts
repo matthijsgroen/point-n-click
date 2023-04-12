@@ -1,7 +1,11 @@
-import { GameWorld, GameStateManager, GameState } from "@point-n-click/types";
+import {
+  GameWorld,
+  GameStateManager,
+  GameState,
+  GameModel,
+} from "@point-n-click/types";
 import { getTranslationText } from "./getTranslationText";
 import { FormattedText, ParsedText } from "./types";
-import { GameModel } from "@point-n-click/state";
 
 export type StateError = Error & {
   name: "StateError";

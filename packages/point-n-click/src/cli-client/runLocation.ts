@@ -1,4 +1,4 @@
-import { GameWorld, GameStateManager } from "@point-n-click/types";
+import { GameWorld, GameStateManager, GameModel } from "@point-n-click/types";
 import {
   GameModelManager,
   getDisplayInfo,
@@ -17,7 +17,9 @@ export const runLocation = async <Game extends GameWorld>(
 
   const locationData = gameModelManager
     .getModel()
-    .locations.find((l) => l.id === currentLocation);
+    .locations.find(
+      (l: GameModel<Game>["locations"][number]) => l.id === currentLocation
+    );
 
   if (!locationData) {
     return;

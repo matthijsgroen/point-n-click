@@ -41,5 +41,5 @@ export type GameWorld<Version extends number = number> = {
    * Can be inventory management, conversation happening in the foreground,
    * a puzzle to solve, lock to pick.
    */
-  overlays: unknown;
+  overlays: Record<string, WorldObjectSettings>;
 };

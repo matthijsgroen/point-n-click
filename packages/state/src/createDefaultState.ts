@@ -1,5 +1,9 @@
-import { GameWorld, GameState } from "@point-n-click/types";
-import { GameModel, RecursivePartial } from "./types";
+import {
+  GameWorld,
+  GameState,
+  RecursivePartial,
+  GameModel,
+} from "@point-n-click/types";
 
 const isObject = (o: any): o is Record<string, unknown> =>
   o && typeof o === "object" && !Array.isArray(o) && Object.keys(o).length > 0;
@@ -48,8 +52,8 @@ export const createDefaultState = <Game extends GameWorld>(
     }, {}) as GameState<Game>["characters"],
     locations: gameModel.locations.reduce<
       Partial<GameState<Game>["locations"]>
-    >((map, currentLocation) => {
-      return {
+    >(
+      (map, currentLocation) => ({
         ...map,
         [currentLocation.id]: {
           state: "unknown",
@@ -57,8 +61,21 @@ export const createDefaultState = <Game extends GameWorld>(
           counters: {},
           texts: {},
         },
-      };
-    }, {}) as GameState<Game>["locations"],
+      }),
+      {}
+    ) as GameState<Game>["locations"],
+    overlays: gameModel.overlays.reduce<Partial<GameState<Game>["overlays"]>>(
+      (map, currentOverlay) => ({
+        ...map,
+        [currentOverlay.id]: {
+          state: "unknown",
+          flags: {},
+          counters: {},
+          texts: {},
+        },
+      }),
+      {}
+    ) as GameState<Game>["overlays"],
   };
   return mergeState(startState, gameModel.settings.initialState);
 };

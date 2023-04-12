@@ -1,7 +1,6 @@
 import {
   ContentPlugin,
   ContentStatement,
-  GameWorld,
   SystemInterface,
 } from "@point-n-click/types";
 import { FormattedText, handleTextContent } from "@point-n-click/engine";
@@ -47,7 +46,7 @@ const textContent: ContentPlugin<typeof textDslFunctions> = {
     }
     return translationScope;
   },
-  handleContent: (statement, stateManager) => {
+  handleContent: (statement, stateManager, gameModel) => {
     if (isTextStatement(statement)) {
       const result: TextContent = {
         type: "descriptionText",
@@ -56,6 +55,7 @@ const textContent: ContentPlugin<typeof textDslFunctions> = {
       };
       const content = handleTextContent(
         stateManager,
+        gameModel,
         statement.content,
         "descriptionText"
       );

@@ -45,7 +45,7 @@ export type OrCondition<Game extends GameWorld> = {
 
 export type OverlayOpenCondition<Game extends GameWorld> = {
   op: "OverlayOpen";
-  overlay?: Game["overlays"];
+  overlay?: keyof Game["overlays"];
 };
 
 export type LocationCondition<Game extends GameWorld> = {
@@ -77,6 +77,7 @@ export type StateCondition<Game extends GameWorld> =
   | GameObjectStateCondition<Game, "character">
   | GameObjectStateCondition<Game, "item">
   | GameObjectStateCondition<Game, "location">
+  | GameObjectStateCondition<Game, "overlay">
   | GameObjectFlagCondition<Game, "character">
   | GameObjectFlagCondition<Game, "item">
   | GameObjectFlagCondition<Game, "location">

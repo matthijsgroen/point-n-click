@@ -1,6 +1,7 @@
 import produce from "immer";
 import {
   ContentPluginContent,
+  DisplayErrorText,
   GameObjectState,
   GameState,
   GameStateManager,
@@ -12,11 +13,7 @@ import { testCondition } from "@point-n-click/state";
 import { getDisplayText, ParseSyntaxError } from "../text/processText";
 import { determineTextScope } from "../text/determineTextScope";
 import { FormattedText } from "../text/types";
-import {
-  DisplayErrorText,
-  formatParserError,
-  formatStateError,
-} from "../errors/formatErrors";
+import { formatParserError, formatStateError } from "../errors/formatErrors";
 import { characterName, StateError } from "../text/applyState";
 import { getTranslationText } from "../text/getTranslationText";
 import { getContentPlugin, isContentPluginStatement } from "../contentPlugin";
@@ -379,7 +376,13 @@ export const runScript = <Game extends GameWorld>(
     if (isContentPluginStatement(statement)) {
       const plugin = getContentPlugin(statement.source);
       if (plugin) {
-        result.push(...plugin.handleContent(statement, stateManager));
+        result.push(
+          ...plugin.handleContent(
+            statement,
+            stateManager,
+            gameModelManager.getModel()
+          )
+        );
       }
     } else {
       const handler = statementHandler<Game, ScriptStatement<Game>>(

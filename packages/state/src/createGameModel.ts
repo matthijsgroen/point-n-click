@@ -1,5 +1,4 @@
-import { GameWorld } from "@point-n-click/types";
-import { GameModel, Settings } from "./types";
+import { GameModel, GameWorld, Settings } from "@point-n-click/types";
 
 export const emptyGameModel = <Game extends GameWorld>(): GameModel<Game> => ({
   settings: {

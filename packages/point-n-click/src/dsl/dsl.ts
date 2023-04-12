@@ -12,8 +12,10 @@ import {
   DSLExtension,
   SystemInterface,
   Script,
+  GameModel,
+  Settings,
+  ThemeInfo,
 } from "@point-n-click/types";
-import { GameModel, Settings, ThemeInfo } from "@point-n-click/state";
 import { characterDSLFunctions, CharacterInterface } from "./character";
 import { ConditionSet, dslStateConditions } from "./dsl-conditions";
 import { itemDSLFunctions, ItemInterface } from "./item";
@@ -61,10 +63,38 @@ type ThemeDSLMap<
 > = RemapFunctions<ThemeMap[number]["extensions"][number]["dslFunctions"]>;
 
 type GameWorldDSL<Version extends number, Game extends GameWorld<Version>> = {
-  defineOverlay: (
-    id: Game["overlays"],
-    handleOverlay: OverlayScript<Game>
+  /**
+   * # Overlay
+   *
+   * Define overlay content. Useful for inventory management,
+   * character conversations, etc. Overlays can be stacked,
+   * so you could open your inventory while in an character conversation.
+   *
+   * Functions available in overlayScript:
+   *
+   * - onEnter
+   * - onLeave
+   * - closeOverlay
+   * - hasState
+   * - setState
+   */
+  defineOverlay: <Overlay extends keyof Game["overlays"]>(
+    id: Overlay,
+    handleOverlay: OverlayScript<Game, Overlay>
   ) => void;
+  /**
+   * # Location
+   *
+   * Define a location. A location is a physical space in the game.
+   *
+   * Functions available in locationScript:
+   *
+   * - onEnter
+   * - onLeave
+   * - describe
+   * - hasState
+   * - setState
+   */
   defineLocation: <Location extends keyof Game["locations"]>(
     location: Location,
     script: LocationScript<Game, Location>
@@ -77,7 +107,7 @@ type GameWorldDSL<Version extends number, Game extends GameWorld<Version>> = {
   text: (...sentences: string[]) => void;
   contentDecoration: (type: string, script: Script) => void;
   describeLocation: () => void;
-  openOverlay: (id: Game["overlays"]) => void;
+  openOverlay: (id: keyof Game["overlays"]) => void;
 
   onState: EvaluateCondition<Game>;
 
@@ -160,12 +190,12 @@ export const world =
     };
 
     const baseDSL: GameWorldDSL<Game["version"], Game> = {
-      defineOverlay: (
-        id: Game["overlays"],
-        handleOverlay: OverlayScript<Game>
+      defineOverlay: <Overlay extends keyof Game["overlays"]>(
+        overlay: Overlay,
+        handleOverlay: OverlayScript<Game, Overlay>
       ) => {
         const overlayAST: GameOverlay<Game> = {
-          id,
+          id: overlay,
           onEnter: { script: [] },
           onLeave: { script: [] },
           interactions: [],
@@ -191,9 +221,23 @@ export const world =
           closeOverlay: () => {
             activeScriptScope.push({
               statementType: "CloseOverlay",
-              overlayId: id,
+              overlayId: overlay,
             });
           },
+          setState: (newState) => {
+            activeScriptScope.push({
+              statementType: "UpdateGameObjectState",
+              objectType: "overlay",
+              stateItem: overlay,
+              newState,
+            });
+          },
+          hasState: (state) => ({
+            objectType: "overlay",
+            item: overlay,
+            op: "StateEquals",
+            state,
+          }),
         });
         worldModel?.overlays.push(overlayAST as unknown as GameOverlay<Game>);
       },
@@ -238,6 +282,20 @@ export const world =
               script: interactionScript,
             });
           },
+          setState: (newState) => {
+            activeScriptScope.push({
+              statementType: "UpdateGameObjectState",
+              objectType: "location",
+              stateItem: location,
+              newState,
+            });
+          },
+          hasState: (state) => ({
+            objectType: "location",
+            item: location,
+            op: "StateEquals",
+            state,
+          }),
         });
         worldModel?.locations.push(
           locationAST as unknown as GameLocation<Game>
