@@ -1,10 +1,11 @@
 import {
   ContentPluginStatement,
+  GameModel,
   GameWorld,
+  Locale,
   ScriptAST,
   TranslationFile,
 } from "@point-n-click/types";
-import { GameModel, Locale } from "@point-n-click/state";
 import {
   isContentPluginStatement,
   DEFAULT_ACTION_PROMPT,
@@ -167,6 +168,9 @@ export const exportTranslations = async <Game extends GameWorld>(
       setTranslationKey(interactionScope, interaction.label);
       processScript(interaction.script, locationScope, setTranslationKey);
     }
+    if (location.prompt) {
+      setTranslationKey(["prompts", location.prompt], location.prompt);
+    }
   }
 
   for (const overlay of gameModel.overlays) {
@@ -179,6 +183,9 @@ export const exportTranslations = async <Game extends GameWorld>(
         interaction.label
       );
       processScript(interaction.script, overlayScope, setTranslationKey);
+    }
+    if (overlay.prompt) {
+      setTranslationKey(["prompts", overlay.prompt], overlay.prompt);
     }
   }
   for (const globalInteraction of gameModel.globalInteractions) {

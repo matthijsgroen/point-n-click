@@ -34,7 +34,16 @@ export const getInteractions = <Game extends GameWorld>(
     ? currentOverlayData.interactions
     : locationData?.interactions ?? [];
 
+  const actionPrompt = currentOverlayData
+    ? currentOverlayData.prompt
+    : locationData?.prompt;
+
+  const translatedPrompt = actionPrompt
+    ? getTranslationText(["prompts"], actionPrompt)
+    : undefined;
+
   const prompt =
+    translatedPrompt ??
     getTranslationText(["settings"], "defaultActionPrompt") ??
     gameModelManager.getModel().settings.defaultActionPrompt ??
     DEFAULT_ACTION_PROMPT;

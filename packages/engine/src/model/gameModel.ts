@@ -1,5 +1,5 @@
-import { emptyGameModel, GameModel } from "@point-n-click/state";
-import { GameWorld } from "@point-n-click/types";
+import { emptyGameModel } from "@point-n-click/state";
+import { GameModel, GameWorld } from "@point-n-click/types";
 
 export type GameModelManager<Game extends GameWorld> = {
   getModel: () => GameModel<Game>;

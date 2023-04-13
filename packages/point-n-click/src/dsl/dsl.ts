@@ -238,6 +238,9 @@ export const world =
             op: "StateEquals",
             state,
           }),
+          setPrompt: (prompt) => {
+            overlayAST.prompt = prompt;
+          },
         });
         worldModel?.overlays.push(overlayAST as unknown as GameOverlay<Game>);
       },
@@ -296,6 +299,9 @@ export const world =
             op: "StateEquals",
             state,
           }),
+          setPrompt: (prompt) => {
+            locationAST.prompt = prompt;
+          },
         });
         worldModel?.locations.push(
           locationAST as unknown as GameLocation<Game>
