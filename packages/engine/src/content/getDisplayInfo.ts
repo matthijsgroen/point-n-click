@@ -23,6 +23,8 @@ export const getDisplayInfo = <Game extends GameWorld>(
 
   const currentInteraction = stateManager.getState().currentInteraction;
 
+  let locationDescribed = false;
+
   if (currentInteraction) {
     const interactionData = globalInteractions
       .concat(
@@ -73,6 +75,7 @@ export const getDisplayInfo = <Game extends GameWorld>(
             )
           );
         } else {
+          locationDescribed = true;
           displayInfo.push(...describeLocation(gameModelManager, stateManager));
         }
       }
@@ -82,12 +85,16 @@ export const getDisplayInfo = <Game extends GameWorld>(
         gameModelManager,
         stateManager
       );
-      if (newLocationData !== locationData) {
+      if (newLocationData !== locationData && !locationDescribed) {
+        locationDescribed = true;
         displayInfo.push(...describeLocation(gameModelManager, stateManager));
       }
     }
   } else {
-    displayInfo.push(...describeLocation(gameModelManager, stateManager));
+    if (!locationDescribed) {
+      locationDescribed = true;
+      displayInfo.push(...describeLocation(gameModelManager, stateManager));
+    }
   }
   return displayInfo;
 };
