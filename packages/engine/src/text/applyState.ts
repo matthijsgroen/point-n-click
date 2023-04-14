@@ -19,6 +19,7 @@ const existingCharacterProperties = [
   "counters",
   "texts",
 ];
+const existingItemProperties = ["counters", "texts"];
 
 export const characterName = <Game extends GameWorld>(
   character: keyof Game["characters"],
@@ -141,7 +142,20 @@ export const applyState = <Game extends GameWorld>(
         const property = resolveStatePath[2];
 
         if (!state.items[item]) {
-          throwStateError(value);
+          throwStateError(
+            `${value} ${String(
+              item
+            )} does not exist. Do you mean one of ${Object.keys(
+              state.items
+            ).join(",")}`
+          );
+        }
+        if (!existingItemProperties.includes(property)) {
+          throwStateError(
+            `${value} ${property} does not exist. Do you mean one of ${existingItemProperties.join(
+              ","
+            )}`
+          );
         }
         if (property === "counters") {
           const itemCounter = state.items[item]?.counters;

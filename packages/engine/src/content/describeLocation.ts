@@ -3,6 +3,7 @@ import { DisplayInfo, runScript } from "./runScript";
 import { GameModelManager } from "../model/gameModel";
 import { getCurrentLocation } from "./getLocation";
 import { noLocation } from "../errors/noLocation";
+import { noOverlay } from "../errors/noOverlay";
 import { getCurrentOverlay } from "./getOverlay";
 
 export const describeLocation = <Game extends GameWorld>(
@@ -63,6 +64,9 @@ export const describeLocation = <Game extends GameWorld>(
     previousLocation: state.currentLocation,
   }));
   let newOverlayData = getCurrentOverlay(gameModelManager, stateManager);
+  if (newOverlayData === undefined) {
+    result.push(noOverlay(stateManager.getState().overlayStack.at(-1)));
+  }
 
   if (newOverlayData) {
     const overlayData = newOverlayData;
