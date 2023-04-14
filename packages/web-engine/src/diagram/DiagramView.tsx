@@ -32,7 +32,9 @@ const getPercentage = (
   return `${(counter / totalCount) * 100}`.slice(0, 5);
 };
 
-const scales = [0.5, 0.65, 0.75, 0.85, 1.0, 1.25, 1.5, 2.0, 2.5, 3, 4, 5, 7];
+const scales = [
+  0.25, 0.5, 0.65, 0.75, 0.85, 1.0, 1.25, 1.5, 2.0, 2.5, 3, 4, 5, 7, 12,
+];
 
 export const DiagramView: React.FC<{
   diagram: PuzzleDependencyDiagram;

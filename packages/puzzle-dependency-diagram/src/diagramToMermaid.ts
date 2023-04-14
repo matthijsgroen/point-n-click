@@ -3,6 +3,7 @@ import { styleToMermaidString } from "./mermaidStyle";
 import {
   CHAPTER_STYLE,
   ERROR_STYLE,
+  FILTERED_DEPS_STYLE,
   FILTERED_STYLE,
   GROUP_STYLE,
   LOGIC_OR_STYLE,
@@ -20,6 +21,10 @@ type RenderOptions<Diagram extends PuzzleDependencyDiagram> = {
   filter?: FilterOptions<Diagram>;
   renderHierarchy?: boolean;
 };
+
+const FILTER_PASS = 0;
+const FILTER_FAIL = 1;
+const FILTER_DEPS = 2;
 
 const m = (text: TemplateStringsArray, ...values: string[]): string =>
   text
@@ -75,12 +80,11 @@ const defineEdges = <Diagram extends PuzzleDependencyDiagram>(
   return [
     ...Object.entries(diagram).flatMap(([key, data]) => {
       const dependencies = data.dependsOn ?? [];
-      const matchesFilter = matchFilter(key);
       const orCondition = data.gateType === "or";
 
       const dependencyResult =
         dependencies.length === 0
-          ? [matchesFilter ? m`_start --> ${key}` : m`_start -.-> ${key}`]
+          ? [m`_start --> ${key}`]
           : dependencies.map((dep) => {
               if (!evenList.includes(dep)) {
                 classes["missingDep"] = styleToMermaidString(ERROR_STYLE);
@@ -88,7 +92,7 @@ const defineEdges = <Diagram extends PuzzleDependencyDiagram>(
                   ? m`${dep}:::missingDep -.-x _or_${key}`
                   : m`${dep}:::missingDep ---x ${key}`;
               }
-              if (matchFilter(dep) && matchesFilter && !orCondition) {
+              if (matchFilter(dep) && !orCondition) {
                 return m`${dep} --> ${key}`;
               }
               if (orCondition) {
@@ -160,13 +164,34 @@ const defineNodes = <Diagram extends PuzzleDependencyDiagram>(
 
   Object.entries(diagram).forEach(([key, data]) => {
     const filtered = !matchFilter(key);
-    if (filtered) {
+    const depsFiltered = (data.dependsOn ?? []).every((dep) =>
+      matchFilter(dep)
+    );
+
+    const filterType =
+      filtered && depsFiltered
+        ? FILTER_DEPS
+        : filtered
+        ? FILTER_FAIL
+        : FILTER_PASS;
+
+    if (filterType === FILTER_FAIL) {
       classes["filtered"] = styleToMermaidString(FILTERED_STYLE);
     }
+    if (filterType === FILTER_DEPS) {
+      classes["filteredDeps"] = styleToMermaidString(FILTERED_DEPS_STYLE);
+    }
 
-    const node = m`${key}${shape(data.type, data.name ?? key)}${
-      filtered ? ":::filtered" : data.type === "chapter" ? ":::chapter" : ""
-    }`;
+    const styling =
+      filterType === FILTER_FAIL
+        ? ":::filtered"
+        : filterType === FILTER_DEPS
+        ? ":::filteredDeps"
+        : data.type === "chapter"
+        ? ":::chapter"
+        : "";
+
+    const node = m`${key}${shape(data.type, data.name ?? key)}${styling}`;
 
     if (data.hierarchy && renderHierarchy) groupClasses.push(...data.hierarchy);
 

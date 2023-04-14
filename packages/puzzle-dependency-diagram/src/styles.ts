@@ -4,9 +4,20 @@ export const FILTERED_STYLE: NodeStyle = {
   border: {
     width: 1,
     style: "dashed",
+    color: "#333",
   },
   background: { color: "#111" },
   text: { color: "#666" },
+};
+
+export const FILTERED_DEPS_STYLE: NodeStyle = {
+  border: {
+    width: 1,
+    style: "solid",
+    color: "#bbb",
+  },
+  background: { color: "#111" },
+  text: { color: "#bbb" },
 };
 
 export const LOGIC_OR_STYLE: NodeStyle = {

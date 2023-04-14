@@ -3,6 +3,7 @@ import { styleToMermaidString } from "./mermaidStyle";
 import {
   CHAPTER_STYLE,
   ERROR_STYLE,
+  FILTERED_DEPS_STYLE,
   FILTERED_STYLE,
   GROUP_STYLE,
   LOGIC_OR_STYLE,
@@ -209,11 +210,11 @@ describe(diagramToMermaid, () => {
         "flowchart TD",
         "  _start{{Start}}:::chapter",
         "  getKey(getKey)",
-        "  openDoor(open the door):::filtered",
+        "  openDoor(open the door):::filteredDeps",
         `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
-        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
+        `  classDef filteredDeps ${styleToMermaidString(FILTERED_DEPS_STYLE)}`,
         "  _start --> getKey",
-        "  getKey -.-> openDoor",
+        "  getKey --> openDoor",
       ]);
     });
 
@@ -232,12 +233,62 @@ describe(diagramToMermaid, () => {
       expect(result.split("\n")).toEqual([
         "flowchart TD",
         "  _start{{Start}}:::chapter",
-        "  getKey(getKey):::filtered",
+        "  getKey(getKey):::filteredDeps",
         "  openDoor(open the door)",
         `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
-        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
-        "  _start -.-> getKey",
+        `  classDef filteredDeps ${styleToMermaidString(FILTERED_DEPS_STYLE)}`,
+        "  _start --> getKey",
         "  getKey -.-> openDoor",
+      ]);
+    });
+
+    it("shows items with filtered dependencies as fully filtered", () => {
+      const diagram: PuzzleDependencyDiagram<MetaData> = {
+        getKey: {},
+        openDoor: {
+          dependsOn: ["getKey"],
+          name: "open the door",
+        },
+      };
+      const result = diagramToMermaid(diagram, { filter: { state: ["done"] } });
+      expect(result.split("\n")).toEqual([
+        "flowchart TD",
+        "  _start{{Start}}:::chapter",
+        "  getKey(getKey):::filteredDeps",
+        "  openDoor(open the door):::filtered",
+        `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+        `  classDef filteredDeps ${styleToMermaidString(FILTERED_DEPS_STYLE)}`,
+        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
+        "  _start --> getKey",
+        "  getKey -.-> openDoor",
+      ]);
+    });
+
+    it("shows items with partially filtered dependencies as fully filtered", () => {
+      const diagram: PuzzleDependencyDiagram<MetaData> = {
+        getKey: {},
+        oilHinges: {
+          tags: { state: "done" },
+        },
+        openDoor: {
+          dependsOn: ["getKey", "oilHinges"],
+          name: "open the door",
+        },
+      };
+      const result = diagramToMermaid(diagram, { filter: { state: ["done"] } });
+      expect(result.split("\n")).toEqual([
+        "flowchart TD",
+        "  _start{{Start}}:::chapter",
+        "  getKey(getKey):::filteredDeps",
+        "  oilHinges(oilHinges)",
+        "  openDoor(open the door):::filtered",
+        `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+        `  classDef filteredDeps ${styleToMermaidString(FILTERED_DEPS_STYLE)}`,
+        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
+        "  _start --> getKey",
+        "  _start --> oilHinges",
+        "  getKey -.-> openDoor",
+        "  oilHinges --> openDoor",
       ]);
     });
 
@@ -264,12 +315,12 @@ describe(diagramToMermaid, () => {
       expect(result.split("\n")).toEqual([
         "flowchart TD",
         "  _start{{Start}}:::chapter",
-        "  getKey(getKey):::filtered",
+        "  getKey(getKey):::filteredDeps",
         "  openDoor(open the door)",
         "  startAdventure(startAdventure)",
         `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
-        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
-        "  _start -.-> getKey",
+        `  classDef filteredDeps ${styleToMermaidString(FILTERED_DEPS_STYLE)}`,
+        "  _start --> getKey",
         "  getKey -.-> openDoor",
         "  openDoor --> startAdventure",
       ]);
@@ -298,12 +349,12 @@ describe(diagramToMermaid, () => {
       expect(result.split("\n")).toEqual([
         "flowchart TD",
         "  _start{{Start}}:::chapter",
-        "  getKey(getKey):::filtered",
+        "  getKey(getKey):::filteredDeps",
         "  openDoor(open the door)",
         "  startAdventure(startAdventure)",
         `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
-        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
-        "  _start -.-> getKey",
+        `  classDef filteredDeps ${styleToMermaidString(FILTERED_DEPS_STYLE)}`,
+        "  _start --> getKey",
         "  getKey -.-> openDoor",
         "  openDoor --> startAdventure",
       ]);
@@ -337,14 +388,14 @@ describe(diagramToMermaid, () => {
       expect(result.split("\n")).toEqual([
         "flowchart TD",
         "  _start{{Start}}:::chapter",
-        "  getKey(getKey):::filtered",
+        "  getKey(getKey):::filteredDeps",
         "  openDoor(open the door)",
-        "  startAdventure(startAdventure):::filtered",
+        "  startAdventure(startAdventure):::filteredDeps",
         `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
-        `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
-        "  _start -.-> getKey",
+        `  classDef filteredDeps ${styleToMermaidString(FILTERED_DEPS_STYLE)}`,
+        "  _start --> getKey",
         "  getKey -.-> openDoor",
-        "  openDoor -.-> startAdventure",
+        "  openDoor --> startAdventure",
       ]);
     });
 
@@ -376,12 +427,13 @@ describe(diagramToMermaid, () => {
         "flowchart TD",
         "  _start{{Start}}:::chapter",
         "  getKey(getKey)",
-        "  openDoor(open the door):::filtered",
+        "  openDoor(open the door):::filteredDeps",
         "  startAdventure(startAdventure):::filtered",
         `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
+        `  classDef filteredDeps ${styleToMermaidString(FILTERED_DEPS_STYLE)}`,
         `  classDef filtered ${styleToMermaidString(FILTERED_STYLE)}`,
         "  _start --> getKey",
-        "  getKey -.-> openDoor",
+        "  getKey --> openDoor",
         "  openDoor -.-> startAdventure",
       ]);
     });
