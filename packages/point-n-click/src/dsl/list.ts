@@ -1,6 +1,7 @@
 import {
   DisplayList,
   GameWorld,
+  ListItemCondition,
   Script,
   ScriptAST,
   ScriptStatement,
@@ -12,9 +13,19 @@ export type ListDSL<Game extends GameWorld, L extends keyof Game["lists"]> = {
       onItem: <I extends Game["lists"][L]>(item: I, script: Script) => void;
     }) => void
   ) => void;
+  /**
+   * Adds an item to the end of the list
+   */
   add: <I extends Game["lists"][L]>(item: I) => void;
+  /**
+   * Only add item if it was not yet in the list
+   */
+  addUnique: <I extends Game["lists"][L]>(item: I) => void;
+  /**
+   * Removes an item from the list
+   */
   remove: <I extends Game["lists"][L]>(item: I) => void;
-  isInList: <I extends Game["lists"][L]>(item: I) => void;
+  isInList: <I extends Game["lists"][L]>(item: I) => ListItemCondition<Game>;
 };
 
 export type ListInterface<Game extends GameWorld> = {
@@ -44,6 +55,15 @@ export const listDSLFunctions = <Game extends GameWorld>(
       addToActiveScript({
         statementType: "AddListItem",
         list,
+        unique: false,
+        value: item,
+      });
+    },
+    addUnique: (item) => {
+      addToActiveScript({
+        statementType: "AddListItem",
+        list,
+        unique: true,
         value: item,
       });
     },
@@ -54,6 +74,10 @@ export const listDSLFunctions = <Game extends GameWorld>(
         value: item,
       });
     },
-    isInList: (_item) => {},
+    isInList: (item): ListItemCondition<Game> => ({
+      op: "IsInList",
+      list,
+      item,
+    }),
   }),
 });

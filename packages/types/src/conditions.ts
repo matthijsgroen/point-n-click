@@ -73,6 +73,12 @@ export type GameObjectFlagCondition<
   flag: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["flags"];
 };
 
+export type ListItemCondition<Game extends GameWorld> = {
+  op: "IsInList";
+  list: keyof Game["lists"];
+  item: Game["lists"][keyof Game["lists"]];
+};
+
 export type StateCondition<Game extends GameWorld> =
   | GameObjectStateCondition<Game, "character">
   | GameObjectStateCondition<Game, "item">
@@ -84,6 +90,7 @@ export type StateCondition<Game extends GameWorld> =
   | GameObjectCounterCondition<Game, "character">
   | GameObjectCounterCondition<Game, "item">
   | GameObjectCounterCondition<Game, "location">
+  | ListItemCondition<Game>
   | OverlayOpenCondition<Game>
   | LocationCondition<Game>
   | TrueCondition

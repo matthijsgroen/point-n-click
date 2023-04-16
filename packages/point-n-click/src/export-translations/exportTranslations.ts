@@ -92,6 +92,15 @@ const processScript = <Game extends GameWorld>(
         statement.text
       );
     }
+    if (statement.statementType === "DisplayList") {
+      Object.values(statement.values).forEach((script) => {
+        processScript(
+          script as ScriptAST<Game>,
+          enterScriptScope,
+          setTranslationKey
+        );
+      });
+    }
   }
   for (const source in contentPluginStatementsPerSource) {
     const plugin = getContentPlugin(source);

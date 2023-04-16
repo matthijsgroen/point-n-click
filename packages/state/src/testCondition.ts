@@ -94,6 +94,10 @@ export const testCondition = <Game extends GameWorld>(
   if (condition.op === "IsLocation") {
     return stateManager.getState().currentLocation === condition.location;
   }
+  if (condition.op === "IsInList") {
+    const list = stateManager.getState().lists[condition.list] || [];
+    return list.includes(condition.item);
+  }
 
   return true;
 };

@@ -165,6 +165,7 @@ export type UpdateCounter<
   transactionType: "set" | "increase" | "decrease";
   value: number;
 };
+
 export type SetStateText<
   Game extends GameWorld,
   ItemType extends StateObject = StateObject
@@ -175,6 +176,7 @@ export type SetStateText<
   name: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["texts"];
   text: string;
 };
+
 export type UpdateCharacterName<Game extends GameWorld> = {
   statementType: "UpdateCharacterName";
   translatable: boolean;
@@ -197,6 +199,7 @@ export type ContentDecoration<Game extends GameWorld> = {
 export type AddListItem<Game extends GameWorld> = {
   statementType: "AddListItem";
   list: keyof Game["lists"];
+  unique: boolean;
   value: Game["lists"][keyof Game["lists"]];
 };
 

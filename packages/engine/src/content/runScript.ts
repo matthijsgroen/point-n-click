@@ -357,7 +357,9 @@ const statementHandler = <
       stateManager.updateState(
         produce((state) => {
           const list = (state as GameState<Game>).lists[statement.list] || [];
-          list.push(statement.value);
+          if (!list.includes(statement.value) || statement.unique === false) {
+            list.push(statement.value);
+          }
           (state as GameState<Game>).lists[statement.list] = list;
         })
       );
