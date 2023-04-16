@@ -5,7 +5,8 @@
 1. Easy writing of game content
 2. Able to start out as text adventure, and make it grow to a graphical adventure
 3. Build as you run it, for easy testing
-4. Deploy as a PWA for local installation and offline play
+4. Multilingual
+5. Deploy as a PWA for local installation and offline play
 
 ## Easy writing of game content
 
@@ -29,7 +30,7 @@ The display instructions are then processed by each individual 'Theme' Some them
 
 This mechanic you can also use to describe some things in text that later gets ignored in a graphical version, because the text would describe what the user is already able to see.
 
-This means the content and state is Theme agnostic, and can be used in all versions of the game.
+This means the content and state is Theme agnostic, and can be used in all versions of the game. (And allows you to play in browser and terminal in synchronized fashion)
 
 ```mermaid
 flowchart
@@ -48,3 +49,11 @@ flowchart
   Theme --> Selection(Select Interaction)
 
 ```
+
+## Build as you run it
+
+Because the engine stores the latest chosen interaction before execution, and all the content is merely a `.json` file. The engine can load in the new content, and start playing again with the latest interaction, live updating the screen you are looking at.
+
+# Multilingual
+
+Because the content can be fully executed directly (since it only collects content). the dev server can directly extract all text and produce a text file for a different language than the source language. And since you can specify in which language you want to play the engine can start a watch process to auto update translation changes as well.
