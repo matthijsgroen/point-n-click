@@ -102,7 +102,10 @@ export type ScriptStatement<Game extends GameWorld> =
   | CharacterSay<Game>
   | ContentDecoration<Game>
   | OpenGameOverlay<Game>
-  | CloseGameOverlay<Game>;
+  | CloseGameOverlay<Game>
+  | AddListItem<Game>
+  | RemoveListItem<Game>
+  | DisplayList<Game>;
 
 export type TextStatement = { statementType: "Text"; sentences: string[] };
 
@@ -189,4 +192,24 @@ export type ContentDecoration<Game extends GameWorld> = {
   statementType: "ContentDecoration";
   decorationType: string;
   content: ScriptAST<Game>;
+};
+
+export type AddListItem<Game extends GameWorld> = {
+  statementType: "AddListItem";
+  list: keyof Game["lists"];
+  value: Game["lists"][keyof Game["lists"]];
+};
+
+export type RemoveListItem<Game extends GameWorld> = {
+  statementType: "RemoveListItem";
+  list: keyof Game["lists"];
+  value: Game["lists"][keyof Game["lists"]];
+};
+
+export type DisplayList<Game extends GameWorld> = {
+  statementType: "DisplayList";
+  list: keyof Game["lists"];
+  values: {
+    [K in Game["lists"][keyof Game["lists"]]]?: ScriptAST<Game>;
+  };
 };

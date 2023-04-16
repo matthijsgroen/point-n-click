@@ -36,6 +36,7 @@ export type GameWorld<Version extends number = number> = {
    * Items you can encounter in the game. Could be inventory, knowledge.
    */
   items: Record<string, WorldObjectSettings>;
+  lists: Record<string, string>;
   /**
    * Definition of overlays of the game.
    * Can be inventory management, conversation happening in the foreground,

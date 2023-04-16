@@ -46,6 +46,9 @@ export type GameState<Game extends GameWorld> = {
   overlays: {
     [K in keyof Game["overlays"]]: GameObjectState<Game["overlays"][K]>;
   };
+  lists: {
+    [K in keyof Game["lists"]]?: Game["lists"][K][];
+  };
 };
 
 export type PlayState = "playing" | "loading" | "quitting" | "reloading";

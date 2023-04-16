@@ -20,6 +20,7 @@ import { characterDSLFunctions, CharacterInterface } from "./character";
 import { ConditionSet, dslStateConditions } from "./dsl-conditions";
 import { itemDSLFunctions, ItemInterface } from "./item";
 import { locationDSLFunctions, LocationInterface } from "./location";
+import { listDSLFunctions, ListInterface } from "./list";
 import { ThemeSettings } from "@point-n-click/themes";
 import {
   BasePuzzleEventStates,
@@ -115,6 +116,7 @@ type GameWorldDSL<Version extends number, Game extends GameWorld<Version>> = {
 } & CharacterInterface<Game> &
   ItemInterface<Game> &
   LocationInterface<Game> &
+  ListInterface<Game> &
   ConditionSet<Game>;
 
 export type GameDefinition<
@@ -329,6 +331,7 @@ export const world =
       ...characterDSLFunctions(addToActiveScript),
       ...itemDSLFunctions(addToActiveScript),
       ...locationDSLFunctions(addToActiveScript),
+      ...listDSLFunctions(addToActiveScript, wrapScript),
 
       text: (...sentences) => {
         addToActiveScript({

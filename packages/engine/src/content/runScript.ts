@@ -353,6 +353,35 @@ const statementHandler = <
         },
       ];
     },
+    AddListItem: (statement, stateManager) => {
+      stateManager.updateState(
+        produce((state) => {
+          const list = (state as GameState<Game>).lists[statement.list] || [];
+          list.push(statement.value);
+          (state as GameState<Game>).lists[statement.list] = list;
+        })
+      );
+      return null;
+    },
+    RemoveListItem: (statement, stateManager) => {
+      stateManager.updateState(
+        produce((state) => {
+          const list = (
+            (state as GameState<Game>).lists[statement.list] || []
+          ).filter((item) => item !== statement.value);
+          (state as GameState<Game>).lists[statement.list] = list;
+        })
+      );
+      return null;
+    },
+    DisplayList: (statement, stateManager, gameModelManager) => {
+      const list = stateManager.getState().lists[statement.list] || [];
+      return list.flatMap((item) => {
+        const displayScript = statement.values[item];
+        if (!displayScript) return [];
+        return runScript(displayScript, stateManager, gameModelManager);
+      });
+    },
   };
 
   return statementMap[statementType] as (

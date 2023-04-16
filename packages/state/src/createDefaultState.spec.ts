@@ -29,6 +29,7 @@ type TestGameWorld = GameDefinition<
       };
     };
     overlays: {};
+    lists: {};
   }
 >;
 
