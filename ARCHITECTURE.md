@@ -47,7 +47,7 @@ flowchart
   DisplayInstructions --> Theme
   Theme --> Rendering
   Theme -.-> ContentPlugin
-  ContentPlugin -.-> TS-DSL
+  ContentPlugin -. augments .-> TS-DSL
   Theme --> Selection(Select Interaction)
 
 ```
