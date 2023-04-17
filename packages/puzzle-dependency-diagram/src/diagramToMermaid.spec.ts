@@ -1,4 +1,4 @@
-import { diagramToMermaid } from "./diagramToMermaid";
+import { diagramToMermaid, getMatchColor } from "./diagramToMermaid";
 import { styleToMermaidString } from "./mermaidStyle";
 import {
   CHAPTER_STYLE,
@@ -440,7 +440,7 @@ describe(diagramToMermaid, () => {
   });
 
   describe("hierarchy", () => {
-    it("supports render option to show hierarchies, set to false", () => {
+    it("supports render mode hierarchies", () => {
       const diagram: PuzzleDependencyDiagram = {
         getKey: { hierarchy: ["tower"] },
         openDoor: {
@@ -452,34 +452,7 @@ describe(diagramToMermaid, () => {
         },
       };
       const result = diagramToMermaid(diagram, {
-        renderHierarchy: false,
-      });
-      expect(result.split("\n")).toEqual([
-        "flowchart TD",
-        "  _start{{Start}}:::chapter",
-        "  getKey(getKey)",
-        "  openDoor(openDoor)",
-        "  startAdventure(startAdventure)",
-        `  classDef chapter ${styleToMermaidString(CHAPTER_STYLE)}`,
-        "  _start --> getKey",
-        "  getKey --> openDoor",
-        "  openDoor --> startAdventure",
-      ]);
-    });
-
-    it("supports render option to show hierarchies, set to true", () => {
-      const diagram: PuzzleDependencyDiagram = {
-        getKey: { hierarchy: ["tower"] },
-        openDoor: {
-          dependsOn: ["getKey"],
-          hierarchy: ["dungeon"],
-        },
-        startAdventure: {
-          dependsOn: ["openDoor"],
-        },
-      };
-      const result = diagramToMermaid(diagram, {
-        renderHierarchy: true,
+        renderMode: "hierarchy",
       });
       expect(result.split("\n")).toEqual([
         "flowchart TD",
@@ -513,7 +486,7 @@ describe(diagramToMermaid, () => {
         },
       };
       const result = diagramToMermaid(diagram, {
-        renderHierarchy: true,
+        renderMode: "hierarchy",
       });
       expect(result.split("\n")).toEqual([
         "flowchart TD",
@@ -547,7 +520,7 @@ describe(diagramToMermaid, () => {
             hierarchy: ["harbor"],
           },
         };
-        const result = diagramToMermaid(diagram, { renderHierarchy: true });
+        const result = diagramToMermaid(diagram, { renderMode: "hierarchy" });
         expect(result.split("\n")).toEqual([
           "flowchart TD",
           "  _start{{Start}}:::chapter",
@@ -568,6 +541,77 @@ describe(diagramToMermaid, () => {
           "  _or_startJourney --> startJourney",
         ]);
       });
+    });
+  });
+
+  describe("overview", () => {
+    const diagram: PuzzleDependencyDiagram<{ state: "done" }> = {
+      getKey: {
+        hierarchy: ["castle", "tower"],
+        tags: {
+          state: "done",
+        },
+      },
+      openDoor: {
+        dependsOn: ["getKey"],
+        hierarchy: ["castle", "dungeon"],
+        tags: {
+          state: "done",
+        },
+      },
+      startAdventure: {
+        dependsOn: ["openDoor"],
+        hierarchy: ["castle", "dungeon"],
+      },
+      saveSomeone: {
+        dependsOn: ["startAdventure"],
+        hierarchy: ["town", "tavern"],
+      },
+      askWizard: {
+        dependsOn: ["startAdventure"],
+        hierarchy: ["forest"],
+      },
+    };
+
+    it("supports render mode overview", () => {
+      const result = diagramToMermaid(diagram, {
+        renderMode: "overview",
+      });
+      expect(result.split("\n")).toEqual([
+        "flowchart TD",
+        "  subgraph castle[castle 3 / 3]",
+        "    tower(tower 1 / 1)",
+        "    dungeon(dungeon 2 / 2)",
+        "  end",
+        "  subgraph town[town 1 / 1]",
+        "    tavern(tavern 1 / 1)",
+        "  end",
+        "  forest(forest 1 / 1)",
+      ]);
+    });
+
+    it("supports styles and filters", () => {
+      const result = diagramToMermaid(diagram, {
+        renderMode: "overview",
+        filter: { state: ["done"] },
+      });
+      expect(result.split("\n")).toEqual([
+        "flowchart TD",
+        "  subgraph castle[castle 2 / 3]",
+        "    tower(tower 1 / 1)",
+        "    dungeon(dungeon 1 / 2)",
+        "  end",
+        "  subgraph town[town 0 / 1]",
+        "    tavern(tavern 0 / 1)",
+        "  end",
+        "  forest(forest 0 / 1)",
+        `  style castle fill:${getMatchColor(2, 3)},text:#fff`,
+        `  style tower fill:${getMatchColor(1, 1)},text:#fff`,
+        `  style dungeon fill:${getMatchColor(1, 2)},text:#fff`,
+        `  style town fill:${getMatchColor(0, 1)},text:#fff`,
+        `  style tavern fill:${getMatchColor(0, 1)},text:#fff`,
+        `  style forest fill:${getMatchColor(0, 1)},text:#fff`,
+      ]);
     });
   });
 });

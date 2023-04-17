@@ -17,9 +17,11 @@ const shape = (type: PuzzleEvent["type"], label: string): string =>
     ? `{{${label}}}`
     : `(${label})`;
 
+export type RenderMode = "default" | "overview" | "hierarchy";
+
 type RenderOptions<Diagram extends PuzzleDependencyDiagram> = {
   filter?: FilterOptions<Diagram>;
-  renderHierarchy?: boolean;
+  renderMode?: RenderMode;
 };
 
 const FILTER_PASS = 0;
@@ -136,7 +138,7 @@ const defineNodes = <Diagram extends PuzzleDependencyDiagram>(
   diagram: Diagram,
   options?: RenderOptions<Diagram>
 ): string[] => {
-  const renderHierarchy = options?.renderHierarchy ?? false;
+  const renderHierarchy = options?.renderMode === "hierarchy";
   const matchFilter = getMatchFilter(diagram, options);
   const classes: Record<string, string> = {
     chapter: styleToMermaidString(CHAPTER_STYLE),
@@ -222,10 +224,81 @@ const defineNodes = <Diagram extends PuzzleDependencyDiagram>(
   return nodes;
 };
 
+const matchColors = ["#511", "#331", "#281", "#090"];
+
+export const getMatchColor = (match: number, amount: number) =>
+  matchColors[Math.floor((match / amount) * (matchColors.length - 1))];
+
+const diagramToMermaidOverview = <Diagram extends PuzzleDependencyDiagram>(
+  diagram: PuzzleDependencyDiagram,
+  options: RenderOptions<Diagram>
+): string => {
+  type HierarchyNode = {
+    name: string;
+    amount: number;
+    match: number;
+    children: Record<string, HierarchyNode>;
+  };
+  const tree: Record<string, HierarchyNode> = {};
+  const matchFilter = getMatchFilter(diagram, options);
+
+  const stylings: Record<string, string> = {};
+
+  Object.entries(diagram).forEach(([name, event]) => {
+    const hierarchy = event.hierarchy ?? ["_all"];
+
+    let parent = tree;
+    for (const level of hierarchy) {
+      const item = parent[level] || {
+        name: level,
+        amount: 0,
+        match: 0,
+        children: {},
+      };
+      parent[level] = item;
+
+      item.amount++;
+      if (matchFilter(name)) {
+        item.match++;
+      }
+
+      parent = item.children;
+    }
+  });
+
+  const renderHierarchyGraph = (
+    level: Record<string, HierarchyNode>
+  ): string[] =>
+    Object.values(level).flatMap((item) => {
+      stylings[item.name] = `fill:${getMatchColor(item.match, item.amount)}`;
+      if (Object.keys(item.children).length > 0) {
+        return [
+          `subgraph ${item.name}[${item.name} ${item.match} / ${item.amount}]`,
+          ...renderHierarchyGraph(item.children).map((e) => `  ${e}`),
+          "end",
+        ];
+      }
+      return [`${item.name}(${item.name} ${item.match} / ${item.amount})`];
+    });
+
+  return [
+    "flowchart TD",
+    ...renderHierarchyGraph(tree).map((e) => `  ${e}`),
+    ...(options.filter
+      ? Object.entries(stylings).map(
+          ([k, color]) => `  style ${k} ${color},text:#fff`
+        )
+      : []),
+  ].join("\n");
+};
+
 export const diagramToMermaid = <Diagram extends PuzzleDependencyDiagram>(
   diagram: Diagram,
   options?: RenderOptions<Diagram>
 ): string => {
+  if (options?.renderMode === "overview") {
+    return diagramToMermaidOverview(diagram, options);
+  }
   const nodes = defineNodes(diagram, options);
   const edges = defineEdges(diagram, options);
 

@@ -2,6 +2,7 @@ import {
   diagramToFilterOptions,
   diagramToMermaid,
   PuzzleDependencyDiagram,
+  RenderMode,
 } from "@point-n-click/puzzle-dependency-diagram";
 import React, { ChangeEventHandler, useEffect, useRef, useState } from "react";
 import { produce } from "immer";
@@ -45,11 +46,11 @@ export const DiagramView: React.FC<{
   const [scaleIndex, setScaleIndex] = useState<number>(4);
   const [togglePercentages, setTogglePercentages] = useState<string[]>([]);
 
-  const [renderHierarchy, setRenderHierarchy] = useState(false);
+  const [renderMode, setRenderMode] = useState<RenderMode>("default");
 
   const mermaidDiagram = diagramToMermaid(diagram, {
     filter: diagramFilter,
-    renderHierarchy,
+    renderMode,
   });
 
   const createEventHandler =
@@ -114,15 +115,21 @@ export const DiagramView: React.FC<{
             </button>
             Zoom
           </div>
-          <label style={{ display: "block", textTransform: "capitalize" }}>
-            <input
-              name={"renderHierarchy"}
-              type="checkbox"
-              checked={renderHierarchy}
-              onChange={(event) => setRenderHierarchy(event.target.checked)}
-            ></input>
-            Render Hierarchy
-          </label>
+          {[
+            { mode: "default", label: "default" },
+            { mode: "hierarchy", label: "hierarchy" },
+            { mode: "overview", label: "overview" },
+          ].map(({ mode, label }) => (
+            <label style={{ display: "block", textTransform: "capitalize" }}>
+              <input
+                name={"renderMode"}
+                type="radio"
+                checked={renderMode === mode}
+                onChange={() => setRenderMode(mode)}
+              ></input>
+              {label}
+            </label>
+          ))}
 
           <h2>Filters:</h2>
           {Object.entries<string[]>(filterOptions).map(([name, options]) => {
