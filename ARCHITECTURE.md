@@ -37,18 +37,24 @@ flowchart
 
   TS-DSL(Typescript Content) -- dev server watch process --> Content.json
   Content.json --> Engine
-  State(Game state) --> Engine
+  GameState(Game state) --> Engine
   Interaction(Last interaction) --> Engine
-  Engine --> NewState(New Game State)
+  Engine --> NewGameState(New Game State)
   Engine --> DisplayInstructions
-  Engine --> Int(Potential interactions)
+  Engine --> PotentialInteractions(Potential interactions)
 
-  Int --> Theme
+  PotentialInteractions --> Theme
   DisplayInstructions --> Theme
   Theme --> Rendering
+  Theme -.-> ContentPlugin
+  ContentPlugin -.-> TS-DSL
   Theme --> Selection(Select Interaction)
 
 ```
+
+### Content plugins
+
+Because a Theme is responsible for rendering, they are not only able to process display instructions, they are also the ones defining it. Defining these display instructions is done through content plugins, which can be shared among multiple themes. This means that if there is no theme active that can play sound, no content plugin for sounds is loaded, and the user can also not define sound instructions in the content of the game.
 
 ## Build as you run it
 
