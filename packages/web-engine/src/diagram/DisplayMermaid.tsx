@@ -5,6 +5,7 @@ mermaid.initialize({
   startOnLoad: false,
   theme: "base",
   themeVariables: {
+    darkMode: true,
     primaryColor: "#bb2528",
     primaryTextColor: "#fff",
     primaryBorderColor: "#ba4042",

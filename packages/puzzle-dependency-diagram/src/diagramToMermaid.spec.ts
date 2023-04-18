@@ -546,7 +546,13 @@ describe(diagramToMermaid, () => {
 
   describe("overview", () => {
     const diagram: PuzzleDependencyDiagram<{ state: "done" }> = {
+      wakeUp: {
+        tags: {
+          state: "done",
+        },
+      },
       getKey: {
+        dependsOn: ["wakeUp"],
         hierarchy: ["castle", "tower"],
         tags: {
           state: "done",
@@ -578,7 +584,8 @@ describe(diagramToMermaid, () => {
         renderMode: "overview",
       });
       expect(result.split("\n")).toEqual([
-        "flowchart TD",
+        "flowchart LR",
+        "  _all(Global 1 / 1)",
         "  subgraph castle[castle 3 / 3]",
         "    tower(tower 1 / 1)",
         "    dungeon(dungeon 2 / 2)",
@@ -596,7 +603,8 @@ describe(diagramToMermaid, () => {
         filter: { state: ["done"] },
       });
       expect(result.split("\n")).toEqual([
-        "flowchart TD",
+        "flowchart LR",
+        "  _all(Global 1 / 1)",
         "  subgraph castle[castle 2 / 3]",
         "    tower(tower 1 / 1)",
         "    dungeon(dungeon 1 / 2)",
@@ -605,6 +613,7 @@ describe(diagramToMermaid, () => {
         "    tavern(tavern 0 / 1)",
         "  end",
         "  forest(forest 0 / 1)",
+        `  style _all fill:${getMatchColor(1, 1)},text:#fff`,
         `  style castle fill:${getMatchColor(2, 3)},text:#fff`,
         `  style tower fill:${getMatchColor(1, 1)},text:#fff`,
         `  style dungeon fill:${getMatchColor(1, 2)},text:#fff`,

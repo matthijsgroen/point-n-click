@@ -224,7 +224,7 @@ const defineNodes = <Diagram extends PuzzleDependencyDiagram>(
   return nodes;
 };
 
-const matchColors = ["#511", "#331", "#281", "#090"];
+const matchColors = ["#900", "#930", "#660", "#090"];
 
 export const getMatchColor = (match: number, amount: number) =>
   matchColors[Math.floor((match / amount) * (matchColors.length - 1))];
@@ -278,11 +278,12 @@ const diagramToMermaidOverview = <Diagram extends PuzzleDependencyDiagram>(
           "end",
         ];
       }
-      return [`${item.name}(${item.name} ${item.match} / ${item.amount})`];
+      const name = item.name === "_all" ? "Global" : item.name;
+      return [`${item.name}(${name} ${item.match} / ${item.amount})`];
     });
 
   return [
-    "flowchart TD",
+    "flowchart LR",
     ...renderHierarchyGraph(tree).map((e) => `  ${e}`),
     ...(options.filter
       ? Object.entries(stylings).map(
