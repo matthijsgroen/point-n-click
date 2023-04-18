@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import { devServer } from "./dev-server/devServer";
 import "@parcel/config-default";
+import { setTerminalTitle } from "./dev-server/terminalTitle";
 
 export const cli = (
   args: string[],
@@ -25,6 +26,7 @@ export const cli = (
     )
     .description("start build server and game")
     .action((source, { light, ...options }) => {
+      setTerminalTitle("point-n-click");
       devServer(source, {
         ...options,
         lightMode: options.light ?? false,

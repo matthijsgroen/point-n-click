@@ -7,8 +7,7 @@ import {
   getTranslation,
   registerTheme,
 } from "@point-n-click/engine";
-import { GameModel, Locale } from "@point-n-click/state";
-import { GameWorld } from "@point-n-click/types";
+import { GameModel, GameWorld, Locale } from "@point-n-click/types";
 import { watch } from "fs";
 import { unlink, writeFile } from "fs/promises";
 import path from "path";
@@ -20,6 +19,7 @@ import { CACHE_FOLDER } from "./constants";
 import { displayTypescriptError } from "./displayTypescriptError";
 import { loadTranslationData } from "./loadTranslationData";
 import { mkdir } from "./mkdir";
+import { setTerminalTitle } from "./terminalTitle";
 
 type ServerOptions = {
   lang: string;
@@ -127,6 +127,9 @@ export const startContentBuilder = async (
             });
           }
         }
+
+        const gameTitle = jsonModel.settings.gameTitle;
+        setTerminalTitle(`${gameTitle} - dev`);
 
         const defaultLocale = jsonModel.settings.locales.default;
         if (isLocale(lang) && lang !== defaultLocale) {

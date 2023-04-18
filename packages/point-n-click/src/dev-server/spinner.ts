@@ -5,7 +5,7 @@ import { setColor } from "../cli-client/utils";
 const delay = (duration: number) =>
   new Promise((resolve) => setTimeout(resolve, duration));
 
-const spinnerSprites = ["⠟", "⠯", "⠷", "⠾", "⠽", "⠻"];
+const spinnerSprites = ["⠟", "⠯", "⠷", "⠾", "⠽", "⠻"].reverse();
 
 const editLine = (prefix: string, spinner: string) => {
   process.stdout.clearLine(0);
@@ -33,7 +33,7 @@ export const progressSpinner = async <T>(
 
   while (busy) {
     editLine(line, spinner[counter]);
-    await delay(30);
+    await delay(300);
     counter += 1;
     counter = counter % spinner.length;
   }
