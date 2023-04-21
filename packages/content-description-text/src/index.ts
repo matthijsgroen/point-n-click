@@ -7,18 +7,18 @@ import { FormattedText, handleTextContent } from "@point-n-click/engine";
 
 const PLUGIN_SOURCE = "descriptionText" as const;
 
-type TextStatement = {
+type TextDescriptionAST = {
   statementType: "descriptionText";
   content: string[];
 };
 
-type TextContent = {
+type TextDescriptionDisplay = {
   type: "descriptionText";
   pluginSource: typeof PLUGIN_SOURCE;
   text: FormattedText[];
 };
 
-const isTextStatement = (item: ContentStatement): item is TextStatement =>
+const isTextStatement = (item: ContentStatement): item is TextDescriptionAST =>
   item.statementType === "descriptionText";
 
 const textDslFunctions = {
@@ -48,7 +48,7 @@ const textContent: ContentPlugin<typeof textDslFunctions> = {
   },
   handleContent: (statement, stateManager, gameModel) => {
     if (isTextStatement(statement)) {
-      const result: TextContent = {
+      const result: TextDescriptionDisplay = {
         type: "descriptionText",
         pluginSource: PLUGIN_SOURCE,
         text: [],

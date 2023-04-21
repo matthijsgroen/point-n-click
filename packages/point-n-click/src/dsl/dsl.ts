@@ -16,7 +16,11 @@ import {
   Settings,
   ThemeInfo,
 } from "@point-n-click/types";
-import { characterDSLFunctions, CharacterInterface } from "./character";
+import {
+  characterDSLFunctions,
+  BaseCharacterInterface,
+  CharacterDSL,
+} from "./character";
 import { ConditionSet, dslStateConditions } from "./dsl-conditions";
 import { itemDSLFunctions, ItemInterface } from "./item";
 import { locationDSLFunctions, LocationInterface } from "./location";
@@ -61,9 +65,9 @@ type ThemeDSLMap<
     ThemeSettings,
     readonly ContentPlugin<DSLExtension>[]
   >[]
-> = RemapFunctions<ThemeMap[number]["extensions"][number]["dslFunctions"]>;
+> = ThemeMap[number]["extensions"][number]["dslFunctions"];
 
-type GameWorldDSL<Version extends number, Game extends GameWorld<Version>> = {
+type BaseDSL<Version extends number, Game extends GameWorld<Version>> = {
   /**
    * # Overlay
    *
@@ -113,16 +117,58 @@ type GameWorldDSL<Version extends number, Game extends GameWorld<Version>> = {
   onState: EvaluateCondition<Game>;
 
   __exportWorld: () => GameModel<Game>;
-} & CharacterInterface<Game> &
+};
+
+type BaseGameWorldDSL<
+  Version extends number,
+  Game extends GameWorld<Version>
+> = BaseDSL<Version, Game> &
+  BaseCharacterInterface<Game> &
   ItemInterface<Game> &
   LocationInterface<Game> &
   ListInterface<Game> &
   ConditionSet<Game>;
 
+type CharacterFunctionMap<M extends DSLExtension> = M extends {
+  character: (system: any) => (character: any) => infer R;
+}
+  ? R
+  : never;
+
+export type CharacterInterface<
+  Game extends GameWorld,
+  T extends DSLExtension
+> = {
+  character: <I extends keyof Game["characters"]>(
+    character: I
+  ) => CharacterDSL<Game, I> & UnionToIntersection<CharacterFunctionMap<T>>;
+};
+
+type GameWorldDSL<
+  Version extends number,
+  Game extends GameWorld<Version>,
+  T extends ThemeWithDSL<
+    ThemeSettings,
+    readonly ContentPlugin<DSLExtension>[]
+  >[]
+> = BaseDSL<Version, Game> &
+  CharacterInterface<Game, ThemeDSLMap<T>> &
+  ItemInterface<Game> &
+  LocationInterface<Game> &
+  ListInterface<Game> &
+  ConditionSet<Game> &
+  Omit<UnionToIntersection<RemapFunctions<ThemeDSLMap<T>>>, "character">;
+
 export type GameDefinition<
   Version extends number,
   Game extends GameWorld<Version>
 > = Game;
+
+const isCharacterExtension = (
+  _item: DSLExtension[string],
+  name: string
+): _item is Exclude<DSLExtension["character"], undefined> =>
+  name === "character";
 
 /**
  * This is the starting point of your adventure.
@@ -142,8 +188,7 @@ export const world =
     >[]
   >(
     ...themes: T
-  ): GameWorldDSL<Game["version"], Game> &
-    UnionToIntersection<ThemeDSLMap<T>> => {
+  ): GameWorldDSL<Game["version"], Game, T> => {
     let worldModel: GameModel<Game> = {
       settings,
       locations: [],
@@ -191,7 +236,41 @@ export const world =
       activeScriptScope.push(statement);
     };
 
-    const baseDSL: GameWorldDSL<Game["version"], Game> = {
+    const createSystemInterface = (
+      contentPlugin: ContentPlugin<DSLExtension<string>>
+    ): SystemInterface => ({
+      addPluginContent: (item) => {
+        activeScriptScope.push({ ...item, source: contentPlugin.pluginType });
+      },
+      addBaseContent: (item) => {
+        activeScriptScope.push(item as unknown as ScriptStatement<Game>);
+      },
+      wrapScript: (execution: Script) =>
+        wrapScript(execution) as ScriptAST<GameWorld>,
+    });
+
+    const pluginDSLFunctions: Record<string, (...args: any[]) => void> = {};
+    const pluginCharacterDSLFunctions: (<Game extends GameWorld>(
+      character: keyof Game["characters"]
+    ) => Record<string, (...args: any[]) => void>)[] = [];
+
+    for (const theme of themes) {
+      for (const contentPlugin of theme.extensions) {
+        const systemInterface = createSystemInterface(contentPlugin);
+        for (const [name, func] of Object.entries(contentPlugin.dslFunctions)) {
+          if (!["character"].includes(name)) {
+            pluginDSLFunctions[name] = (...args) => {
+              func(systemInterface, ...args);
+            };
+          }
+          if (isCharacterExtension(func, name)) {
+            pluginCharacterDSLFunctions.push(func(systemInterface));
+          }
+        }
+      }
+    }
+
+    const baseDSL: BaseGameWorldDSL<Game["version"], Game> = {
       defineOverlay: <Overlay extends keyof Game["overlays"]>(
         overlay: Overlay,
         handleOverlay: OverlayScript<Game, Overlay>
@@ -328,7 +407,7 @@ export const world =
         });
       },
 
-      ...characterDSLFunctions(addToActiveScript),
+      ...characterDSLFunctions(addToActiveScript, pluginCharacterDSLFunctions),
       ...itemDSLFunctions(addToActiveScript),
       ...locationDSLFunctions(addToActiveScript),
       ...listDSLFunctions(addToActiveScript, wrapScript),
@@ -355,35 +434,9 @@ export const world =
       __exportWorld: () => worldModel,
     };
 
-    const createSystemInterface = (
-      contentPlugin: ContentPlugin<DSLExtension>
-    ): SystemInterface => ({
-      addPluginContent: (item) => {
-        activeScriptScope.push({ ...item, source: contentPlugin.pluginType });
-      },
-      addBaseContent: (item) => {
-        activeScriptScope.push(item as unknown as ScriptStatement<Game>);
-      },
-      wrapScript: (execution: Script) =>
-        wrapScript(execution) as ScriptAST<GameWorld>,
-    });
-
-    const pluginDSLFunctions: Record<string, (...args: any[]) => void> = {};
-
-    for (const theme of themes) {
-      for (const contentPlugin of theme.extensions) {
-        const systemInterface = createSystemInterface(contentPlugin);
-        for (const [name, func] of Object.entries(contentPlugin.dslFunctions)) {
-          pluginDSLFunctions[name] = (...args) => {
-            func(systemInterface, ...args);
-          };
-        }
-      }
-    }
-
     return { ...baseDSL, ...pluginDSLFunctions } as unknown as GameWorldDSL<
       Game["version"],
-      Game
-    > &
-      UnionToIntersection<ThemeDSLMap<T>>;
+      Game,
+      T
+    >;
   };

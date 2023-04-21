@@ -1,0 +1,26 @@
+{
+  "name": "@point-n-click/content-rename",
+  "version": "1.0.0-alpha.0",
+  "description": "plugin for renaming characters",
+  "author": "Matthijs Groen",
+  "license": "MIT",
+  "source": "./src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/types.d.ts",
+  "scripts": {
+    "build": "parcel build",
+    "watch": "parcel watch"
+  },
+  "files": [
+    "dist/"
+  ],
+  "devDependencies": {
+    "parcel": "2.7.0",
+    "typescript": "~4.7.3"
+  },
+  "dependencies": {
+    "@point-n-click/engine": "workspace:^",
+    "@point-n-click/types": "workspace:^"
+  }
+}

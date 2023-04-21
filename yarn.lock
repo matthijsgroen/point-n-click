@@ -3506,6 +3506,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@point-n-click/content-rename@workspace:packages/content-rename":
+  version: 0.0.0-use.local
+  resolution: "@point-n-click/content-rename@workspace:packages/content-rename"
+  dependencies:
+    "@point-n-click/engine": "workspace:^"
+    "@point-n-click/types": "workspace:^"
+    parcel: 2.7.0
+    typescript: ~4.7.3
+  languageName: unknown
+  linkType: soft
+
 "@point-n-click/engine@workspace:^, @point-n-click/engine@workspace:packages/engine":
   version: 0.0.0-use.local
   resolution: "@point-n-click/engine@workspace:packages/engine"

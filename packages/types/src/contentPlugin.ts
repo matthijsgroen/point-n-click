@@ -18,10 +18,24 @@ export type SystemInterface = {
   wrapScript: (execution: Script) => ScriptAST<GameWorld>;
 };
 
-export type DSLExtension = Record<
-  string,
+/**
+ * Description of functions to add.
+ *
+ * when using `character: (system: SystemInterface, character: string) =>
+ * as signature, the result object will be merged with the other
+ * character functions.
+ */
+
+export type DSLExtension<T extends string = string> = Record<
+  T extends "character" ? never : string,
   (system: SystemInterface, ...args: any[]) => void
->;
+> & {
+  character?: (
+    system: SystemInterface
+  ) => <Game extends GameWorld>(
+    character: keyof Game["characters"]
+  ) => Record<string, (...args: any[]) => void>;
+};
 
 export type TranslationFile = {
   [key: string]: string | TranslationFile;
@@ -34,6 +48,7 @@ export interface ContentPluginContent {
 
 export type ContentPlugin<Extension extends DSLExtension> = {
   pluginType: string;
+  dslFunctions: Extension;
   preloadContent?: (content: ContentStatement[]) => Promise<void>;
   unloadContent?: (content: ContentStatement[]) => Promise<void>;
   handleContent: <Game extends GameWorld>(
@@ -42,5 +57,4 @@ export type ContentPlugin<Extension extends DSLExtension> = {
     model: GameModel<Game>
   ) => (ContentPluginContent | DisplayErrorText)[];
   translationContent?: (content: ContentStatement[]) => TranslationFile;
-  dslFunctions: Extension;
 };

@@ -2,6 +2,7 @@ import {
   ContentPlugin,
   DSLExtension,
   GameWorld,
+  JSONValue,
   TranslationFile,
 } from "@point-n-click/types";
 import React from "react";
@@ -10,7 +11,6 @@ import {
   GameModelManager,
   Interactions,
 } from "@point-n-click/engine";
-import { JSONValue } from "@point-n-click/state";
 
 export type ThemeSettings = { [x: string]: JSONValue };
 

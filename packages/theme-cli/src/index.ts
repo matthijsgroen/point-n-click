@@ -3,8 +3,9 @@ import { Theme } from "@point-n-click/themes";
 import packageDef from "../package.json";
 import descriptionText from "@point-n-click/content-description-text";
 import noteLetter from "@point-n-click/content-note-letter";
+import rename from "@point-n-click/content-rename";
 
-const extensions = [descriptionText, noteLetter] as const;
+const extensions = [descriptionText, noteLetter, rename] as const;
 
 const terminalTheme: Theme<Settings, typeof extensions> = (name, settings) => ({
   name,

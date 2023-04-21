@@ -1,9 +1,4 @@
-import {
-  ContentPlugin,
-  GameWorld,
-  Script,
-  SystemInterface,
-} from "@point-n-click/types";
+import { ContentPlugin, Script, SystemInterface } from "@point-n-click/types";
 
 const PLUGIN_SOURCE = "notesAndLetters" as const;
 
@@ -20,8 +15,8 @@ const textDslFunctions = {
 const textContent: ContentPlugin<typeof textDslFunctions> = {
   pluginType: PLUGIN_SOURCE,
   dslFunctions: textDslFunctions,
-  translationContent: (content) => ({}),
-  handleContent: (statement, stateManager) => [],
+  translationContent: () => ({}),
+  handleContent: () => [],
 };
 
 export default textContent;
