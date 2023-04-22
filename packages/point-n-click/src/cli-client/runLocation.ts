@@ -5,7 +5,7 @@ import {
   getInteractions,
 } from "@point-n-click/engine";
 import { handleInteractions } from "./handleInteractions";
-import { renderScreen } from "./renderScreen";
+import { renderDisplayInfo } from "./renderDisplayInfo";
 
 export const runLocation = async <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
@@ -32,7 +32,7 @@ export const runLocation = async <Game extends GameWorld>(
       return;
     }
 
-    await renderScreen(displayInfo, gameModelManager, stateManager, {
+    await renderDisplayInfo(displayInfo, gameModelManager, stateManager, {
       lightMode,
     });
 

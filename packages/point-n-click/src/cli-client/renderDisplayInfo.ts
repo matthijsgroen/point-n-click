@@ -9,20 +9,38 @@ import {
   ContentPluginContent,
   GameWorld,
   GameStateManager,
+  GameState,
 } from "@point-n-click/types";
 import { renderText } from "./renderText";
 import { getSettings } from "./settings";
 import { resetStyling } from "./utils";
+import { createInterface } from "readline";
+import produce from "immer";
+
+const rl = createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+const prompt = (query: string) =>
+  new Promise<string>((resolve) => rl.question(query, resolve));
 
 const isDescriptionText = (
   item: ContentPluginContent
 ): item is ContentPluginContent & { text: FormattedText[] } =>
   item.pluginSource === "descriptionText" && item.type === "descriptionText";
 
+const isCharacterRename = (
+  item: ContentPluginContent
+): item is ContentPluginContent & {
+  character: string;
+  currentName: string;
+  prompt: FormattedText;
+} => item.pluginSource === "characterRename" && item.type === "CharacterRename";
+
 const isListItem = (text: FormattedText): boolean =>
   text[0] && text[0].type === "text" && text[0].text.startsWith("- ");
 
-export const renderScreen = async <Game extends GameWorld>(
+export const renderDisplayInfo = async <Game extends GameWorld>(
   info: DisplayInfo<Game>[],
   gameModelManager: GameModelManager<Game>,
   stateManager: GameStateManager<Game>,
@@ -65,6 +83,33 @@ export const renderScreen = async <Game extends GameWorld>(
             indent: isListItem(sentence) ? 2 : 0,
           });
         }
+        resetStyling();
+      }
+
+      if (isCharacterRename(displayItem)) {
+        setKey("prompt");
+        const color = getColor(textColor);
+        const cpm = stateManager.getState().settings.cpm;
+        // 1. Show input prompt
+        await renderText(displayItem.prompt, cpm, {
+          color,
+          prefix,
+          postfix,
+        });
+        // 2. Gather result
+        const newName = await prompt("");
+        if (newName.trim().length > 1) {
+          stateManager.updateState(
+            // TODO: Extract to a 'renameCharacter' function
+            produce((state) => {
+              (state.characters as Record<string, { name: string }>)[
+                displayItem.character
+              ].name = newName;
+            })
+          );
+        }
+
+        // 3. Set state
         resetStyling();
       }
       continue;
@@ -143,7 +188,7 @@ export const renderScreen = async <Game extends GameWorld>(
           0,
           {}
         );
-        await renderScreen(
+        await renderDisplayInfo(
           displayItem.content,
           gameModelManager,
           stateManager,
@@ -166,7 +211,7 @@ export const renderScreen = async <Game extends GameWorld>(
         console.log(" ");
       } else {
         console.log(" ");
-        await renderScreen(
+        await renderDisplayInfo(
           displayItem.content,
           gameModelManager,
           stateManager,

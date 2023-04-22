@@ -27,7 +27,7 @@ type CharacterRenameDisplay = {
 const isCharacterRename = (
   item: ContentStatement
 ): item is CharacterRenameAST<GameWorld> =>
-  item.statementType === "characterRename";
+  item.statementType === "CharacterRename";
 
 const textDslFunctions = {
   character:

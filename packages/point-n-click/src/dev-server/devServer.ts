@@ -37,7 +37,7 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
   } catch (e) {}
 
   const [stopServer, runningPort] = await progressSpinner(
-    "Awaiting initial build...",
+    "Creating initial build...",
     startWebserver(modelManager, gameStateManager, options)
   );
 
