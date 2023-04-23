@@ -5,7 +5,7 @@ import { wait, resetStyling, setStyling, TextStyling } from "./utils";
 
 const minute = 60e3;
 
-const getTextLength = (text: FormattedText): number =>
+export const getTextLength = (text: FormattedText): number =>
   text.reduce(
     (r, e) =>
       e.type === "text" ? r + e.text.length : r + getTextLength(e.contents),
@@ -22,6 +22,7 @@ export const splitLines = (
   const prefLength = getTextLength(prefix);
   const postLength = getTextLength(postfix);
   let current = prefLength;
+
   const indent = styling.indent ?? 0;
 
   const formattedText = [...prefix, ...text];
@@ -41,7 +42,7 @@ export const splitLines = (
 
               if (current + word.length > maxWidth) {
                 result.push({ type: "text", text: sentence });
-                if (styling.postfix) {
+                if (postfix.length > 0) {
                   const spacing = maxWidth - current;
                   result.push({
                     type: "text",
@@ -65,7 +66,7 @@ export const splitLines = (
           }
           if (current + word.length > maxWidth) {
             result.push({ type: "text", text: sentence });
-            if (styling.postfix) {
+            if (postfix.length > 0) {
               const spacing = maxWidth - current;
               result.push({
                 type: "text",
@@ -97,7 +98,7 @@ export const splitLines = (
   };
 
   const res = handleText(formattedText);
-  if (styling.postfix) {
+  if (postfix.length > 0) {
     const spacing = maxWidth - current;
     res.push({
       type: "text",

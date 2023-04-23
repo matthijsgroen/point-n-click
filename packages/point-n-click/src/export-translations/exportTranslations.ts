@@ -77,9 +77,6 @@ const processScript = <Game extends GameWorld>(
       processScript(statement.body, enterScriptScope, setTranslationKey);
       processScript(statement.elseBody, enterScriptScope, setTranslationKey);
     }
-    if (statement.statementType === "ContentDecoration") {
-      processScript(statement.content, enterScriptScope, setTranslationKey);
-    }
     if (statement.statementType === "SetGameObjectText") {
       setTranslationKey(
         [

@@ -20,7 +20,6 @@ import { getContentPlugin, isContentPluginStatement } from "../contentPlugin";
 import { handleTextContent } from "../text/handleText";
 import { getCurrentLocation } from "./getLocation";
 import { GameModelManager } from "../model/gameModel";
-import { gameModelManager } from "../../dist";
 
 type NarratorText = {
   type: "narratorText";
@@ -36,17 +35,10 @@ type CharacterText<Game extends GameWorld> = {
   displayName?: string;
 };
 
-type ContentDecoration<Game extends GameWorld> = {
-  type: "contentDecoration";
-  decorationType: string;
-  content: DisplayInfo<Game>[];
-};
-
 export type DisplayInfo<Game extends GameWorld> =
   | DisplayErrorText
   | NarratorText
   | CharacterText<Game>
-  | ContentDecoration<Game>
   | ContentPluginContent;
 
 type StatementHandler<
@@ -339,19 +331,6 @@ const statementHandler = <
         })
       );
       return null;
-    },
-    ContentDecoration: (
-      statement,
-      stateManager,
-      gameModelManager
-    ): DisplayInfo<Game>[] => {
-      return [
-        {
-          type: "contentDecoration",
-          decorationType: statement.decorationType,
-          content: runScript(statement.content, stateManager, gameModelManager),
-        },
-      ];
     },
     AddListItem: (statement, stateManager) => {
       stateManager.updateState(

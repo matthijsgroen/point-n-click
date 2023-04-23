@@ -9,9 +9,8 @@ import {
   ContentPluginContent,
   GameWorld,
   GameStateManager,
-  GameState,
 } from "@point-n-click/types";
-import { renderText } from "./renderText";
+import { getTextLength, renderText } from "./renderText";
 import { getSettings } from "./settings";
 import { resetStyling } from "./utils";
 import { createInterface } from "readline";
@@ -28,6 +27,13 @@ const isDescriptionText = (
   item: ContentPluginContent
 ): item is ContentPluginContent & { text: FormattedText[] } =>
   item.pluginSource === "descriptionText" && item.type === "descriptionText";
+
+const isTextBox = (
+  item: ContentPluginContent
+): item is ContentPluginContent & {
+  decoration: "Note";
+  decorationPosition: "start" | "end";
+} => item.pluginSource === "notesAndLetters" && item.type === "TextBox";
 
 const isCharacterRename = (
   item: ContentPluginContent
@@ -46,10 +52,13 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
   stateManager: GameStateManager<Game>,
   {
     lightMode,
-    prefix,
-    postfix,
+    prefix: textPrefix,
+    postfix: textPostfix,
   }: { lightMode: boolean; prefix?: FormattedText; postfix?: FormattedText }
 ): Promise<void> => {
+  let prefix = textPrefix ?? [];
+  let postfix = textPostfix ?? [];
+
   const useColor = getSettings().color;
   const textColor = useColor
     ? gameModelManager.getModel().settings.colors.defaultTextColor
@@ -84,6 +93,67 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
           });
         }
         resetStyling();
+      }
+
+      if (isTextBox(displayItem)) {
+        if (
+          displayItem.decoration === "Note" &&
+          displayItem.decorationPosition === "start"
+        ) {
+          const width =
+            process.stdout.columns -
+            getTextLength(prefix) -
+            getTextLength(postfix);
+
+          console.log(" ");
+          await renderText(
+            [
+              {
+                type: "text",
+                text: `  \u256D${Array(width - 6)
+                  .fill("\u2500")
+                  .join("")}\u256E  `,
+              },
+            ],
+            0,
+            {
+              prefix,
+              postfix,
+            }
+          );
+          prefix.push({ type: "text", text: "  \u2502 " });
+          postfix.unshift({ type: "text", text: " \u2502  " });
+        }
+
+        if (
+          displayItem.decoration === "Note" &&
+          displayItem.decorationPosition === "end"
+        ) {
+          prefix.pop();
+          postfix.shift();
+
+          const width =
+            process.stdout.columns -
+            getTextLength(prefix) -
+            getTextLength(postfix);
+
+          await renderText(
+            [
+              {
+                type: "text",
+                text: `  \u2570${Array(width - 6)
+                  .fill("\u2500")
+                  .join("")}\u256F  `,
+              },
+            ],
+            0,
+            {
+              prefix,
+              postfix,
+            }
+          );
+          console.log(" ");
+        }
       }
 
       if (isCharacterRename(displayItem)) {
@@ -173,54 +243,6 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
       }
 
       resetStyling();
-    } else if (displayItem.type === "contentDecoration") {
-      if (displayItem.decorationType === "note") {
-        const width = process.stdout.columns - 6;
-        console.log(" ");
-
-        await renderText(
-          [
-            {
-              type: "text",
-              text: `  \u256D${Array(width).fill("\u2500").join("")}\u256E  `,
-            },
-          ],
-          0,
-          {}
-        );
-        await renderDisplayInfo(
-          displayItem.content,
-          gameModelManager,
-          stateManager,
-          {
-            lightMode,
-            prefix: [{ type: "text", text: "  \u2502 " }],
-            postfix: [{ type: "text", text: " \u2502  " }],
-          }
-        );
-        await renderText(
-          [
-            {
-              type: "text",
-              text: `  \u2570${Array(width).fill("\u2500").join("")}\u256F  `,
-            },
-          ],
-          0,
-          {}
-        );
-        console.log(" ");
-      } else {
-        console.log(" ");
-        await renderDisplayInfo(
-          displayItem.content,
-          gameModelManager,
-          stateManager,
-          {
-            lightMode,
-          }
-        );
-        console.log(" ");
-      }
     } else if (displayItem.type === "error") {
       stateManager.setPlayState("reloading");
       gameModelManager.backupModel();

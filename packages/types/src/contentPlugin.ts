@@ -1,6 +1,6 @@
 import { GameStateManager } from "./state";
 import { GameWorld } from "./world";
-import { Script, ScriptAST, ScriptStatement } from "./ast";
+import { Script, ScriptStatement } from "./ast";
 import { GameModel } from "./model";
 import { DisplayErrorText } from "./text";
 
@@ -15,7 +15,7 @@ export interface ContentPluginStatement extends ContentStatement {
 export type SystemInterface = {
   addPluginContent: <Item extends ContentStatement>(item: Item) => void;
   addBaseContent: (item: ScriptStatement<GameWorld>) => void;
-  wrapScript: (execution: Script) => ScriptAST<GameWorld>;
+  addScript: (execution: Script) => void;
 };
 
 /**

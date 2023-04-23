@@ -110,7 +110,6 @@ type BaseDSL<Version extends number, Game extends GameWorld<Version>> = {
   globalInteraction: GlobalInteraction<Game>;
 
   text: (...sentences: string[]) => void;
-  contentDecoration: (type: string, script: Script) => void;
   describeLocation: () => void;
   openOverlay: (id: keyof Game["overlays"]) => void;
 
@@ -245,8 +244,8 @@ export const world =
       addBaseContent: (item) => {
         activeScriptScope.push(item as unknown as ScriptStatement<Game>);
       },
-      wrapScript: (execution: Script) =>
-        wrapScript(execution) as ScriptAST<GameWorld>,
+      addScript: (execution: Script) =>
+        activeScriptScope.push(...wrapScript(execution)),
     });
 
     const pluginDSLFunctions: Record<string, (...args: any[]) => void> = {};
@@ -387,13 +386,6 @@ export const world =
         worldModel?.locations.push(
           locationAST as unknown as GameLocation<Game>
         );
-      },
-      contentDecoration: (decorationType: string, script: Script) => {
-        addToActiveScript({
-          statementType: "ContentDecoration",
-          decorationType,
-          content: wrapScript(script),
-        });
       },
       definePuzzleDependencies: (diagram) => {
         worldModel.diagram = diagram;

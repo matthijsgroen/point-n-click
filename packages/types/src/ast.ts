@@ -100,7 +100,6 @@ export type ScriptStatement<Game extends GameWorld> =
   | UpdateCharacterName<Game>
   | SetStateText<Game>
   | CharacterSay<Game>
-  | ContentDecoration<Game>
   | OpenGameOverlay<Game>
   | CloseGameOverlay<Game>
   | AddListItem<Game>
@@ -188,12 +187,6 @@ export type CharacterSay<Game extends GameWorld> = {
   statementType: "CharacterSay";
   character: keyof Game["characters"];
   sentences: string[];
-};
-
-export type ContentDecoration<Game extends GameWorld> = {
-  statementType: "ContentDecoration";
-  decorationType: string;
-  content: ScriptAST<Game>;
 };
 
 export type AddListItem<Game extends GameWorld> = {
