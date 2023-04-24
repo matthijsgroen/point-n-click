@@ -1,0 +1,45 @@
+{
+  "name": "@point-n-click/theme-book",
+  "version": "1.0.0-alpha.0",
+  "description": "Book Theme",
+  "main": "dist/index.js",
+  "source": "src/index.ts",
+  "types": "dist/index.d.ts",
+  "author": "Matthijs Groen",
+  "license": "MIT",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "build": "parcel build --no-content-hash",
+    "prepublish": "yarn build",
+    "preprepublish": "yarn upgrade --pattern='@point-n-click/*' --latest",
+    "watch": "parcel watch"
+  },
+  "dependencies": {
+    "@point-n-click/content-description-text": "workspace:^",
+    "@point-n-click/content-note-letter": "workspace:^",
+    "@point-n-click/engine": "workspace:^",
+    "@point-n-click/state": "workspace:^",
+    "@point-n-click/themes": "workspace:^",
+    "@point-n-click/types": "workspace:^",
+    "@point-n-click/web-engine": "workspace:^"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.21",
+    "parcel": "2.7.0",
+    "typescript": "4.7.3"
+  }
+}

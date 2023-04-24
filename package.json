@@ -2,7 +2,10 @@
   "name": "point-n-click-repo",
   "packageManager": "yarn@3.5.0",
   "workspaces": [
-    "packages/*"
+    "apps/*",
+    "packages/*",
+    "content-plugins/*",
+    "themes/*"
   ],
   "scripts": {
     "build": "nx run-many --target=build",

@@ -3484,9 +3484,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@point-n-click/content-description-text@workspace:^, @point-n-click/content-description-text@workspace:packages/content-description-text":
+"@point-n-click/content-description-text@workspace:^, @point-n-click/content-description-text@workspace:content-plugins/content-description-text":
   version: 0.0.0-use.local
-  resolution: "@point-n-click/content-description-text@workspace:packages/content-description-text"
+  resolution: "@point-n-click/content-description-text@workspace:content-plugins/content-description-text"
   dependencies:
     "@point-n-click/engine": "workspace:^"
     "@point-n-click/types": "workspace:^"
@@ -3495,9 +3495,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@point-n-click/content-note-letter@workspace:^, @point-n-click/content-note-letter@workspace:packages/content-note-letter":
+"@point-n-click/content-note-letter@workspace:^, @point-n-click/content-note-letter@workspace:content-plugins/content-note-letter":
   version: 0.0.0-use.local
-  resolution: "@point-n-click/content-note-letter@workspace:packages/content-note-letter"
+  resolution: "@point-n-click/content-note-letter@workspace:content-plugins/content-note-letter"
   dependencies:
     "@point-n-click/engine": "workspace:^"
     "@point-n-click/types": "workspace:^"
@@ -3506,9 +3506,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@point-n-click/content-rename@workspace:packages/content-rename":
+"@point-n-click/content-rename@workspace:^, @point-n-click/content-rename@workspace:content-plugins/content-rename":
   version: 0.0.0-use.local
-  resolution: "@point-n-click/content-rename@workspace:packages/content-rename"
+  resolution: "@point-n-click/content-rename@workspace:content-plugins/content-rename"
   dependencies:
     "@point-n-click/engine": "workspace:^"
     "@point-n-click/types": "workspace:^"
@@ -3523,7 +3523,7 @@ __metadata:
   dependencies:
     "@point-n-click/state": "workspace:^"
     "@point-n-click/types": "workspace:^"
-    immer: ^9.0.15
+    immer: ^9.0.21
     parcel: 2.7.0
     typescript: ">=3.0.0"
   languageName: unknown
@@ -3559,9 +3559,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@point-n-click/theme-book@workspace:packages/theme-book":
+"@point-n-click/theme-book@workspace:themes/theme-book":
   version: 0.0.0-use.local
-  resolution: "@point-n-click/theme-book@workspace:packages/theme-book"
+  resolution: "@point-n-click/theme-book@workspace:themes/theme-book"
   dependencies:
     "@point-n-click/content-description-text": "workspace:^"
     "@point-n-click/content-note-letter": "workspace:^"
@@ -3576,15 +3576,21 @@ __metadata:
   peerDependencies:
     react: ^18.2.0
     react-dom: ^18.2.0
+  peerDependenciesMeta:
+    react:
+      optional: true
+    react-dom:
+      optional: true
   languageName: unknown
   linkType: soft
 
-"@point-n-click/theme-cli@workspace:^, @point-n-click/theme-cli@workspace:packages/theme-cli":
+"@point-n-click/theme-cli@workspace:^, @point-n-click/theme-cli@workspace:themes/theme-cli":
   version: 0.0.0-use.local
-  resolution: "@point-n-click/theme-cli@workspace:packages/theme-cli"
+  resolution: "@point-n-click/theme-cli@workspace:themes/theme-cli"
   dependencies:
     "@point-n-click/content-description-text": "workspace:^"
     "@point-n-click/content-note-letter": "workspace:^"
+    "@point-n-click/content-rename": "workspace:^"
     "@point-n-click/engine": "workspace:^"
     "@point-n-click/state": "workspace:^"
     "@point-n-click/themes": "workspace:^"
@@ -3597,6 +3603,11 @@ __metadata:
   peerDependencies:
     react: ^18.2.0
     react-dom: ^18.2.0
+  peerDependenciesMeta:
+    react:
+      optional: true
+    react-dom:
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -3669,9 +3680,9 @@ __metadata:
     "@point-n-click/puzzle-dependency-diagram": "workspace:^"
     "@point-n-click/state": "workspace:^"
     "@point-n-click/themes": "workspace:^"
-    "@tanstack/react-query": ^4.13.0
+    "@tanstack/react-query": ^4.19.1
     "@types/react": ^18.0.21
-    immer: ^9.0.19
+    immer: ^9.0.21
     jotai: ^2.0.3
     jotai-optics: ^0.3.0
     mermaid: ^10.0.2
@@ -3951,18 +3962,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/query-core@npm:4.26.1":
-  version: 4.26.1
-  resolution: "@tanstack/query-core@npm:4.26.1"
-  checksum: c7bc751d7d08ce27dd7262aa75a263808b128902b8f3a5dd1ff9b1dfda6511af965388bcdb7d8130bdf10756c1d583f527ead274b1d3e4f4db29c83260b416b0
+"@tanstack/query-core@npm:4.29.5":
+  version: 4.29.5
+  resolution: "@tanstack/query-core@npm:4.29.5"
+  checksum: 367176beccd78e959c74e69e96497b626dd1c139398501eb7a04cf92215edf262665c3e7bb59df68320779d49893d3153a3b41e750b9046655b45cfe44691b36
   languageName: node
   linkType: hard
 
-"@tanstack/react-query@npm:^4.10.3, @tanstack/react-query@npm:^4.13.0":
-  version: 4.26.1
-  resolution: "@tanstack/react-query@npm:4.26.1"
+"@tanstack/react-query@npm:^4.19.1":
+  version: 4.29.5
+  resolution: "@tanstack/react-query@npm:4.29.5"
   dependencies:
-    "@tanstack/query-core": 4.26.1
+    "@tanstack/query-core": 4.29.5
     use-sync-external-store: ^1.2.0
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
@@ -3973,7 +3984,7 @@ __metadata:
       optional: true
     react-native:
       optional: true
-  checksum: 3b43a5acc84841364c08ed7c7d0f495008214f1f39b7fb073a95a53528ce40b4841dbc407070b4c0082d73990277bbcf9bc88df40217e70c226be4931efaa081
+  checksum: de45573900810b37216aa8d6599cae5ea43602eaada9fd2224f57ff7ab1de10b3f2e681e7fdb993ee1519ed8ffc7e6e07d6bf3ad1b9da4136b1ae78ca19f31f6
   languageName: node
   linkType: hard
 
@@ -9342,7 +9353,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"immer@npm:^9.0.15, immer@npm:^9.0.19, immer@npm:^9.0.7":
+"immer@npm:^9.0.21":
+  version: 9.0.21
+  resolution: "immer@npm:9.0.21"
+  checksum: 70e3c274165995352f6936695f0ef4723c52c92c92dd0e9afdfe008175af39fa28e76aafb3a2ca9d57d1fb8f796efc4dd1e1cc36f18d33fa5b74f3dfb0375432
+  languageName: node
+  linkType: hard
+
+"immer@npm:^9.0.7":
   version: 9.0.19
   resolution: "immer@npm:9.0.19"
   checksum: f02ee53989989c287cd548a3d817fccf0bfe56db919755ee94a72ea3ae78a00363fba93ee6c010fe54a664380c29c53d44ed4091c6a86cae60957ad2cfabc010
@@ -12662,10 +12680,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"point-n-click@workspace:packages/point-n-click":
+"point-n-click@workspace:apps/point-n-click":
   version: 0.0.0-use.local
-  resolution: "point-n-click@workspace:packages/point-n-click"
+  resolution: "point-n-click@workspace:apps/point-n-click"
   dependencies:
+    "@parcel/config-default": 2.7.0
+    "@parcel/core": 2.7.0
     "@parcel/packager-ts": 2.7.0
     "@parcel/transformer-typescript-types": 2.7.0
     "@point-n-click/engine": "workspace:^"
@@ -12675,7 +12695,7 @@ __metadata:
     "@point-n-click/themes": "workspace:^"
     "@point-n-click/types": "workspace:^"
     "@point-n-click/web-engine": "workspace:^"
-    "@tanstack/react-query": ^4.10.3
+    "@tanstack/react-query": ^4.19.1
     "@types/express": ^4.17.14
     "@types/node": 16
     "@types/react": ^18.0.21
@@ -12684,7 +12704,7 @@ __metadata:
     commander: ^9.4.1
     express: ^4.18.2
     http-proxy-middleware: ^2.0.6
-    immer: ^9.0.15
+    immer: ^9.0.21
     mime: ^3.0.0
     parcel: 2.7.0
     process: ^0.11.10

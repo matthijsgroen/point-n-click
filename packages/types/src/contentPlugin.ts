@@ -41,9 +41,19 @@ export type TranslationFile = {
   [key: string]: string | TranslationFile;
 };
 
-export interface ContentPluginContent {
+export type ContentPluginContent = ContentPluginInput | ContentPluginOutput;
+
+export interface ContentPluginOutput {
   type: string;
   pluginSource: string;
+  statementClassification: "output";
+}
+
+export interface ContentPluginInput {
+  type: string;
+  pluginSource: string;
+  statementClassification: "input";
+  storageKey: string;
 }
 
 export type ContentPlugin<Extension extends DSLExtension> = {

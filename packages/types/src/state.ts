@@ -49,21 +49,25 @@ export type GameState<Game extends GameWorld> = {
   lists: {
     [K in keyof Game["lists"]]?: Game["lists"][K][];
   };
+  inputs: Record<string, unknown>;
 };
 
 export type PlayState = "playing" | "loading" | "quitting" | "reloading";
 
 export type GameStateManager<Game extends GameWorld> = {
   getState: () => GameState<Game>;
-  getSaveState: () => GameState<Game>;
   updateState: (
     mutation: (currentState: GameState<Game>) => GameState<Game>
   ) => void;
 
-  getPlayState: () => PlayState;
-  setPlayState: (state: PlayState) => void;
-  isAborting: () => boolean;
+  storeInput: (key: string, value: unknown) => void;
+
+  getSaveState: () => GameState<Game>;
 
   updateSaveState: () => void;
   restoreSaveState: () => void;
+
+  getPlayState: () => PlayState;
+  setPlayState: (state: PlayState) => void;
+  isAborting: () => boolean;
 };

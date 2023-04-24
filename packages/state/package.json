@@ -22,9 +22,6 @@
     "parcel": "2.7.0",
     "typescript": ">=3.0.0"
   },
-  "resolutions": {
-    "typescript": "~4.7"
-  },
   "dependencies": {
     "@point-n-click/puzzle-dependency-diagram": "workspace:^"
   }
