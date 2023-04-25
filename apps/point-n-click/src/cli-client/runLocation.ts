@@ -1,4 +1,12 @@
-import { GameWorld, GameStateManager, GameModel } from "@point-n-click/types";
+import {
+  GameWorld,
+  GameStateManager,
+  GameModel,
+  GameState,
+  FormattedText,
+  GameSaveStateManager,
+  PatchFunction,
+} from "@point-n-click/types";
 import {
   GameModelManager,
   getDisplayInfo,
@@ -9,11 +17,11 @@ import { renderDisplayInfo } from "./renderDisplayInfo";
 
 export const runLocation = async <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
-  stateManager: GameStateManager<Game>,
+  stateManager: GameSaveStateManager<Game>,
   clearScreen: () => void,
   { lightMode }: { lightMode: boolean }
 ) => {
-  const currentLocation = stateManager.getState().currentLocation;
+  const currentLocation = stateManager.activeState().get().currentLocation;
 
   const locationData = gameModelManager
     .getModel()
@@ -26,22 +34,82 @@ export const runLocation = async <Game extends GameWorld>(
   }
 
   while (!stateManager.isAborting()) {
-    const displayInfo = getDisplayInfo(gameModelManager, stateManager);
+    const patches: Record<string, (state: GameState<Game>) => GameState<Game>> =
+      {};
+
+    let index = 0;
+    let newPatch = false;
+    const collectPatch = (patch: PatchFunction<GameState<Game>>) => {
+      if (patches[index] !== undefined) return;
+      newPatch = true;
+      patches[index] = patch;
+    };
+
+    let displayInfo = getDisplayInfo(
+      gameModelManager,
+      stateManager.activeState()
+    );
 
     if (stateManager.isAborting()) {
       return;
     }
-    for (const item of displayInfo) {
-      await renderDisplayInfo(item, gameModelManager, stateManager, {
-        lightMode,
-      });
+
+    let prefix: FormattedText = [];
+    let postfix: FormattedText = [];
+
+    const updateBorder = (
+      newPrefix: FormattedText,
+      newPostfix: FormattedText
+    ) => {
+      prefix = newPrefix;
+      postfix = newPostfix;
+    };
+
+    for (let i = 0; i < displayInfo.length; i++) {
+      const item = displayInfo[i];
+
+      await renderDisplayInfo(
+        item,
+        gameModelManager,
+        stateManager,
+        `key${index}`,
+        collectPatch,
+        updateBorder,
+        {
+          lightMode,
+          prefix,
+          postfix,
+        }
+      );
+
+      // TODO: If new patch registered?
+      // Refetch displayInfo, supply patches.
+      // continue rendering
+      if (newPatch) {
+        console.log(
+          `New Patch registered! current length: ${displayInfo.length} `
+        );
+        newPatch = false;
+        stateManager.restoreSaveState();
+        displayInfo = getDisplayInfo(
+          gameModelManager,
+          stateManager.activeState(),
+          patches
+        );
+        console.log(`patched length: ${displayInfo.length} `);
+      }
+
+      index++;
 
       if (stateManager.isAborting()) {
         return;
       }
     }
 
-    const interactions = getInteractions(gameModelManager, stateManager);
+    const interactions = getInteractions(
+      gameModelManager,
+      stateManager.activeState()
+    );
     await handleInteractions(
       interactions,
       stateManager,

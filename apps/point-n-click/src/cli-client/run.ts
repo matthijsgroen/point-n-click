@@ -1,4 +1,4 @@
-import { GameWorld, GameStateManager } from "@point-n-click/types";
+import { GameWorld, GameSaveStateManager } from "@point-n-click/types";
 import { createDefaultState, mergeState } from "@point-n-click/state";
 import { CLISettings, updateSettings } from "./settings";
 import { enableKeyPresses, startSkip, stopKeyPresses } from "./utils";
@@ -16,7 +16,7 @@ export const runGame = async <Game extends GameWorld>(
     lightMode,
   }: CLISettings & TranslationSettings & { lightMode: boolean },
   gameModelManager: GameModelManager<Game>,
-  stateManager: GameStateManager<Game>,
+  stateManager: GameSaveStateManager<Game>,
   clearScreen: () => void
 ) => {
   updateSettings({ color });
@@ -43,9 +43,9 @@ export const runGame = async <Game extends GameWorld>(
         const newStartState = createDefaultState(model);
         const mergedState = mergeState(
           newStartState,
-          stateManager.getSaveState()
+          stateManager.stableState().get()
         );
-        stateManager.updateState(() => mergedState);
+        stateManager.activeState().update(() => mergedState);
         stateManager.updateSaveState();
       }
 

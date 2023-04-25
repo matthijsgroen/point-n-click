@@ -54,14 +54,30 @@ export type GameState<Game extends GameWorld> = {
 
 export type PlayState = "playing" | "loading" | "quitting" | "reloading";
 
-export type GameStateManager<Game extends GameWorld> = {
+export type GameStateManager<Game extends GameWorld> = ReadWritableState<
+  GameState<Game>
+>;
+
+export type GameSaveStateManager<Game extends GameWorld> = {
+  activeState: () => GameStateManager<Game>;
+  stableState: () => GameStateManager<Game>;
+
+  /**
+   * @deprecated use activeState().get()
+   */
   getState: () => GameState<Game>;
+  /**
+   * @deprecated use activeState().update()
+   */
   updateState: (
     mutation: (currentState: GameState<Game>) => GameState<Game>
   ) => void;
 
   storeInput: (key: string, value: unknown) => void;
 
+  /**
+   * @deprecated use stableState().get()
+   */
   getSaveState: () => GameState<Game>;
 
   updateSaveState: () => void;
@@ -70,4 +86,26 @@ export type GameStateManager<Game extends GameWorld> = {
   getPlayState: () => PlayState;
   setPlayState: (state: PlayState) => void;
   isAborting: () => boolean;
+};
+
+export type PatchFunction<T> = (state: T) => T;
+
+export type ReadableState<T> = {
+  get: () => T;
+};
+
+export type WritableState<T> = {
+  update: (patch: PatchFunction<T>) => void;
+};
+
+export type ReadWritableState<T> = ReadableState<T> & WritableState<T>;
+
+export const createState = <T>(initialState: T): ReadWritableState<T> => {
+  let state = initialState;
+  return {
+    get: () => state,
+    update: (patch) => {
+      state = patch(state);
+    },
+  };
 };

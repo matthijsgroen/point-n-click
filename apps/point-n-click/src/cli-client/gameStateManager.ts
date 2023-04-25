@@ -1,31 +1,35 @@
 import { GameModelManager } from "@point-n-click/engine";
 import { createDefaultState } from "@point-n-click/state";
 import {
+  GameSaveStateManager,
   GameState,
-  GameStateManager,
   GameWorld,
   PlayState,
+  createState,
 } from "@point-n-click/types";
 import { produce } from "immer";
 
-export const createGameStateManager = async <Game extends GameWorld>(
+export const createGameSaveStateManager = async <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>
-): Promise<GameStateManager<Game>> => {
+): Promise<GameSaveStateManager<Game>> => {
   let model = gameModelManager.getModel();
   while (!gameModelManager.hasModel()) {
     await gameModelManager.waitForChange();
     model = gameModelManager.getModel();
   }
 
-  let gameState: GameState<Game> = createDefaultState(model);
-  let savePoint = gameState;
+  const gameState = createState(createDefaultState(model));
+  const savePoint = createState(createDefaultState(model));
 
   let playState: PlayState = "playing";
 
-  const stateManager: GameStateManager<Game> = {
-    getState: () => gameState,
+  const stateManager: GameSaveStateManager<Game> = {
+    activeState: () => gameState,
+    stableState: () => savePoint,
+
+    getState: () => gameState.get(),
     updateState: (mutation) => {
-      gameState = mutation(gameState);
+      gameState.update(mutation);
     },
 
     setPlayState: (state) => {
@@ -33,19 +37,21 @@ export const createGameStateManager = async <Game extends GameWorld>(
     },
     getPlayState: () => playState,
 
-    getSaveState: () => savePoint,
+    getSaveState: () => savePoint.get(),
     updateSaveState: () => {
-      savePoint = gameState;
+      savePoint.update(() => gameState.get());
     },
 
     storeInput: (key, value) => {
-      savePoint = produce<GameState<Game>>((draft) => {
-        draft.inputs[key] = value;
-      })(savePoint);
+      savePoint.update(
+        produce<GameState<Game>>((draft) => {
+          draft.inputs[key] = value;
+        })
+      );
     },
 
     restoreSaveState: () => {
-      gameState = savePoint;
+      gameState.update(() => savePoint.get());
     },
     isAborting: () => playState === "quitting" || playState === "reloading",
   };

@@ -1,6 +1,6 @@
 import { gameModelManager } from "@point-n-click/engine";
 import { mergeState } from "@point-n-click/state";
-import { createGameStateManager } from "../cli-client/gameStateManager";
+import { createGameSaveStateManager } from "../cli-client/gameStateManager";
 import { runGame } from "../cli-client/run";
 import { startContentBuilder } from "./contentBuilder";
 import { loadTranslationData } from "./loadTranslationData";
@@ -27,12 +27,14 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
   );
   const translationData = await loadTranslationData(options.lang);
 
-  const gameStateManager = await createGameStateManager(modelManager);
+  const gameStateManager = await createGameSaveStateManager(modelManager);
   try {
     const saveFilePath = join(process.cwd(), ".autosave.json");
     const saveFile = await readFile(saveFilePath, { encoding: "utf-8" });
     const contents = JSON.parse(saveFile);
-    gameStateManager.updateState((state) => mergeState(state, contents));
+    gameStateManager
+      .stableState()
+      .update((state) => mergeState(state, contents));
     gameStateManager.updateSaveState();
   } catch (e) {}
 

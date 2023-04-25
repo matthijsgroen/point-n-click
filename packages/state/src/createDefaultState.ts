@@ -77,6 +77,7 @@ export const createDefaultState = <Game extends GameWorld>(
       {}
     ) as GameState<Game>["overlays"],
     lists: {},
+    inputs: {},
   };
   return mergeState(startState, gameModel.settings.initialState);
 };

@@ -9,11 +9,15 @@ import {
   ContentPluginContent,
   GameWorld,
   GameStateManager,
+  GameState,
+  GameSaveStateManager,
+  PatchFunction,
 } from "@point-n-click/types";
 import { getTextLength, renderText } from "./renderText";
 import { getSettings } from "./settings";
 import { resetStyling } from "./utils";
 import { createInterface } from "readline";
+import { produce } from "immer";
 
 const rl = createInterface({
   input: process.stdin,
@@ -49,16 +53,16 @@ const isListItem = (text: FormattedText): boolean =>
 export const renderDisplayInfo = async <Game extends GameWorld>(
   displayItem: DisplayInfo<Game>,
   gameModelManager: GameModelManager<Game>,
-  stateManager: GameStateManager<Game>,
+  stateManager: GameSaveStateManager<Game>,
+  key: string,
+  supplyPatch: (patch: PatchFunction<GameState<Game>>) => void,
+  updateBorder: (newPrefix: FormattedText, newPostFix: FormattedText) => void,
   {
     lightMode,
-    prefix: textPrefix,
-    postfix: textPostfix,
-  }: { lightMode: boolean; prefix?: FormattedText; postfix?: FormattedText }
+    prefix,
+    postfix,
+  }: { lightMode: boolean; prefix: FormattedText; postfix: FormattedText }
 ): Promise<void> => {
-  let prefix = textPrefix ?? [];
-  let postfix = textPostfix ?? [];
-
   const useColor = getSettings().color;
   const textColor = useColor
     ? gameModelManager.getModel().settings.colors.defaultTextColor
@@ -78,11 +82,13 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
     viewKey = key;
   };
 
+  const state = stateManager.activeState();
+
   if (isContentPluginContent(displayItem)) {
     if (isDescriptionText(displayItem)) {
       setKey("text");
       for (const sentence of displayItem.text) {
-        const cpm = stateManager.getState().settings.cpm;
+        const cpm = state.get().settings.cpm;
         const color = getColor(textColor);
         await renderText(sentence, cpm, {
           color,
@@ -120,21 +126,23 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
             postfix,
           }
         );
-        prefix.push({ type: "text", text: "  \u2502 " });
-        postfix.unshift({ type: "text", text: " \u2502  " });
+        updateBorder(
+          [...prefix, { type: "text", text: "  \u2502 " }],
+          [{ type: "text", text: " \u2502  " }, ...postfix]
+        );
       }
 
       if (
         displayItem.decoration === "Note" &&
         displayItem.decorationPosition === "end"
       ) {
-        prefix.pop();
-        postfix.shift();
+        const newPrefix = prefix.slice(0, -1);
+        const newPostfix = postfix.slice(1);
 
         const width =
           process.stdout.columns -
-          getTextLength(prefix) -
-          getTextLength(postfix);
+          getTextLength(newPrefix) -
+          getTextLength(newPostfix);
 
         await renderText(
           [
@@ -147,19 +155,20 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
           ],
           0,
           {
-            prefix,
-            postfix,
+            prefix: newPrefix,
+            postfix: newPostfix,
           }
         );
         console.log(" ");
+        updateBorder(newPrefix, newPostfix);
       }
     }
 
     if (isCharacterRename(displayItem)) {
       setKey("prompt");
       const color = getColor(textColor);
-      const cpm = stateManager.getState().settings.cpm;
-      console.log(displayItem.storageKey);
+      const cpm = state.get().settings.cpm;
+      console.log(key);
       // 1. Show input prompt
       await renderText(displayItem.prompt, cpm, {
         color,
@@ -168,6 +177,15 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
       });
       // 2. Gather result
       const newName = await prompt("");
+      stateManager.storeInput(key, { newName });
+
+      supplyPatch(
+        produce((state) => {
+          (state.characters as Record<string, { name: string }>)[
+            displayItem.character
+          ].name = newName;
+        })
+      );
       // if (newName.trim().length > 1) {
       //   stateManager.updateState(
       //     // TODO: Extract to a 'renameCharacter' function

@@ -1,5 +1,10 @@
 import { GameModelManager, getTranslationText } from "@point-n-click/engine";
-import { GameModel, GameStateManager, GameWorld } from "@point-n-click/types";
+import {
+  GameModel,
+  GameSaveStateManager,
+  GameStateManager,
+  GameWorld,
+} from "@point-n-click/types";
 import express from "express";
 import { dirname, join, relative } from "node:path";
 import bodyParser from "body-parser";
@@ -21,7 +26,7 @@ const defaultWatchList = [
 
 export const startWebserver = async (
   modelManager: GameModelManager<GameWorld>,
-  stateManager: GameStateManager<GameWorld>,
+  stateManager: GameSaveStateManager<GameWorld>,
   {
     port = 3456,
     lang,
@@ -234,12 +239,12 @@ export const startWebserver = async (
   });
 
   app.get("/development-server/save.json", function (_req, res) {
-    res.json(stateManager.getSaveState());
+    res.json(stateManager.stableState().get());
   });
 
   app.post("/development-server/action", function (req, res) {
     const actionId = req.body.action;
-    stateManager.updateState(
+    stateManager.activeState().update(
       produce((state) => {
         state.currentInteraction = actionId;
       })

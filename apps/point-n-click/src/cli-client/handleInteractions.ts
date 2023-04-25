@@ -1,5 +1,5 @@
 import { produce } from "immer";
-import { GameWorld, GameStateManager } from "@point-n-click/types";
+import { GameWorld, GameSaveStateManager } from "@point-n-click/types";
 import { keypress, stopSkip } from "./utils";
 import { renderText } from "./renderText";
 import {
@@ -24,7 +24,7 @@ const globalColor = (active: boolean, text: FormattedText): FormattedText =>
 
 export const handleInteractions = async <Game extends GameWorld>(
   interactions: Interactions,
-  stateManager: GameStateManager<Game>,
+  stateManager: GameSaveStateManager<Game>,
   modelManager: GameModelManager<Game>,
   clearScreen: () => void
 ) => {
@@ -47,7 +47,7 @@ export const handleInteractions = async <Game extends GameWorld>(
       { type: "text", text: `${interaction.key.toUpperCase()}) ` },
       ...interaction.label,
     ]);
-    const cpm = stateManager.getState().settings.cpm;
+    const cpm = stateManager.activeState().get().settings.cpm;
     await renderText(text, cpm, {});
   }
 
@@ -78,7 +78,7 @@ export const handleInteractions = async <Game extends GameWorld>(
     );
   } while (!chosenAction);
   clearScreen();
-  stateManager.updateState(
+  stateManager.activeState().update(
     produce((state) => {
       state.currentInteraction = chosenAction?.id;
     })
@@ -86,7 +86,11 @@ export const handleInteractions = async <Game extends GameWorld>(
   stateManager.updateSaveState();
 
   const autoSavePath = join(process.cwd(), ".autosave.json");
-  await writeFile(autoSavePath, JSON.stringify(stateManager.getSaveState()), {
-    encoding: "utf-8",
-  });
+  await writeFile(
+    autoSavePath,
+    JSON.stringify(stateManager.stableState().get()),
+    {
+      encoding: "utf-8",
+    }
+  );
 };

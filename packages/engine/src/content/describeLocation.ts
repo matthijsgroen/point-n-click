@@ -5,21 +5,21 @@ import { getCurrentLocation } from "./getLocation";
 import { noLocation } from "../errors/noLocation";
 import { noOverlay } from "../errors/noOverlay";
 import { getCurrentOverlay } from "./getOverlay";
+import { NotificationList } from "./displayInfoCollection";
 
 export const describeLocation = <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
-  stateManager: GameStateManager<Game>
-): DisplayInfo<Game>[] => {
-  const currentLocation = stateManager.getState().currentLocation;
+  stateManager: GameStateManager<Game>,
+  list: NotificationList<DisplayInfo<Game>>
+): void => {
+  const currentLocation = stateManager.get().currentLocation;
   const locationData = getCurrentLocation(gameModelManager, stateManager);
 
-  const result: DisplayInfo<Game>[] = [];
-
   if (!locationData) {
-    result.push(noLocation(stateManager.getState().currentLocation));
+    list.add(noLocation(stateManager.get().currentLocation));
   }
 
-  const previousLocation = stateManager.getState().previousLocation;
+  const previousLocation = stateManager.get().previousLocation;
 
   if (currentLocation !== previousLocation) {
     const previousLocationData = gameModelManager
@@ -30,8 +30,11 @@ export const describeLocation = <Game extends GameWorld>(
         (item) => item.to === currentLocation
       );
       if (exitScript) {
-        result.push(
-          ...runScript<Game>(exitScript.script, stateManager, gameModelManager)
+        runScript<Game>(
+          exitScript.script,
+          stateManager,
+          gameModelManager,
+          list
         );
       }
     }
@@ -39,44 +42,38 @@ export const describeLocation = <Game extends GameWorld>(
     const enterScript = locationData?.onEnter.find(
       (item) => item.from === previousLocation
     );
-    stateManager.updateState((state) => ({
+    stateManager.update((state) => ({
       ...state,
       previousLocation: currentLocation,
     }));
     if (enterScript) {
-      result.push(
-        ...runScript<Game>(enterScript.script, stateManager, gameModelManager)
-      );
+      runScript<Game>(enterScript.script, stateManager, gameModelManager, list);
     }
   }
 
-  result.push(
-    ...runScript<Game>(
-      locationData?.describe.script || [],
-      stateManager,
-      gameModelManager
-    )
+  runScript<Game>(
+    locationData?.describe.script || [],
+    stateManager,
+    gameModelManager,
+    list
   );
   // When location changes happen during a location description,
   // this needs to be updated to get the proper translation key
-  stateManager.updateState((state) => ({
+  stateManager.update((state) => ({
     ...state,
     previousLocation: state.currentLocation,
   }));
   let newOverlayData = getCurrentOverlay(gameModelManager, stateManager);
   if (newOverlayData === undefined) {
-    result.push(noOverlay(stateManager.getState().overlayStack.at(-1)));
+    list.add(noOverlay(stateManager.get().overlayStack.at(-1)));
   }
 
   if (newOverlayData) {
     const overlayData = newOverlayData;
-    stateManager.updateState((state) => ({
+    stateManager.update((state) => ({
       ...state,
       currentOverlay: overlayData.id,
     }));
-    result.push(
-      ...runScript(overlayData.onEnter.script, stateManager, gameModelManager)
-    );
+    runScript(overlayData.onEnter.script, stateManager, gameModelManager, list);
   }
-  return result;
 };

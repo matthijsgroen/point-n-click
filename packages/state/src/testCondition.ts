@@ -55,20 +55,17 @@ export const testCondition = <Game extends GameWorld>(
     const item = condition.item;
     const expectedState = condition.state;
     const actualState =
-      stateManager.getState()[`${condition.objectType}s`][item]?.state ??
-      "unknown";
+      stateManager.get()[`${condition.objectType}s`][item]?.state ?? "unknown";
     return expectedState === actualState;
   }
   if (condition.op === "IsFlagSet") {
-    const item =
-      stateManager.getState()[`${condition.objectType}s`][condition.item];
+    const item = stateManager.get()[`${condition.objectType}s`][condition.item];
     const flags = getFlags(item);
     return flags[String(condition.flag)] === true;
   }
   if (condition.op === "CounterCompare") {
     const comp = condition.comparator;
-    const item =
-      stateManager.getState()[`${condition.objectType}s`][condition.item];
+    const item = stateManager.get()[`${condition.objectType}s`][condition.item];
     const counters = getCounters(item);
     const stateValue = counters[String(condition.name)] ?? 0;
     return numberCompare(stateValue, comp, condition.value);
@@ -84,7 +81,7 @@ export const testCondition = <Game extends GameWorld>(
     );
   }
   if (condition.op === "OverlayOpen") {
-    const openOverlays = stateManager.getState().overlayStack;
+    const openOverlays = stateManager.get().overlayStack;
     if (condition.overlay) {
       return openOverlays.some((overlay) => overlay === condition.overlay);
     } else {
@@ -92,10 +89,10 @@ export const testCondition = <Game extends GameWorld>(
     }
   }
   if (condition.op === "IsLocation") {
-    return stateManager.getState().currentLocation === condition.location;
+    return stateManager.get().currentLocation === condition.location;
   }
   if (condition.op === "IsInList") {
-    const list = stateManager.getState().lists[condition.list] || [];
+    const list = stateManager.get().lists[condition.list] || [];
     return list.includes(condition.item);
   }
 

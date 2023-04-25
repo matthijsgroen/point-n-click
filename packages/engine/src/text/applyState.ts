@@ -70,7 +70,7 @@ export const applyState = <Game extends GameWorld>(
           ? [...stateScope].concat(statePath.slice(1))
           : statePath;
 
-      const state = stateManager.getState();
+      const state = stateManager.get();
       const throwStateError = (message: string) => {
         const error = new Error(message);
         (error as StateError).name = "StateError";

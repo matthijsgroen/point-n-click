@@ -1,4 +1,4 @@
-import { GameWorld, GameStateManager } from "@point-n-click/types";
+import { GameWorld, GameStateManager, GameState } from "@point-n-click/types";
 import { noLocation } from "../errors/noLocation";
 import { GameModelManager } from "../model/gameModel";
 import { describeLocation } from "./describeLocation";
@@ -6,23 +6,25 @@ import { getCurrentLocation } from "./getLocation";
 import { getCurrentOverlay } from "./getOverlay";
 import { DisplayInfo, runScript } from "./runScript";
 import { noOverlay } from "../errors/noOverlay";
+import { notificationList } from "./displayInfoCollection";
 
 export const getDisplayInfo = <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
-  stateManager: GameStateManager<Game>
+  stateManager: GameStateManager<Game>,
+  _patches: Record<string, (state: GameState<Game>) => GameState<Game>> = {}
 ): DisplayInfo<Game>[] => {
-  const displayInfo: DisplayInfo<Game>[] = [];
+  const displayInstructions = notificationList<DisplayInfo<Game>>();
 
   const locationData = getCurrentLocation(gameModelManager, stateManager);
   if (!locationData) {
-    displayInfo.push(noLocation(stateManager.getState().currentLocation));
-    return displayInfo;
+    displayInstructions.add(noLocation(stateManager.get().currentLocation));
+    return displayInstructions.getCollection();
   }
   const globalInteractions = gameModelManager.getModel().globalInteractions;
 
   let currentOverlayData = getCurrentOverlay(gameModelManager, stateManager);
 
-  const currentInteraction = stateManager.getState().currentInteraction;
+  const currentInteraction = stateManager.get().currentInteraction;
 
   let locationDescribed = false;
 
@@ -36,53 +38,50 @@ export const getDisplayInfo = <Game extends GameWorld>(
       .find((interaction) => interaction.label === currentInteraction);
 
     if (interactionData) {
-      stateManager.updateState((state) => ({
+      stateManager.update((state) => ({
         ...state,
         currentInteraction: undefined,
       }));
 
-      displayInfo.push(
-        ...runScript<Game>(
-          interactionData.script,
-          stateManager,
-          gameModelManager
-        )
+      runScript<Game>(
+        interactionData.script,
+        stateManager,
+        gameModelManager,
+        displayInstructions
       );
       const newOverlayData = getCurrentOverlay(gameModelManager, stateManager);
       if (newOverlayData === undefined) {
-        displayInfo.push(
-          noOverlay(stateManager.getState().overlayStack.at(-1))
+        displayInstructions.add(
+          noOverlay(stateManager.get().overlayStack.at(-1))
         );
       }
       if (currentOverlayData !== newOverlayData) {
         if (currentOverlayData) {
-          displayInfo.push(
-            ...runScript(
-              currentOverlayData.onLeave.script,
-              stateManager,
-              gameModelManager
-            )
+          runScript(
+            currentOverlayData.onLeave.script,
+            stateManager,
+            gameModelManager,
+            displayInstructions
           );
-          stateManager.updateState((state) => ({
+          stateManager.update((state) => ({
             ...state,
             currentOverlay: undefined,
           }));
         }
         if (newOverlayData) {
-          stateManager.updateState((state) => ({
+          stateManager.update((state) => ({
             ...state,
             currentOverlay: newOverlayData.id,
           }));
-          displayInfo.push(
-            ...runScript(
-              newOverlayData.onEnter.script,
-              stateManager,
-              gameModelManager
-            )
+          runScript(
+            newOverlayData.onEnter.script,
+            stateManager,
+            gameModelManager,
+            displayInstructions
           );
         } else {
           locationDescribed = true;
-          displayInfo.push(...describeLocation(gameModelManager, stateManager));
+          describeLocation(gameModelManager, stateManager, displayInstructions);
         }
       }
       currentOverlayData = newOverlayData;
@@ -93,14 +92,14 @@ export const getDisplayInfo = <Game extends GameWorld>(
       );
       if (newLocationData !== locationData && !locationDescribed) {
         locationDescribed = true;
-        displayInfo.push(...describeLocation(gameModelManager, stateManager));
+        describeLocation(gameModelManager, stateManager, displayInstructions);
       }
     }
   } else {
     if (!locationDescribed) {
       locationDescribed = true;
-      displayInfo.push(...describeLocation(gameModelManager, stateManager));
+      describeLocation(gameModelManager, stateManager, displayInstructions);
     }
   }
-  return displayInfo;
+  return displayInstructions.getCollection();
 };
