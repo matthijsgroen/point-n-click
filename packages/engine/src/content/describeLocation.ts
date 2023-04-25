@@ -5,7 +5,7 @@ import { getCurrentLocation } from "./getLocation";
 import { noLocation } from "../errors/noLocation";
 import { noOverlay } from "../errors/noOverlay";
 import { getCurrentOverlay } from "./getOverlay";
-import { NotificationList } from "./displayInfoCollection";
+import { NotificationList } from "./notificationList";
 
 export const describeLocation = <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,

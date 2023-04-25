@@ -86,9 +86,6 @@ export const runLocation = async <Game extends GameWorld>(
       // Refetch displayInfo, supply patches.
       // continue rendering
       if (newPatch) {
-        console.log(
-          `New Patch registered! current length: ${displayInfo.length} `
-        );
         newPatch = false;
         stateManager.restoreSaveState();
         displayInfo = getDisplayInfo(
@@ -96,7 +93,6 @@ export const runLocation = async <Game extends GameWorld>(
           stateManager.activeState(),
           patches
         );
-        console.log(`patched length: ${displayInfo.length} `);
       }
 
       index++;

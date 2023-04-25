@@ -8,7 +8,6 @@ import {
 import {
   ContentPluginContent,
   GameWorld,
-  GameStateManager,
   GameState,
   GameSaveStateManager,
   PatchFunction,
@@ -16,15 +15,24 @@ import {
 import { getTextLength, renderText } from "./renderText";
 import { getSettings } from "./settings";
 import { resetStyling } from "./utils";
-import { createInterface } from "readline";
 import { produce } from "immer";
 
-const rl = createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-const prompt = (query: string) =>
-  new Promise<string>((resolve) => rl.question(query, resolve));
+const stdin = process.stdin;
+
+const prompt = () =>
+  new Promise<string>((resolve) => {
+    stdin.setRawMode(false);
+    stdin.setEncoding("utf8");
+    const callback = (chunk: string) => {
+      resolve(chunk.slice(0, -1));
+
+      stdin.setRawMode(true);
+      stdin.setEncoding("utf8");
+      stdin.removeListener("data", callback);
+    };
+
+    stdin.on("data", callback);
+  });
 
 const isDescriptionText = (
   item: ContentPluginContent
@@ -168,7 +176,6 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
       setKey("prompt");
       const color = getColor(textColor);
       const cpm = state.get().settings.cpm;
-      console.log(key);
       // 1. Show input prompt
       await renderText(displayItem.prompt, cpm, {
         color,
@@ -176,7 +183,7 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
         postfix,
       });
       // 2. Gather result
-      const newName = await prompt("");
+      const newName = await prompt();
       stateManager.storeInput(key, { newName });
 
       supplyPatch(

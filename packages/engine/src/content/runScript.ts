@@ -20,7 +20,7 @@ import { getContentPlugin, isContentPluginStatement } from "../contentPlugin";
 import { handleTextContent } from "../text/handleText";
 import { getCurrentLocation } from "./getLocation";
 import { GameModelManager } from "../model/gameModel";
-import { NotificationList } from "./displayInfoCollection";
+import { NotificationList } from "./notificationList";
 
 type NarratorText = {
   type: "narratorText";

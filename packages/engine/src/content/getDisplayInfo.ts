@@ -1,4 +1,9 @@
-import { GameWorld, GameStateManager, GameState } from "@point-n-click/types";
+import {
+  GameWorld,
+  GameStateManager,
+  GameState,
+  PatchFunction,
+} from "@point-n-click/types";
 import { noLocation } from "../errors/noLocation";
 import { GameModelManager } from "../model/gameModel";
 import { describeLocation } from "./describeLocation";
@@ -6,14 +11,21 @@ import { getCurrentLocation } from "./getLocation";
 import { getCurrentOverlay } from "./getOverlay";
 import { DisplayInfo, runScript } from "./runScript";
 import { noOverlay } from "../errors/noOverlay";
-import { notificationList } from "./displayInfoCollection";
+import { notificationList } from "./notificationList";
 
 export const getDisplayInfo = <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
   stateManager: GameStateManager<Game>,
-  _patches: Record<string, (state: GameState<Game>) => GameState<Game>> = {}
+  patches: Record<string, PatchFunction<GameState<Game>>> = {}
 ): DisplayInfo<Game>[] => {
   const displayInstructions = notificationList<DisplayInfo<Game>>();
+  displayInstructions.subscribe(() => {
+    const patch = patches[displayInstructions.getCollection().length];
+
+    if (patch) {
+      stateManager.update(patch);
+    }
+  });
 
   const locationData = getCurrentLocation(gameModelManager, stateManager);
   if (!locationData) {
