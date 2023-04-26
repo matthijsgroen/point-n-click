@@ -33,22 +33,35 @@ This mechanic you can also use to describe some things in text that later gets i
 This means the content and state is Theme agnostic, and can be used in all versions of the game. (And allows you to play in browser and terminal in synchronized fashion)
 
 ```mermaid
-flowchart
+flowchart TB
+  classDef content fill:#004
 
-  TS-DSL(Typescript Content) -- dev server watch process --> Content.json
-  Content.json --> Engine
-  GameState(Game state) --> Engine
-  Interaction(Last interaction) --> Engine
-  Engine --> NewGameState(New Game State)
-  Engine --> DisplayInstructions
-  Engine --> PotentialInteractions(Potential interactions)
+  Engine
+  GameState
+  Theme[ Web Theme ]
+  TS-DSL[ Typescript DSL Content ]:::content
+  GameType[ Game Type Model ]:::content
+  Translations
 
-  PotentialInteractions --> Theme
-  DisplayInstructions --> Theme
-  Theme --> Rendering
-  Theme -.-> ContentPlugin
+  Content.json -.-> Engine
+  Translations -.-> Engine
+
+  GameType -- augments --> TS-DSL
+  GameType -. defines .-> GameState
+  TS-DSL --> Translations:::content
+  TS-DSL -- generates --> Content.json
+  Theme -. supports .-> ContentPlugin
   ContentPlugin -. augments .-> TS-DSL
-  Theme --> Selection(Select Interaction)
+
+  subgraph GameLoop
+    Interaction --> GameState
+    Instructions --> Theme
+    Theme --> Rendering[ Render content ]
+    Rendering --> Interaction
+    GameState[ Game state ] --> Engine
+    Engine --> Instructions[ Display Instructions \n& Potential Interations ]
+  end
+
 
 ```
 
