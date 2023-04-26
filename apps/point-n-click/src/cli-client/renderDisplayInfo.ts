@@ -11,11 +11,14 @@ import {
   GameState,
   GameSaveStateManager,
   PatchFunction,
+  hexColor,
 } from "@point-n-click/types";
 import { getTextLength, renderText } from "./renderText";
 import { getSettings } from "./settings";
-import { resetStyling } from "./utils";
+import { resetStyling, setColor } from "./utils";
 import { produce } from "immer";
+import { saveProgress } from "./saveProgress";
+import { setDisplayType } from "./displayType";
 
 const stdin = process.stdin;
 
@@ -80,21 +83,17 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
     gameModelManager,
     lightMode ? "light" : "dark"
   );
-  let viewKey: string = "";
-
-  const setKey = (key: string) => {
-    if (key === viewKey) return;
-    if (viewKey !== key && viewKey !== "") {
-      console.log("");
-    }
-    viewKey = key;
-  };
 
   const state = stateManager.activeState();
+  const renderEmptyLine = ({ pre, post } = { pre: prefix, post: postfix }) =>
+    renderText([{ type: "text", text: "" }], 0, {
+      prefix: pre,
+      postfix: post,
+    });
 
   if (isContentPluginContent(displayItem)) {
     if (isDescriptionText(displayItem)) {
-      setKey("text");
+      await setDisplayType("text", renderEmptyLine);
       for (const sentence of displayItem.text) {
         const cpm = state.get().settings.cpm;
         const color = getColor(textColor);
@@ -109,6 +108,15 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
     }
 
     if (isTextBox(displayItem)) {
+      const noteBorder = (text: string): FormattedText => [
+        {
+          type: "formatting",
+          format: "color",
+          value: "996644",
+          contents: [{ type: "text", text }],
+        },
+      ];
+
       if (
         displayItem.decoration === "Note" &&
         displayItem.decorationPosition === "start"
@@ -118,16 +126,13 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
           getTextLength(prefix) -
           getTextLength(postfix);
 
-        console.log(" ");
+        await renderEmptyLine();
         await renderText(
-          [
-            {
-              type: "text",
-              text: `  \u256D${Array(width - 6)
-                .fill("\u2500")
-                .join("")}\u256E  `,
-            },
-          ],
+          noteBorder(
+            `  \u256D${Array(width - 6)
+              .fill("\u2500")
+              .join("")}\u256E  `
+          ),
           0,
           {
             prefix,
@@ -135,8 +140,8 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
           }
         );
         updateBorder(
-          [...prefix, { type: "text", text: "  \u2502 " }],
-          [{ type: "text", text: " \u2502  " }, ...postfix]
+          [...prefix, ...noteBorder("  \u2502 ")],
+          [...noteBorder(" \u2502  "), ...postfix]
         );
       }
 
@@ -153,27 +158,24 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
           getTextLength(newPostfix);
 
         await renderText(
-          [
-            {
-              type: "text",
-              text: `  \u2570${Array(width - 6)
-                .fill("\u2500")
-                .join("")}\u256F  `,
-            },
-          ],
+          noteBorder(
+            `  \u2570${Array(width - 6)
+              .fill("\u2500")
+              .join("")}\u256F  `
+          ),
           0,
           {
             prefix: newPrefix,
             postfix: newPostfix,
           }
         );
-        console.log(" ");
         updateBorder(newPrefix, newPostfix);
+        setDisplayType("note", () => {});
       }
     }
 
     if (isCharacterRename(displayItem)) {
-      setKey("prompt");
+      await setDisplayType("prompt", renderEmptyLine);
       const color = getColor(textColor);
       const cpm = state.get().settings.cpm;
       // 1. Show input prompt
@@ -183,26 +185,38 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
         postfix,
       });
       // 2. Gather result
-      const newName = await prompt();
-      stateManager.storeInput(key, { newName });
-
+      setColor(
+        getColor(
+          gameModelManager.getModel().settings.characterConfigs[
+            displayItem.character
+          ].textColor
+        ) ?? hexColor("888888")
+      );
+      let newName: string | boolean = "";
+      const suppliedValue = stateManager.activeState().get().inputs[key];
+      if (suppliedValue) {
+        newName = (suppliedValue as { newName: string }).newName;
+        console.log(newName);
+      } else {
+        newName = await Promise.race([
+          prompt(),
+          gameModelManager.waitForChange(),
+        ]);
+        if (typeof newName === "boolean") {
+          stateManager.setPlayState("reloading");
+          return;
+        }
+        stateManager.storeInput(key, { newName });
+        await saveProgress(stateManager);
+      }
+      resetStyling();
       supplyPatch(
         produce((state) => {
           (state.characters as Record<string, { name: string }>)[
             displayItem.character
-          ].name = newName;
+          ].name = String(newName);
         })
       );
-      // if (newName.trim().length > 1) {
-      //   stateManager.updateState(
-      //     // TODO: Extract to a 'renameCharacter' function
-      //     produce((state) => {
-      //       (state.characters as Record<string, { name: string }>)[
-      //         displayItem.character
-      //       ].name = newName;
-      //     })
-      //   );
-      // }
 
       // 3. Set state
       resetStyling();
@@ -210,7 +224,7 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
     return;
   }
   if (displayItem.type === "narratorText") {
-    setKey("text");
+    await setDisplayType("text", renderEmptyLine);
     for (const sentence of displayItem.text) {
       const color = getColor(textColor);
       await renderText(sentence, displayItem.cpm, {
@@ -242,7 +256,7 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
           displayItem.character
         ].textColor
       : undefined;
-    setKey(`char:${name}`);
+    await setDisplayType(`char:${name}`, renderEmptyLine);
 
     for (const index in displayItem.text) {
       let text: FormattedText = [];

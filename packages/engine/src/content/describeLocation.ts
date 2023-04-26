@@ -5,12 +5,12 @@ import { getCurrentLocation } from "./getLocation";
 import { noLocation } from "../errors/noLocation";
 import { noOverlay } from "../errors/noOverlay";
 import { getCurrentOverlay } from "./getOverlay";
-import { NotificationList } from "./notificationList";
+import { ObservableList } from "./notificationList";
 
 export const describeLocation = <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
   stateManager: GameStateManager<Game>,
-  list: NotificationList<DisplayInfo<Game>>
+  list: ObservableList<DisplayInfo<Game>>
 ): void => {
   const currentLocation = stateManager.get().currentLocation;
   const locationData = getCurrentLocation(gameModelManager, stateManager);

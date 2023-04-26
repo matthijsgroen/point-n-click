@@ -9,6 +9,7 @@ import {
 } from "@point-n-click/engine";
 import { join } from "node:path";
 import { writeFile } from "node:fs/promises";
+import { saveProgress } from "./saveProgress";
 
 type TextInteraction = {
   label: FormattedText;
@@ -81,16 +82,9 @@ export const handleInteractions = async <Game extends GameWorld>(
   stateManager.activeState().update(
     produce((state) => {
       state.currentInteraction = chosenAction?.id;
+      state.inputs = {};
     })
   );
   stateManager.updateSaveState();
-
-  const autoSavePath = join(process.cwd(), ".autosave.json");
-  await writeFile(
-    autoSavePath,
-    JSON.stringify(stateManager.stableState().get()),
-    {
-      encoding: "utf-8",
-    }
-  );
+  await saveProgress(stateManager);
 };

@@ -20,7 +20,7 @@ import { getContentPlugin, isContentPluginStatement } from "../contentPlugin";
 import { handleTextContent } from "../text/handleText";
 import { getCurrentLocation } from "./getLocation";
 import { GameModelManager } from "../model/gameModel";
-import { NotificationList } from "./notificationList";
+import { ObservableList } from "./notificationList";
 
 type NarratorText = {
   type: "narratorText";
@@ -60,7 +60,7 @@ const statementHandler = <
   K extends ScriptStatement<Game>
 >(
   statementType: K["statementType"],
-  list: NotificationList<DisplayInfo<Game>>
+  list: ObservableList<DisplayInfo<Game>>
 ): StatementHandler<Game, K> => {
   const statementMap: StatementMap<Game> = {
     Text: (statement, stateManager, gameModelManager) => {
@@ -369,24 +369,12 @@ export const runScript = <Game extends GameWorld>(
   script: ScriptAST<Game>,
   stateManager: GameStateManager<Game>,
   gameModelManager: GameModelManager<Game>,
-  list: NotificationList<DisplayInfo<Game>>
-): DisplayInfo<Game>[] => {
-  const result: DisplayInfo<Game>[] = [];
+  list: ObservableList<DisplayInfo<Game>>
+): void => {
   for (const statement of script) {
-    // if (stateManager.isAborting()) {
-    //   return result;
-    // }
-
     if (isContentPluginStatement(statement)) {
       const plugin = getContentPlugin(statement.source);
       if (plugin) {
-        result.push(
-          ...plugin.handleContent(
-            statement,
-            stateManager,
-            gameModelManager.getModel()
-          )
-        );
         list.add(
           ...plugin.handleContent(
             statement,
@@ -401,10 +389,6 @@ export const runScript = <Game extends GameWorld>(
         list
       );
       handler(statement, stateManager, gameModelManager);
-      // if (statementResult !== null) {
-      //   result.push(...statementResult);
-      // }
     }
   }
-  return result;
 };

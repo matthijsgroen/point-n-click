@@ -11,16 +11,16 @@ import { getCurrentLocation } from "./getLocation";
 import { getCurrentOverlay } from "./getOverlay";
 import { DisplayInfo, runScript } from "./runScript";
 import { noOverlay } from "../errors/noOverlay";
-import { notificationList } from "./notificationList";
+import { observableList } from "./notificationList";
 
 export const getDisplayInfo = <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
   stateManager: GameStateManager<Game>,
   patches: Record<string, PatchFunction<GameState<Game>>> = {}
 ): DisplayInfo<Game>[] => {
-  const displayInstructions = notificationList<DisplayInfo<Game>>();
+  const displayInstructions = observableList<DisplayInfo<Game>>();
   displayInstructions.subscribe(() => {
-    const patch = patches[displayInstructions.getCollection().length];
+    const patch = patches[displayInstructions.length];
 
     if (patch) {
       stateManager.update(patch);

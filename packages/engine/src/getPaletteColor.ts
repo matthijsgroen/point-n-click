@@ -1,5 +1,9 @@
-import { ColorPalette, HexColor, PaletteColor } from "@point-n-click/state";
-import { GameWorld } from "@point-n-click/types";
+import {
+  ColorPalette,
+  GameWorld,
+  HexColor,
+  PaletteColor,
+} from "@point-n-click/types";
 import { GameModelManager } from "./model/gameModel";
 
 const getPalette = <Game extends GameWorld<number>>(

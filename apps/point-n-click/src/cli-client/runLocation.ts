@@ -82,9 +82,6 @@ export const runLocation = async <Game extends GameWorld>(
         }
       );
 
-      // TODO: If new patch registered?
-      // Refetch displayInfo, supply patches.
-      // continue rendering
       if (newPatch) {
         newPatch = false;
         stateManager.restoreSaveState();

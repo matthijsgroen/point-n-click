@@ -10,6 +10,7 @@ import { hexColor } from "..";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { progressSpinner } from "./spinner";
+import { resetDisplayType } from "../cli-client/displayType";
 
 type ServerOptions = {
   lang: string;
@@ -33,7 +34,7 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
     const saveFile = await readFile(saveFilePath, { encoding: "utf-8" });
     const contents = JSON.parse(saveFile);
     gameStateManager
-      .stableState()
+      .activeState()
       .update((state) => mergeState(state, contents));
     gameStateManager.updateSaveState();
   } catch (e) {}
@@ -55,6 +56,7 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
     );
     resetStyling();
     console.log("");
+    resetDisplayType();
   };
 
   await runGame(

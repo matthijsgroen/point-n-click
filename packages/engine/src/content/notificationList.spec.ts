@@ -1,8 +1,8 @@
-import { notificationList } from "./notificationList";
+import { observableList } from "./notificationList";
 
 describe("notificationList", () => {
   it("allows adding single item", () => {
-    const list = notificationList<string>();
+    const list = observableList<string>();
     list.add("Foo");
 
     const result = list.getCollection();
@@ -10,7 +10,7 @@ describe("notificationList", () => {
   });
 
   it("allows adding multiple items", () => {
-    const list = notificationList<string>();
+    const list = observableList<string>();
     list.add("Foo");
     list.add("Bar", "Baz");
 
@@ -20,7 +20,7 @@ describe("notificationList", () => {
 
   it("allows subscriptions on changes", () => {
     const subscription = jest.fn();
-    const list = notificationList<string>();
+    const list = observableList<string>();
     list.add("Foo");
     list.subscribe(subscription);
     list.add("Bar", "Baz");
@@ -30,7 +30,7 @@ describe("notificationList", () => {
 
   it("calls subscribers for every change", () => {
     const subscription = jest.fn();
-    const list = notificationList<string>();
+    const list = observableList<string>();
     list.subscribe(subscription);
     list.add("Foo");
     list.add("Bar", "Baz");
@@ -40,7 +40,7 @@ describe("notificationList", () => {
 
   it("allows subscriptions to unsubscribe", () => {
     const subscription = jest.fn();
-    const list = notificationList<string>();
+    const list = observableList<string>();
     const unsubscribe = list.subscribe(subscription);
     list.add("Foo");
     unsubscribe();
