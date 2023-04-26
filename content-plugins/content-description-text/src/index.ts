@@ -47,7 +47,7 @@ const textContent: ContentPlugin<typeof textDslFunctions> = {
     }
     return translationScope;
   },
-  handleContent: (statement, stateManager, gameModel) => {
+  handleContent: (statement, state, gameModel) => {
     if (isTextStatement(statement)) {
       const result: TextDescriptionDisplay = {
         type: "descriptionText",
@@ -56,7 +56,7 @@ const textContent: ContentPlugin<typeof textDslFunctions> = {
         text: [],
       };
       const content = handleTextContent(
-        stateManager,
+        state,
         gameModel,
         statement.content,
         "descriptionText"

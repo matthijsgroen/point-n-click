@@ -47,7 +47,7 @@ type StatementHandler<
   K extends ScriptStatement<Game>
 > = (
   statement: K,
-  stateManager: GameStateManager<Game>,
+  state: GameStateManager<Game>,
   modelManager: GameModelManager<Game>
 ) => void;
 
@@ -63,8 +63,8 @@ const statementHandler = <
   list: ObservableList<DisplayInfo<Game>>
 ): StatementHandler<Game, K> => {
   const statementMap: StatementMap<Game> = {
-    Text: (statement, stateManager, gameModelManager) => {
-      const cpm = stateManager.get().settings.cpm;
+    Text: (statement, state, gameModelManager) => {
+      const cpm = state.get().settings.cpm;
       const result: NarratorText = {
         type: "narratorText",
         cpm,
@@ -72,7 +72,7 @@ const statementHandler = <
       };
 
       const text = handleTextContent(
-        stateManager,
+        state,
         gameModelManager.getModel(),
         statement.sentences,
         "text"
@@ -84,11 +84,8 @@ const statementHandler = <
         list.add(text.error);
       }
     },
-    SetGameObjectText: (
-      { objectType, stateItem, name, text },
-      stateManager
-    ) => {
-      stateManager.update(
+    SetGameObjectText: ({ objectType, stateItem, name, text }, state) => {
+      state.update(
         produce((draft) => {
           const item = (draft as GameState<Game>)[`${objectType}s`][
             stateItem
@@ -112,15 +109,10 @@ const statementHandler = <
         })
       );
     },
-    DescribeLocation: (_statement, stateManager, gameModelManager) => {
-      const locationData = getCurrentLocation(gameModelManager, stateManager);
+    DescribeLocation: (_statement, state, gameModelManager) => {
+      const locationData = getCurrentLocation(gameModelManager, state);
       if (locationData === undefined) return null;
-      runScript(
-        locationData.describe.script,
-        stateManager,
-        gameModelManager,
-        list
-      );
+      runScript(locationData.describe.script, state, gameModelManager, list);
     },
     Travel: ({ destination }, stateManager) => {
       stateManager.update((state) => ({
@@ -128,11 +120,8 @@ const statementHandler = <
         currentLocation: destination,
       }));
     },
-    UpdateGameObjectState: (
-      { stateItem, newState, objectType },
-      stateManager
-    ) => {
-      stateManager.update(
+    UpdateGameObjectState: ({ stateItem, newState, objectType }, state) => {
+      state.update(
         produce((draft) => {
           const item = (draft as GameState<Game>)[`${objectType}s`][
             stateItem
@@ -153,11 +142,8 @@ const statementHandler = <
         })
       );
     },
-    UpdateGameObjectFlag: (
-      { stateItem, flag, value, objectType },
-      stateManager
-    ) => {
-      stateManager.update(
+    UpdateGameObjectFlag: ({ stateItem, flag, value, objectType }, state) => {
+      state.update(
         produce((draft) => {
           const item = (draft as GameState<Game>)[`${objectType}s`][
             stateItem
@@ -180,9 +166,9 @@ const statementHandler = <
     },
     UpdateGameObjectCounter: (
       { stateItem, value, name, transactionType, objectType },
-      stateManager
+      state
     ) => {
-      stateManager.update(
+      state.update(
         produce((draft) => {
           const item = (draft as GameState<Game>)[`${objectType}s`][
             stateItem
@@ -221,11 +207,8 @@ const statementHandler = <
         })
       );
     },
-    UpdateCharacterName: (
-      { character, newName, translatable },
-      stateManager
-    ) => {
-      stateManager.update(
+    UpdateCharacterName: ({ character, newName, translatable }, state) => {
+      state.update(
         produce((draft) => {
           if (translatable && newName) {
             const translatedName =
@@ -241,12 +224,8 @@ const statementHandler = <
         })
       );
     },
-    CharacterSay: (
-      { character, sentences },
-      stateManager,
-      gameModelManager
-    ) => {
-      if (!Object.hasOwn(stateManager.get().characters, character)) {
+    CharacterSay: ({ character, sentences }, state, gameModelManager) => {
+      if (!Object.hasOwn(state.get().characters, character)) {
         const error: DisplayErrorText = {
           type: "error",
           message: [
@@ -263,13 +242,13 @@ const statementHandler = <
       }
       const name = characterName(
         character,
-        stateManager.get(),
+        state.get(),
         gameModelManager.getModel()
       );
 
-      const textScope = determineTextScope(stateManager, String(character));
+      const textScope = determineTextScope(state, String(character));
 
-      const cpm = stateManager.get().settings.cpm;
+      const cpm = state.get().settings.cpm;
       const result: CharacterText<Game> = {
         type: "characterText",
         cpm,
@@ -283,7 +262,7 @@ const statementHandler = <
           result.text.push(
             getDisplayText(
               sentence,
-              stateManager,
+              state,
               gameModelManager.getModel(),
               textScope,
               ["characters", String(character)]
@@ -301,19 +280,15 @@ const statementHandler = <
       }
       list.add(result);
     },
-    Condition: (
-      { condition, body, elseBody },
-      stateManager,
-      gameModelManager
-    ) => {
-      if (testCondition(condition, stateManager)) {
-        runScript(body, stateManager, gameModelManager, list);
+    Condition: ({ condition, body, elseBody }, state, gameModelManager) => {
+      if (testCondition(condition, state)) {
+        runScript(body, state, gameModelManager, list);
       } else {
-        runScript(elseBody, stateManager, gameModelManager, list);
+        runScript(elseBody, state, gameModelManager, list);
       }
     },
-    OpenOverlay: (statement, stateManager) => {
-      stateManager.update((state) => ({
+    OpenOverlay: (statement, state) => {
+      state.update((state) => ({
         ...state,
         overlayStack: state.overlayStack.concat(statement.overlayId),
       }));
@@ -327,8 +302,8 @@ const statementHandler = <
         })
       );
     },
-    AddListItem: (statement, stateManager) => {
-      stateManager.update(
+    AddListItem: (statement, state) => {
+      state.update(
         produce((state) => {
           const list = (state as GameState<Game>).lists[statement.list] || [];
           if (!list.includes(statement.value) || statement.unique === false) {
@@ -338,8 +313,8 @@ const statementHandler = <
         })
       );
     },
-    RemoveListItem: (statement, stateManager) => {
-      stateManager.update(
+    RemoveListItem: (statement, state) => {
+      state.update(
         produce((state) => {
           const list = (
             (state as GameState<Game>).lists[statement.list] || []
@@ -348,12 +323,12 @@ const statementHandler = <
         })
       );
     },
-    DisplayList: (statement, stateManager, gameModelManager) => {
-      const listState = stateManager.get().lists[statement.list] || [];
+    DisplayList: (statement, state, gameModelManager) => {
+      const listState = state.get().lists[statement.list] || [];
       listState.forEach((item) => {
         const displayScript = statement.values[item];
         if (!displayScript) return;
-        runScript(displayScript, stateManager, gameModelManager, list);
+        runScript(displayScript, state, gameModelManager, list);
       });
     },
   };
@@ -367,7 +342,7 @@ const statementHandler = <
 
 export const runScript = <Game extends GameWorld>(
   script: ScriptAST<Game>,
-  stateManager: GameStateManager<Game>,
+  state: GameStateManager<Game>,
   gameModelManager: GameModelManager<Game>,
   list: ObservableList<DisplayInfo<Game>>
 ): void => {
@@ -376,11 +351,7 @@ export const runScript = <Game extends GameWorld>(
       const plugin = getContentPlugin(statement.source);
       if (plugin) {
         list.add(
-          ...plugin.handleContent(
-            statement,
-            stateManager,
-            gameModelManager.getModel()
-          )
+          ...plugin.handleContent(statement, state, gameModelManager.getModel())
         );
       }
     } else {
@@ -388,7 +359,7 @@ export const runScript = <Game extends GameWorld>(
         statement.statementType,
         list
       );
-      handler(statement, stateManager, gameModelManager);
+      handler(statement, state, gameModelManager);
     }
   }
 };

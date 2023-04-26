@@ -15,7 +15,7 @@ import { observableList } from "./notificationList";
 
 export const getDisplayInfo = <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
-  stateManager: GameStateManager<Game>,
+  state: GameStateManager<Game>,
   patches: Record<string, PatchFunction<GameState<Game>>> = {}
 ): DisplayInfo<Game>[] => {
   const displayInstructions = observableList<DisplayInfo<Game>>();
@@ -23,20 +23,20 @@ export const getDisplayInfo = <Game extends GameWorld>(
     const patch = patches[displayInstructions.length];
 
     if (patch) {
-      stateManager.update(patch);
+      state.update(patch);
     }
   });
 
-  const locationData = getCurrentLocation(gameModelManager, stateManager);
+  const locationData = getCurrentLocation(gameModelManager, state);
   if (!locationData) {
-    displayInstructions.add(noLocation(stateManager.get().currentLocation));
+    displayInstructions.add(noLocation(state.get().currentLocation));
     return displayInstructions.getCollection();
   }
   const globalInteractions = gameModelManager.getModel().globalInteractions;
 
-  let currentOverlayData = getCurrentOverlay(gameModelManager, stateManager);
+  let currentOverlayData = getCurrentOverlay(gameModelManager, state);
 
-  const currentInteraction = stateManager.get().currentInteraction;
+  const currentInteraction = state.get().currentInteraction;
 
   let locationDescribed = false;
 
@@ -50,67 +50,62 @@ export const getDisplayInfo = <Game extends GameWorld>(
       .find((interaction) => interaction.label === currentInteraction);
 
     if (interactionData) {
-      stateManager.update((state) => ({
+      state.update((state) => ({
         ...state,
         currentInteraction: undefined,
       }));
 
       runScript<Game>(
         interactionData.script,
-        stateManager,
+        state,
         gameModelManager,
         displayInstructions
       );
-      const newOverlayData = getCurrentOverlay(gameModelManager, stateManager);
+      const newOverlayData = getCurrentOverlay(gameModelManager, state);
       if (newOverlayData === undefined) {
-        displayInstructions.add(
-          noOverlay(stateManager.get().overlayStack.at(-1))
-        );
+        displayInstructions.add(noOverlay(state.get().overlayStack.at(-1)));
       }
       if (currentOverlayData !== newOverlayData) {
         if (currentOverlayData) {
           runScript(
             currentOverlayData.onLeave.script,
-            stateManager,
+            state,
             gameModelManager,
             displayInstructions
           );
-          stateManager.update((state) => ({
+          state.update((state) => ({
             ...state,
             currentOverlay: undefined,
           }));
         }
         if (newOverlayData) {
-          stateManager.update((state) => ({
+          state.update((state) => ({
             ...state,
             currentOverlay: newOverlayData.id,
           }));
           runScript(
             newOverlayData.onEnter.script,
-            stateManager,
+            state,
             gameModelManager,
             displayInstructions
           );
         } else {
           locationDescribed = true;
-          describeLocation(gameModelManager, stateManager, displayInstructions);
+          describeLocation(gameModelManager, state, displayInstructions);
         }
       }
       currentOverlayData = newOverlayData;
 
-      const newLocationData = getCurrentLocation(
-        gameModelManager,
-        stateManager
-      );
+      const newLocationData = getCurrentLocation(gameModelManager, state);
       if (newLocationData !== locationData && !locationDescribed) {
         locationDescribed = true;
-        describeLocation(gameModelManager, stateManager, displayInstructions);
+        describeLocation(gameModelManager, state, displayInstructions);
       }
     }
   } else {
     if (!locationDescribed) {
       locationDescribed = true;
-      describeLocation(gameModelManager, stateManager, displayInstructions);
+      describeLocation(gameModelManager, state, displayInstructions);
     }
   }
   return displayInstructions.getCollection();

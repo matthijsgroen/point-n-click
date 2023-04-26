@@ -23,12 +23,12 @@ export type Interactions = {
 
 export const getInteractions = <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
-  stateManager: GameStateManager<Game>
+  state: GameStateManager<Game>
 ): Interactions => {
-  const currentOverlayData = getCurrentOverlay(gameModelManager, stateManager);
+  const currentOverlayData = getCurrentOverlay(gameModelManager, state);
 
-  const textScope = determineTextScope(stateManager, "interactions");
-  const locationData = getCurrentLocation(gameModelManager, stateManager);
+  const textScope = determineTextScope(state, "interactions");
+  const locationData = getCurrentLocation(gameModelManager, state);
 
   const interactions = currentOverlayData
     ? currentOverlayData.interactions
@@ -51,12 +51,12 @@ export const getInteractions = <Game extends GameWorld>(
   const globalInteractions = gameModelManager
     .getModel()
     .globalInteractions.filter((interaction) =>
-      testCondition(interaction.condition, stateManager)
+      testCondition(interaction.condition, state)
     )
     .map<InteractionAction>(({ label, shortcutKey }) => ({
       label: getDisplayText(
         getTranslationText(["global", "interactions", label], "label") || label,
-        stateManager,
+        state,
         gameModelManager.getModel(),
         [],
         textScope
@@ -69,11 +69,11 @@ export const getInteractions = <Game extends GameWorld>(
     }));
 
   const possibleInteractions = interactions
-    .filter((interaction) => testCondition(interaction.condition, stateManager))
+    .filter((interaction) => testCondition(interaction.condition, state))
     .map<InteractionAction>(({ label }) => ({
       label: getDisplayText(
         label,
-        stateManager,
+        state,
         gameModelManager.getModel(),
         textScope,
         textScope

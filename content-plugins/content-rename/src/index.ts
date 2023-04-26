@@ -6,7 +6,6 @@ import {
   SystemInterface,
 } from "@point-n-click/types";
 import { characterName, handleTextContent } from "@point-n-click/engine";
-import { produce } from "immer";
 
 const PLUGIN_SOURCE = "characterRename" as const;
 
@@ -29,12 +28,6 @@ const isCharacterRename = (
   item: ContentStatement
 ): item is CharacterRenameAST<GameWorld> =>
   item.statementType === "CharacterRename";
-
-const isRenameDone = (result: unknown): result is { newName: string } =>
-  result !== undefined &&
-  typeof result === "object" &&
-  result !== null &&
-  Object.keys(result).includes("newName");
 
 const textDslFunctions = {
   character:
@@ -65,21 +58,17 @@ const textContent: ContentPlugin<typeof textDslFunctions> = {
     }
     return translationScope;
   },
-  handleContent: (statement, stateManager, gameModel) => {
+  handleContent: (statement, state, gameModel) => {
     if (isCharacterRename(statement)) {
       const result: CharacterRenameDisplay = {
         type: "CharacterRename",
         pluginSource: PLUGIN_SOURCE,
         character: statement.character,
-        currentName: characterName(
-          statement.character,
-          stateManager.get(),
-          gameModel
-        ),
+        currentName: characterName(statement.character, state.get(), gameModel),
         prompt: [],
       };
       const content = handleTextContent(
-        stateManager,
+        state,
         gameModel,
         [statement.prompt],
         "renamePrompt"

@@ -7,9 +7,9 @@ import { GameModelManager } from "../model/gameModel";
 
 export const getCurrentLocation = <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
-  stateManager: GameStateManager<Game>
+  state: GameStateManager<Game>
 ): GameLocation<Game> | undefined => {
-  const locationId = stateManager.get().currentLocation;
+  const locationId = state.get().currentLocation;
   if (!locationId) {
     return undefined;
   }

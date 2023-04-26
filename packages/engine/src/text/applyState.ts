@@ -23,10 +23,10 @@ const existingItemProperties = ["counters", "texts"];
 
 export const characterName = <Game extends GameWorld>(
   character: keyof Game["characters"],
-  state: GameState<Game>,
+  gameState: GameState<Game>,
   model: GameModel<Game>
 ): string => {
-  const stateName = state.characters[character]?.name;
+  const stateName = gameState.characters[character]?.name;
   const name =
     (stateName
       ? getTranslationText(
@@ -48,7 +48,7 @@ export const characterDefaultName = <Game extends GameWorld>(
 
 export const applyState = <Game extends GameWorld>(
   text: ParsedText,
-  stateManager: GameStateManager<Game>,
+  gameState: GameStateManager<Game>,
   model: GameModel<Game>,
   stateScope: string[]
 ): FormattedText => {
@@ -60,7 +60,7 @@ export const applyState = <Game extends GameWorld>(
     if (element.type === "formatting") {
       result.push({
         ...element,
-        contents: applyState(element.contents, stateManager, model, stateScope),
+        contents: applyState(element.contents, gameState, model, stateScope),
       });
     }
     if (element.type === "interpolation") {
@@ -70,7 +70,7 @@ export const applyState = <Game extends GameWorld>(
           ? [...stateScope].concat(statePath.slice(1))
           : statePath;
 
-      const state = stateManager.get();
+      const state = gameState.get();
       const throwStateError = (message: string) => {
         const error = new Error(message);
         (error as StateError).name = "StateError";
