@@ -7,8 +7,7 @@ A typical use case would be describing what themes using images would see.
 ## Content Language additions
 
 ```ts
-world.note(() => {
-  world.text("Text of the note");
-  // other content is accepted as well
-});
+world.descriptionText(
+  "You are at a beautiful forest. Wind is rustling through the trees."
+);
 ```
