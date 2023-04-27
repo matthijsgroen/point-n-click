@@ -2,7 +2,6 @@ import {
   GameWorld,
   OverlayScript,
   LocationScript,
-  EvaluateCondition,
   ScriptAST,
   ScriptStatement,
   GameOverlay,
@@ -15,6 +14,11 @@ import {
   GameModel,
   Settings,
   ThemeInfo,
+  EvaluateStateCondition,
+  ConditionStatement,
+  ConditionElse,
+  ChainedStateCondition,
+  StateCondition,
 } from "@point-n-click/types";
 import {
   characterDSLFunctions,
@@ -113,7 +117,7 @@ type BaseDSL<Version extends number, Game extends GameWorld<Version>> = {
   describeLocation: () => void;
   openOverlay: (id: keyof Game["overlays"]) => void;
 
-  onState: EvaluateCondition<Game>;
+  onState: EvaluateStateCondition<Game>;
 
   __exportWorld: () => GameModel<Game>;
 };
@@ -216,19 +220,36 @@ export const world =
       return result;
     };
 
-    const onState: EvaluateCondition<Game> = (
-      condition,
-      script,
-      elseScript
-    ) => {
+    const onState: EvaluateStateCondition<Game> = (condition, script) => {
       const body = wrapScript(script);
-      const elseBody = elseScript ? wrapScript(elseScript) : [];
-      activeScriptScope.push({
+      let statement: ConditionStatement<Game> | ConditionElse<Game> = {
         statementType: "Condition",
         condition,
         body,
-        elseBody,
-      });
+      };
+      activeScriptScope.push(statement);
+
+      const elseStatement: ChainedStateCondition<Game> = (
+        ...args:
+          | [condition: StateCondition<Game>, body: Script]
+          | [body: Script]
+      ) => {
+        if (args.length === 2) {
+          const chainedElse: ConditionElse<Game> = {
+            condition: args[0],
+            body: wrapScript(args[1]),
+          };
+          statement.else = chainedElse;
+          statement = chainedElse;
+        } else {
+          const chainedElse: { body: ScriptAST<Game> } = {
+            body: wrapScript(args[0]),
+          };
+          statement.else = chainedElse;
+        }
+        return { else: elseStatement };
+      };
+      return { else: elseStatement };
     };
 
     const addToActiveScript = (statement: ScriptStatement<Game>) => {

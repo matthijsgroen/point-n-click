@@ -43,11 +43,17 @@ export type OverlayScript<
   setPrompt: (interactionPrompt: string) => void;
 }) => void;
 
-export type EvaluateCondition<Game extends GameWorld> = (
+export type EvaluateStateCondition<Game extends GameWorld> = (
   condition: StateCondition<Game>,
-  script: Script,
-  elseScript?: Script
-) => void;
+  script: Script
+) => { else: ChainedStateCondition<Game> };
+
+export type ChainedStateCondition<Game extends GameWorld> = {
+  (condition: StateCondition<Game>, script: Script): {
+    else: ChainedStateCondition<Game>;
+  };
+  (script: Script): void;
+};
 
 export type Interaction<Game extends GameWorld> = (
   text: string,
@@ -129,7 +135,13 @@ export type ConditionStatement<Game extends GameWorld> = {
   statementType: "Condition";
   condition: StateCondition<Game>;
   body: ScriptAST<Game>;
-  elseBody: ScriptAST<Game>;
+  else?: ConditionElse<Game> | { body: ScriptAST<Game> };
+};
+
+export type ConditionElse<Game extends GameWorld> = {
+  condition: StateCondition<Game>;
+  body: ScriptAST<Game>;
+  else?: ConditionElse<Game> | { body: ScriptAST<Game> };
 };
 
 export type UpdateState<

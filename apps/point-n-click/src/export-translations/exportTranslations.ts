@@ -1,4 +1,6 @@
 import {
+  ConditionElse,
+  ConditionStatement,
   ContentPluginStatement,
   GameModel,
   GameWorld,
@@ -74,8 +76,20 @@ const processScript = <Game extends GameWorld>(
       );
     }
     if (statement.statementType === "Condition") {
-      processScript(statement.body, enterScriptScope, setTranslationKey);
-      processScript(statement.elseBody, enterScriptScope, setTranslationKey);
+      const exportBody = (
+        testStatement:
+          | ConditionStatement<Game>
+          | ConditionElse<Game>
+          | { body: ScriptAST<Game> }
+      ) => {
+        processScript(testStatement.body, enterScriptScope, setTranslationKey);
+        if ("else" in testStatement && testStatement.else) {
+          exportBody(testStatement.else);
+        }
+      };
+      // processScript(statement.body, enterScriptScope, setTranslationKey);
+      // processScript(statement.elseBody, enterScriptScope, setTranslationKey);
+      exportBody(statement);
     }
     if (statement.statementType === "SetGameObjectText") {
       setTranslationKey(

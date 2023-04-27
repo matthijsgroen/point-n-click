@@ -1,5 +1,7 @@
 import { produce } from "immer";
 import {
+  ConditionElse,
+  ConditionStatement,
   ContentPluginContent,
   DisplayErrorText,
   GameObjectState,
@@ -280,12 +282,21 @@ const statementHandler = <
       }
       list.add(result);
     },
-    Condition: ({ condition, body, elseBody }, state, gameModelManager) => {
-      if (testCondition(condition, state)) {
-        runScript(body, state, gameModelManager, list);
-      } else {
-        runScript(elseBody, state, gameModelManager, list);
-      }
+    Condition: (statement, state, gameModelManager) => {
+      const test = (
+        testStatement: ConditionStatement<Game> | ConditionElse<Game>
+      ) => {
+        if (testCondition(testStatement.condition, state)) {
+          runScript(testStatement.body, state, gameModelManager, list);
+        } else if (testStatement.else) {
+          if (testStatement.else && "condition" in testStatement.else) {
+            test(testStatement.else);
+          } else {
+            runScript(testStatement.else.body, state, gameModelManager, list);
+          }
+        }
+      };
+      test(statement);
     },
     OpenOverlay: (statement, state) => {
       state.update((state) => ({
