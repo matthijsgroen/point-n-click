@@ -15,51 +15,20 @@ import {
 } from "@point-n-click/types";
 import { getTextLength, renderText } from "./renderText";
 import { getSettings } from "./settings";
-import { resetStyling, setColor } from "./utils";
+import { isListItem, resetStyling, setColor } from "./utils";
 import { produce } from "immer";
 import { saveProgress } from "./saveProgress";
 import { setDisplayType } from "./displayType";
-
-const stdin = process.stdin;
-
-const prompt = () =>
-  new Promise<string>((resolve) => {
-    stdin.setRawMode(false);
-    stdin.setEncoding("utf8");
-    const callback = (chunk: string) => {
-      resolve(chunk.slice(0, -1));
-
-      stdin.setRawMode(true);
-      stdin.setEncoding("utf8");
-      stdin.removeListener("data", callback);
-    };
-
-    stdin.on("data", callback);
-  });
-
-const isDescriptionText = (
-  item: ContentPluginContent
-): item is ContentPluginContent & { text: FormattedText[] } =>
-  item.pluginSource === "descriptionText" && item.type === "descriptionText";
-
-const isTextBox = (
-  item: ContentPluginContent
-): item is ContentPluginContent & {
-  decoration: "Note";
-  decorationPosition: "start" | "end";
-} => item.pluginSource === "notesAndLetters" && item.type === "TextBox";
-
-const isCharacterRename = (
-  item: ContentPluginContent
-): item is ContentPluginContent & {
-  character: string;
-  currentName: string;
-  prompt: FormattedText;
-  storageKey: string;
-} => item.pluginSource === "characterRename" && item.type === "CharacterRename";
-
-const isListItem = (text: FormattedText): boolean =>
-  text[0] && text[0].type === "text" && text[0].text.startsWith("- ");
+import {
+  handleDescriptionText,
+  isDescriptionText,
+} from "./plugin-support/descriptionText";
+import { PluginProps } from "./plugin-support/types";
+import {
+  handleNotesLetters,
+  isNoteLetters,
+} from "./plugin-support/notes-letters";
+import { handleRename, isCharacterRename } from "./plugin-support/rename";
 
 export const renderDisplayInfo = async <Game extends GameWorld>(
   displayItem: DisplayInfo<Game>,
@@ -92,135 +61,53 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
     });
 
   if (isContentPluginContent(displayItem)) {
-    if (isDescriptionText(displayItem)) {
-      await setDisplayType("text", renderEmptyLine);
-      for (const sentence of displayItem.text) {
-        const cpm = state.get().settings.cpm;
-        const color = getColor(textColor);
-        await renderText(sentence, cpm, {
-          color,
-          prefix,
-          postfix,
-          indent: isListItem(sentence) ? 2 : 0,
-        });
-      }
-      resetStyling();
-    }
-
-    if (isTextBox(displayItem)) {
-      const noteBorder = (text: string): FormattedText => [
-        {
-          type: "formatting",
-          format: "color",
-          value: "996644",
-          contents: [{ type: "text", text }],
-        },
-      ];
-
-      if (
-        displayItem.decoration === "Note" &&
-        displayItem.decorationPosition === "start"
-      ) {
-        const width =
-          process.stdout.columns -
-          getTextLength(prefix) -
-          getTextLength(postfix);
-
-        await renderEmptyLine();
-        await renderText(
-          noteBorder(
-            `  \u256D${Array(width - 6)
-              .fill("\u2500")
-              .join("")}\u256E  `
-          ),
-          0,
-          {
-            prefix,
-            postfix,
-          }
-        );
-        updateBorder(
-          [...prefix, ...noteBorder("  \u2502 ")],
-          [...noteBorder(" \u2502  "), ...postfix]
-        );
-      }
-
-      if (
-        displayItem.decoration === "Note" &&
-        displayItem.decorationPosition === "end"
-      ) {
-        const newPrefix = prefix.slice(0, -1);
-        const newPostfix = postfix.slice(1);
-
-        const width =
-          process.stdout.columns -
-          getTextLength(newPrefix) -
-          getTextLength(newPostfix);
-
-        await renderText(
-          noteBorder(
-            `  \u2570${Array(width - 6)
-              .fill("\u2500")
-              .join("")}\u256F  `
-          ),
-          0,
-          {
-            prefix: newPrefix,
-            postfix: newPostfix,
-          }
-        );
-        updateBorder(newPrefix, newPostfix);
-        setDisplayType("note", () => {});
-      }
-    }
-
-    if (isCharacterRename(displayItem)) {
-      await setDisplayType("prompt", renderEmptyLine);
-      const color = getColor(textColor);
-      const cpm = state.get().settings.cpm;
-      // 1. Show input prompt
-      await renderText(displayItem.prompt, cpm, {
-        color,
-        prefix,
-        postfix,
-      });
-      // 2. Gather result
-      setColor(
-        getColor(
-          gameModelManager.getModel().settings.characterConfigs[
-            displayItem.character
-          ].textColor
-        ) ?? hexColor("888888")
-      );
-      let newName: string | boolean = "";
-      const suppliedValue = stateManager.activeState().get().inputs[key];
+    const storeCustomInput = async <T>(
+      getInput: () => Promise<T>,
+      displayPreviousInput: (value: T) => Promise<void>
+    ) => {
+      const suppliedValue = state.get().inputs[key] as T | undefined;
       if (suppliedValue) {
-        newName = (suppliedValue as { newName: string }).newName;
-        console.log(newName);
+        await displayPreviousInput(suppliedValue);
+        return suppliedValue;
       } else {
-        newName = await Promise.race([
-          prompt(),
+        const newInput = await Promise.race([
+          getInput(),
           gameModelManager.waitForChange(),
         ]);
-        if (typeof newName === "boolean") {
+        if (typeof newInput === "boolean") {
           stateManager.setPlayState("reloading");
-          return;
+          throw new Error("Reloading");
         }
-        stateManager.storeInput(key, { newName });
+        stateManager.storeInput(key, newInput);
         await saveProgress(stateManager);
+        return newInput;
       }
-      resetStyling();
-      supplyPatch(
-        produce((state) => {
-          (state.characters as Record<string, { name: string }>)[
-            displayItem.character
-          ].name = String(newName);
-        })
-      );
+    };
 
-      // 3. Set state
-      resetStyling();
-    }
+    const pluginProps: PluginProps<Game> = {
+      gameModelManager,
+      state,
+      updateBorder,
+      supplyPatch,
+      renderEmptyLine,
+      storeCustomInput,
+      lightMode,
+      prefix,
+      postfix,
+    };
+    try {
+      if (isDescriptionText(displayItem)) {
+        await handleDescriptionText(displayItem, pluginProps);
+      }
+
+      if (isNoteLetters(displayItem)) {
+        await handleNotesLetters(displayItem, pluginProps);
+      }
+
+      if (isCharacterRename(displayItem)) {
+        await handleRename(displayItem, pluginProps);
+      }
+    } catch (e) {}
     return;
   }
   if (displayItem.type === "narratorText") {

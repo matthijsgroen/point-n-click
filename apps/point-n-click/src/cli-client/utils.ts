@@ -98,3 +98,6 @@ export const keypress = () =>
       resolve(key);
     };
   });
+
+export const isListItem = (text: FormattedText): boolean =>
+  text[0] && text[0].type === "text" && text[0].text.startsWith("- ");
