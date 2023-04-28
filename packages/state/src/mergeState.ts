@@ -22,4 +22,9 @@ export const mergeState = <Game extends GameWorld>(
       return [location, { ...locationData, ...b.locations[location] }];
     })
   ) as GameState<Game>["locations"],
+  overlays: Object.fromEntries(
+    Object.entries(a.overlays).map(([overlay, overlayData]) => {
+      return [overlay, { ...overlayData, ...b.overlays[overlay] }];
+    })
+  ) as GameState<Game>["overlays"],
 });
