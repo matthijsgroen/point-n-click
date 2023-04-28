@@ -148,7 +148,7 @@ export const startContentBuilder = async (
 
         modelManager.setNewModel(jsonModel);
       } catch (e) {
-        if (e instanceof TypeError) {
+        if (e instanceof TypeError || e instanceof ReferenceError) {
           const gameContentsSourceMap = await outputFS.readFile(
             `${bundle.filePath}.map`,
             "utf-8"
