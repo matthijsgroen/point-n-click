@@ -272,10 +272,10 @@ const statementHandler = <
           );
         } catch (e) {
           if ((e as ParseSyntaxError).name === "SyntaxError") {
-            return [result, formatParserError(e as ParseSyntaxError)];
+            list.add(result, formatParserError(e as ParseSyntaxError));
           }
           if ((e as StateError).name === "StateError") {
-            return [result, formatStateError(sentence, e as StateError)];
+            list.add(result, formatStateError(sentence, e as StateError));
           }
           break;
         }
