@@ -1,6 +1,6 @@
+import { DisplayErrorText } from "@point-n-click/types";
 import { StateError } from "../text/applyState";
 import { ParseSyntaxError } from "../text/processText";
-import { FormattedText } from "../text/types";
 
 export const formatParserError = (e: ParseSyntaxError): DisplayErrorText => ({
   type: "error",
