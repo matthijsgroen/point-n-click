@@ -6,17 +6,14 @@ import {
   isContentPluginContent,
 } from "@point-n-click/engine";
 import {
-  ContentPluginContent,
   GameWorld,
   GameState,
   GameSaveStateManager,
   PatchFunction,
-  hexColor,
 } from "@point-n-click/types";
-import { getTextLength, renderText } from "./renderText";
+import { renderText } from "./renderText";
 import { getSettings } from "./settings";
 import { isListItem, resetStyling, setColor } from "./utils";
-import { produce } from "immer";
 import { saveProgress } from "./saveProgress";
 import { setDisplayType } from "./displayType";
 import {
@@ -95,19 +92,17 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
       prefix,
       postfix,
     };
-    try {
-      if (isDescriptionText(displayItem)) {
-        await handleDescriptionText(displayItem, pluginProps);
-      }
+    if (isDescriptionText(displayItem)) {
+      await handleDescriptionText(displayItem, pluginProps);
+    }
 
-      if (isNoteLetters(displayItem)) {
-        await handleNotesLetters(displayItem, pluginProps);
-      }
+    if (isNoteLetters(displayItem)) {
+      await handleNotesLetters(displayItem, pluginProps);
+    }
 
-      if (isCharacterRename(displayItem)) {
-        await handleRename(displayItem, pluginProps);
-      }
-    } catch (e) {}
+    if (isCharacterRename(displayItem)) {
+      await handleRename(displayItem, pluginProps);
+    }
     return;
   }
   if (displayItem.type === "narratorText") {
