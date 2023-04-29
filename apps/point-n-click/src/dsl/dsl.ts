@@ -400,6 +400,12 @@ export const world =
             op: "StateEquals",
             state,
           }),
+          hasFlag: (flag) => ({
+            objectType: "location",
+            item: location,
+            op: "IsFlagSet",
+            flag,
+          }),
           setPrompt: (prompt) => {
             locationAST.prompt = prompt;
           },

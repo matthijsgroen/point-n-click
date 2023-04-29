@@ -1,4 +1,8 @@
-import { GameObjectStateCondition, StateCondition } from "./conditions";
+import {
+  GameObjectFlagCondition,
+  GameObjectStateCondition,
+  StateCondition,
+} from "./conditions";
 import { ContentPluginStatement } from "./contentPlugin";
 import { StateObject } from "./state";
 import { GameWorld } from "./world";
@@ -25,6 +29,9 @@ export type LocationScript<
   setState: (
     newState: Game["locations"][Location]["states"] | "unknown"
   ) => void;
+  hasFlag: (
+    flag: Game["locations"][Location]["flags"]
+  ) => GameObjectFlagCondition<Game, "location">;
   setPrompt: (interactionPrompt: string) => void;
 }) => void;
 
