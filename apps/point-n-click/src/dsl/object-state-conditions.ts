@@ -82,7 +82,7 @@ export const objectStateManagement = <
       stateItem: item,
       name,
       transactionType: "set",
-      value,
+      valueRangeStart: value,
     });
   },
   increaseCounter: (name, value) => {
@@ -92,7 +92,7 @@ export const objectStateManagement = <
       stateItem: item,
       transactionType: "increase",
       name,
-      value,
+      valueRangeStart: value,
     });
   },
   decreaseCounter: (name, value) => {
@@ -102,7 +102,7 @@ export const objectStateManagement = <
       stateItem: item,
       transactionType: "decrease",
       name,
-      value,
+      valueRangeStart: value,
     });
   },
   setText: (name, text) => {

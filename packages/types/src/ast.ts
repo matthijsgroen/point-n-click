@@ -181,7 +181,8 @@ export type UpdateCounter<
   stateItem: keyof Game[`${ItemType}s`];
   name: Game[`${ItemType}s`][keyof Game[`${ItemType}s`]]["counters"];
   transactionType: "set" | "increase" | "decrease";
-  value: number;
+  valueRangeStart: number;
+  valueRangeEnd?: number;
 };
 
 export type SetStateText<

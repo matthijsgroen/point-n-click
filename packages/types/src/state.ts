@@ -25,6 +25,7 @@ export type GameState<Game extends GameWorld> = {
   currentLocation?: keyof Game["locations"];
   previousLocation?: keyof Game["locations"];
   currentInteraction?: string;
+  lastInteractionAt?: number;
   overlayStack: (keyof Game["overlays"])[];
   currentOverlay?: keyof Game["overlays"];
   settings: {

@@ -167,7 +167,7 @@ const statementHandler = <
       );
     },
     UpdateGameObjectCounter: (
-      { stateItem, value, name, transactionType, objectType },
+      { stateItem, valueRangeStart, name, transactionType, objectType },
       state
     ) => {
       state.update(
@@ -176,6 +176,7 @@ const statementHandler = <
             stateItem
           ] as { counters: Record<string, number> };
           const prevValue = item ? item.counters[String(name)] : 0;
+          const value = valueRangeStart;
 
           const nextValue = (() => {
             switch (transactionType) {
