@@ -59,6 +59,11 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
     resetDisplayType();
   };
 
+  // If model is not loaded yet, wait
+  while (!modelManager.hasModel()) {
+    await modelManager.waitForChange();
+  }
+
   await runGame(
     { color: true, translationData, lightMode: options.lightMode },
     modelManager,

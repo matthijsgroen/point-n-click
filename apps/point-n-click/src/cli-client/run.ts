@@ -22,10 +22,6 @@ export const runGame = async <Game extends GameWorld>(
   updateSettings({ color });
   updateTranslation({ translationData });
 
-  while (!gameModelManager.hasModel()) {
-    await gameModelManager.waitForChange();
-  }
-
   enableKeyPresses();
 
   clearScreen();
