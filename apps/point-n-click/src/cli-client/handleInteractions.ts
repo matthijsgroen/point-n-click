@@ -82,6 +82,7 @@ export const handleInteractions = async <Game extends GameWorld>(
   stateManager.activeState().update(
     produce((state) => {
       state.currentInteraction = chosenAction?.id;
+      state.lastInteractionAt = Date.now();
       state.inputs = {};
     })
   );
