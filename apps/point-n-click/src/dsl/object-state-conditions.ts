@@ -15,14 +15,20 @@ export type ObjectStateDSL<
   setState: (newState: Game[`${T}s`][I]["states"] | "unknown") => void;
   setFlag: (flag: Game[`${T}s`][I]["flags"]) => void;
   clearFlag: (flag: Game[`${T}s`][I]["flags"]) => void;
-  setCounter: (counter: Game[`${T}s`][I]["counters"], value: number) => void;
+  setCounter: (
+    counter: Game[`${T}s`][I]["counters"],
+    value: number,
+    randomAdd?: number
+  ) => void;
   increaseCounter: (
     counter: Game[`${T}s`][I]["counters"],
-    value: number
+    value: number,
+    randomIncrease?: number
   ) => void;
   decreaseCounter: (
     counter: Game[`${T}s`][I]["counters"],
-    value: number
+    value: number,
+    randomDecrease?: number
   ) => void;
   setText: (key: Game[`${T}s`][I]["texts"], value: string) => void;
   hasState: (
@@ -75,7 +81,7 @@ export const objectStateManagement = <
       value: false,
     });
   },
-  setCounter: (name, value) => {
+  setCounter: (name, value, randomAdd = 0) => {
     addToActiveScript({
       statementType: "UpdateGameObjectCounter",
       objectType,
@@ -83,9 +89,10 @@ export const objectStateManagement = <
       name,
       transactionType: "set",
       valueRangeStart: value,
+      valueRangeEnd: value + randomAdd,
     });
   },
-  increaseCounter: (name, value) => {
+  increaseCounter: (name, value, randomAdd = 0) => {
     addToActiveScript({
       statementType: "UpdateGameObjectCounter",
       objectType,
@@ -93,9 +100,10 @@ export const objectStateManagement = <
       transactionType: "increase",
       name,
       valueRangeStart: value,
+      valueRangeEnd: value + randomAdd,
     });
   },
-  decreaseCounter: (name, value) => {
+  decreaseCounter: (name, value, randomDecrease = 0) => {
     addToActiveScript({
       statementType: "UpdateGameObjectCounter",
       objectType,
@@ -103,6 +111,7 @@ export const objectStateManagement = <
       transactionType: "decrease",
       name,
       valueRangeStart: value,
+      valueRangeEnd: value + randomDecrease,
     });
   },
   setText: (name, text) => {

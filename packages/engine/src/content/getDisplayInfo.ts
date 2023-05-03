@@ -12,6 +12,7 @@ import { getCurrentOverlay } from "./getOverlay";
 import { DisplayInfo, runScript } from "./runScript";
 import { noOverlay } from "../errors/noOverlay";
 import { observableList } from "./notificationList";
+import { mulberry32 } from "../numbers/random";
 
 export const getDisplayInfo = <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
@@ -26,6 +27,10 @@ export const getDisplayInfo = <Game extends GameWorld>(
       state.update(patch);
     }
   });
+
+  const seed = state.get().lastInteractionAt ?? Date.now();
+
+  const randomNumber = mulberry32(seed);
 
   const locationData = getCurrentLocation(gameModelManager, state);
   if (!locationData) {
@@ -59,7 +64,8 @@ export const getDisplayInfo = <Game extends GameWorld>(
         interactionData.script,
         state,
         gameModelManager,
-        displayInstructions
+        displayInstructions,
+        randomNumber
       );
       const newOverlayData = getCurrentOverlay(gameModelManager, state);
       if (newOverlayData === undefined) {
@@ -71,7 +77,8 @@ export const getDisplayInfo = <Game extends GameWorld>(
             currentOverlayData.onLeave.script,
             state,
             gameModelManager,
-            displayInstructions
+            displayInstructions,
+            randomNumber
           );
           state.update((state) => ({
             ...state,
@@ -87,7 +94,8 @@ export const getDisplayInfo = <Game extends GameWorld>(
             newOverlayData.onEnter.script,
             state,
             gameModelManager,
-            displayInstructions
+            displayInstructions,
+            randomNumber
           );
         } else {
           locationDescribed = true;

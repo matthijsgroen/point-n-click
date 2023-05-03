@@ -57,12 +57,25 @@ type StatementMap<Game extends GameWorld> = {
   [K in ScriptStatement<Game> as K["statementType"]]: StatementHandler<Game, K>;
 };
 
+const getNumberValue = (
+  start: number,
+  end: number | undefined,
+  random: () => number
+): number => {
+  if (end === undefined || end === 0) {
+    return start;
+  }
+  const range = Math.round(random() * (end - start));
+  return start + range;
+};
+
 const statementHandler = <
   Game extends GameWorld,
   K extends ScriptStatement<Game>
 >(
   statementType: K["statementType"],
-  list: ObservableList<DisplayInfo<Game>>
+  list: ObservableList<DisplayInfo<Game>>,
+  random: () => number
 ): StatementHandler<Game, K> => {
   const statementMap: StatementMap<Game> = {
     Text: (statement, state, gameModelManager) => {
@@ -114,7 +127,13 @@ const statementHandler = <
     DescribeLocation: (_statement, state, gameModelManager) => {
       const locationData = getCurrentLocation(gameModelManager, state);
       if (locationData === undefined) return null;
-      runScript(locationData.describe.script, state, gameModelManager, list);
+      runScript(
+        locationData.describe.script,
+        state,
+        gameModelManager,
+        list,
+        random
+      );
     },
     Travel: ({ destination }, stateManager) => {
       stateManager.update((state) => ({
@@ -167,7 +186,14 @@ const statementHandler = <
       );
     },
     UpdateGameObjectCounter: (
-      { stateItem, valueRangeStart, name, transactionType, objectType },
+      {
+        stateItem,
+        valueRangeStart,
+        valueRangeEnd,
+        name,
+        transactionType,
+        objectType,
+      },
       state
     ) => {
       state.update(
@@ -176,7 +202,8 @@ const statementHandler = <
             stateItem
           ] as { counters: Record<string, number> };
           const prevValue = item ? item.counters[String(name)] : 0;
-          const value = valueRangeStart;
+
+          const value = getNumberValue(valueRangeStart, valueRangeEnd, random);
 
           const nextValue = (() => {
             switch (transactionType) {
@@ -288,12 +315,18 @@ const statementHandler = <
         testStatement: ConditionStatement<Game> | ConditionElse<Game>
       ) => {
         if (testCondition(testStatement.condition, state)) {
-          runScript(testStatement.body, state, gameModelManager, list);
+          runScript(testStatement.body, state, gameModelManager, list, random);
         } else if (testStatement.else) {
           if (testStatement.else && "condition" in testStatement.else) {
             test(testStatement.else);
           } else {
-            runScript(testStatement.else.body, state, gameModelManager, list);
+            runScript(
+              testStatement.else.body,
+              state,
+              gameModelManager,
+              list,
+              random
+            );
           }
         }
       };
@@ -340,7 +373,7 @@ const statementHandler = <
       listState.forEach((item) => {
         const displayScript = statement.values[item];
         if (!displayScript) return;
-        runScript(displayScript, state, gameModelManager, list);
+        runScript(displayScript, state, gameModelManager, list, random);
       });
     },
   };
@@ -356,7 +389,8 @@ export const runScript = <Game extends GameWorld>(
   script: ScriptAST<Game>,
   state: GameStateManager<Game>,
   gameModelManager: GameModelManager<Game>,
-  list: ObservableList<DisplayInfo<Game>>
+  list: ObservableList<DisplayInfo<Game>>,
+  random: () => number
 ): void => {
   for (const statement of script) {
     if (isContentPluginStatement(statement)) {
@@ -369,7 +403,8 @@ export const runScript = <Game extends GameWorld>(
     } else {
       const handler = statementHandler<Game, ScriptStatement<Game>>(
         statement.statementType,
-        list
+        list,
+        random
       );
       handler(statement, state, gameModelManager);
     }
