@@ -2,6 +2,8 @@ import { Command } from "commander";
 import { devServer } from "./dev-server/devServer";
 import "@parcel/config-default";
 import { setTerminalTitle } from "./dev-server/terminalTitle";
+import packageInfo from "../package.json";
+import { buildContent } from "./content-builder/contentBuilder";
 
 export const cli = (
   args: string[],
@@ -12,10 +14,12 @@ export const cli = (
     .description(
       "A tool to build adventure games. Start with a CLI text adventure, and work towards a graphical adventure PWA."
     )
-    .version("2.0.0");
+    .version(packageInfo.version);
 
   program
-    .command("dev [source]")
+    .command("dev <source>")
+    .summary("start development server")
+    .description("start build server and game in both terminal and browser.")
     .option("-l, --lang <language>")
     .option("--light", "light mode (terminal with light background)")
     .option(
@@ -24,9 +28,7 @@ export const cli = (
       (value) => parseInt(value, 10),
       3456
     )
-    .description("start build server and game")
     .action((source, { light, ...options }) => {
-      setTerminalTitle("point-n-click");
       devServer(source, {
         ...options,
         lightMode: options.light ?? false,
@@ -34,5 +36,15 @@ export const cli = (
       });
     });
 
+  program
+    .command("verify <source>")
+    .summary("verify game content")
+    .action(async (source) => {
+      const gameContent = await buildContent(source, { resolver });
+
+      console.log(gameContent);
+    });
+
+  setTerminalTitle("point-n-click");
   program.parse(args);
 };

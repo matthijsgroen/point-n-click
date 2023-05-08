@@ -10,7 +10,7 @@ import { dirname, join, relative } from "node:path";
 import bodyParser from "body-parser";
 import { produce } from "immer";
 import { CACHE_FOLDER } from "./constants";
-import { mkdir } from "./mkdir";
+import { mkdir } from "../content-builder/mkdir";
 import { writeFile } from "node:fs/promises";
 import Parcel, { createWorkerFarm } from "@parcel/core";
 import { PackagedBundle } from "@parcel/types";

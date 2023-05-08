@@ -1,92 +1,41 @@
 /// <reference types="node" />
 import Parcel, { createWorkerFarm } from "@parcel/core";
-import { MemoryFS } from "@parcel/fs";
+import { MemoryFS, FileSystem } from "@parcel/fs";
 import {
   clearRegisteredThemes,
   GameModelManager,
-  getTranslation,
   registerTheme,
 } from "@point-n-click/engine";
-import { GameModel, GameWorld, Locale } from "@point-n-click/types";
-import { watch } from "fs";
-import { unlink, writeFile } from "fs/promises";
-import path from "path";
+import { GameModel, GameWorld } from "@point-n-click/types";
+import { join } from "path";
 import {
   isLocale,
   exportTranslations,
 } from "../export-translations/exportTranslations";
-import { CACHE_FOLDER } from "./constants";
-import { displayTypescriptError } from "./displayTypescriptError";
-import { loadTranslationData } from "./loadTranslationData";
+import { CACHE_FOLDER } from "../dev-server/constants";
+import { displayTypescriptError } from "../dev-server/displayTypescriptError";
 import { mkdir } from "./mkdir";
-import { setTerminalTitle } from "./terminalTitle";
+import { setTerminalTitle } from "../dev-server/terminalTitle";
+import { watchTranslations } from "./watchTranslations";
+import { convertToGameModel } from "./convertToGameModel";
 
 type ServerOptions = {
   lang: string;
   resolver: (packageName: string) => string;
 };
 
-const watchTranslations = <Game extends GameWorld>(
-  locale: Locale,
-  gameModelManager: GameModelManager<Game>
-): AbortController => {
-  const ac = new AbortController();
-  const { signal } = ac;
-
-  const fileName = path.join(
-    process.cwd(),
-    "src",
-    "translations",
-    `${locale}.json`
-  );
-  watch(fileName, { signal }, async (eventType) => {
-    const translationBefore = getTranslation();
-    await loadTranslationData(locale);
-    const translationAfter = getTranslation();
-    if (
-      JSON.stringify(translationBefore) !== JSON.stringify(translationAfter)
-    ) {
-      gameModelManager.restoreModel();
-    }
-  });
-
-  return ac;
-};
-
-const convertToGameModel = async (
-  fileContents: string
-): Promise<GameModel<GameWorld>> => {
-  const absPath = path.resolve(
-    `./${CACHE_FOLDER}/contents-${new Date().getTime()}.js`
-  );
-  await writeFile(absPath, fileContents, "utf-8");
-
-  try {
-    const gameModel = await import(absPath);
-    const jsonModel: GameModel<GameWorld> =
-      gameModel.default.default.__exportWorld();
-
-    const absContentPath = path.resolve(`./${CACHE_FOLDER}/contents.json`);
-    await writeFile(absContentPath, JSON.stringify(jsonModel), "utf-8");
-
-    return jsonModel;
-  } finally {
-    await unlink(absPath);
-  }
-};
-
-export const startContentBuilder = async (
+const createContentBundler = async (
   fileName: string,
-  { resolver, lang }: ServerOptions,
-  modelManager: GameModelManager<GameWorld>
-) => {
-  let jsonModel: GameModel<GameWorld> | undefined = undefined;
-  let translationWatchController: undefined | AbortController = undefined;
-
+  resolver: (packageName: string) => string
+): Promise<{
+  contentBundler: Parcel;
+  readFile: (filePath: string) => Promise<string>;
+  stopContentBundler: () => Promise<void>;
+}> => {
   await mkdir(CACHE_FOLDER);
-  let workerFarm = createWorkerFarm();
-  let outputFS = new MemoryFS(workerFarm);
-  let contentBundler = new Parcel({
+  const workerFarm = createWorkerFarm();
+  const outputFS = new MemoryFS(workerFarm);
+  const contentBundler = new Parcel({
     entries: fileName,
     defaultConfig: resolver("@parcel/config-default"),
     shouldAutoInstall: false,
@@ -98,7 +47,26 @@ export const startContentBuilder = async (
       engines: { node: "*" },
     },
   });
+
+  return {
+    contentBundler,
+    readFile: (filePath) => outputFS.readFile(filePath, "utf-8"),
+    stopContentBundler: () => workerFarm.end(),
+  };
+};
+
+export const startContentBuilder = async (
+  fileName: string,
+  { resolver, lang }: ServerOptions,
+  modelManager: GameModelManager<GameWorld>
+) => {
+  let jsonModel: GameModel<GameWorld> | undefined = undefined;
+  let translationWatchController: undefined | AbortController = undefined;
+
   let watchingTranslation: undefined | string = undefined;
+
+  const { contentBundler, stopContentBundler, readFile } =
+    await createContentBundler(fileName, resolver);
 
   let subscription = await contentBundler.watch(async (err, event) => {
     if (err) {
@@ -110,7 +78,7 @@ export const startContentBuilder = async (
     if (event && event.type === "buildSuccess") {
       const bundles = event.bundleGraph.getBundles();
       let bundle = bundles[0];
-      const gameContentsDSL = await outputFS.readFile(bundle.filePath, "utf-8");
+      const gameContentsDSL = await readFile(bundle.filePath);
       try {
         jsonModel = await convertToGameModel(gameContentsDSL);
         if (jsonModel.themes) {
@@ -134,7 +102,7 @@ export const startContentBuilder = async (
         const defaultLocale = jsonModel.settings.locales.default;
         if (isLocale(lang) && lang !== defaultLocale) {
           await exportTranslations(
-            path.join(process.cwd(), "src", "translations"),
+            join(process.cwd(), "src", "translations"),
             resolver,
             [lang],
             jsonModel
@@ -149,9 +117,8 @@ export const startContentBuilder = async (
         modelManager.setNewModel(jsonModel);
       } catch (e) {
         if (e instanceof TypeError || e instanceof ReferenceError) {
-          const gameContentsSourceMap = await outputFS.readFile(
-            `${bundle.filePath}.map`,
-            "utf-8"
+          const gameContentsSourceMap = await readFile(
+            `${bundle.filePath}.map`
           );
           displayTypescriptError(gameContentsSourceMap, e);
           modelManager.setNewModel(undefined);
@@ -167,9 +134,40 @@ export const startContentBuilder = async (
   });
   return async () => {
     await subscription.unsubscribe();
-    await workerFarm.end();
+    await stopContentBundler();
     if (translationWatchController) {
       (translationWatchController as AbortController).abort();
     }
   };
+};
+
+export const buildContent = async (
+  fileName: string,
+  {
+    resolver,
+  }: {
+    resolver: (packageName: string) => string;
+  }
+): Promise<GameModel<GameWorld> | undefined> => {
+  let jsonModel: GameModel<GameWorld> | undefined = undefined;
+  const { contentBundler, stopContentBundler, readFile } =
+    await createContentBundler(fileName, resolver);
+
+  const event = await contentBundler.run();
+
+  const bundles = event.bundleGraph.getBundles();
+  const bundle = bundles[0];
+  const gameContentsDSL = await readFile(bundle.filePath);
+
+  try {
+    jsonModel = await convertToGameModel(gameContentsDSL);
+    return jsonModel;
+  } catch (e) {
+    if (e instanceof TypeError || e instanceof ReferenceError) {
+      const gameContentsSourceMap = await readFile(`${bundle.filePath}.map`);
+      displayTypescriptError(gameContentsSourceMap, e);
+    }
+  } finally {
+    await stopContentBundler();
+  }
 };
