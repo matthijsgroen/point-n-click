@@ -5,7 +5,10 @@ export const getTranslationText = (
   scope: string[],
   key: string
 ): string | undefined => {
-  const translationScope = getTranslationScope(scope);
+  const translationScope = getTranslationScope(
+    getTranslation().translationData,
+    scope
+  );
   if (!translationScope) return undefined;
 
   const value = translationScope[key];
@@ -16,11 +19,11 @@ export const getTranslationText = (
 };
 
 export const getTranslationScope = (
+  source: TranslationFile | undefined,
   scope: string[]
 ): TranslationFile | undefined => {
-  const translationData = getTranslation().translationData;
-  if (!translationData) return undefined;
-  let translationScope = translationData;
+  if (!source) return undefined;
+  let translationScope = source;
   for (const key of scope) {
     const value = translationScope[key];
     if (typeof value !== "string") {

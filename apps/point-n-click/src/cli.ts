@@ -3,8 +3,6 @@ import { devServer } from "./dev-server/devServer";
 import "@parcel/config-default";
 import { setTerminalTitle } from "./cli-utils/terminalTitle";
 import packageInfo from "../package.json";
-import { buildContent } from "./content-builder/contentBuilder";
-import { progressSpinner } from "./cli-utils/spinner";
 import { validateContent } from "./validator/validateContent";
 
 export const cli = (
@@ -42,7 +40,10 @@ export const cli = (
     .command("validate <source>")
     .summary("validate game content")
     .action(async (source) => {
-      validateContent(source, { resolver });
+      const result = validateContent(source, { resolver });
+      if (!result) {
+        process.exit(1);
+      }
     });
 
   setTerminalTitle("point-n-click");

@@ -38,5 +38,7 @@ export const progressSpinner = async <T>(
     counter = counter % spinner.length;
   }
   process.stdout.write("\u001B[?25h");
+  process.stdout.clearLine(0);
+  process.stdout.write("\r");
   return result as unknown as T;
 };

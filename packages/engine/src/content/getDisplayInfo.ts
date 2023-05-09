@@ -99,7 +99,12 @@ export const getDisplayInfo = <Game extends GameWorld>(
           );
         } else {
           locationDescribed = true;
-          describeLocation(gameModelManager, state, displayInstructions);
+          describeLocation(
+            gameModelManager,
+            state,
+            displayInstructions,
+            randomNumber
+          );
         }
       }
       currentOverlayData = newOverlayData;
@@ -107,13 +112,23 @@ export const getDisplayInfo = <Game extends GameWorld>(
       const newLocationData = getCurrentLocation(gameModelManager, state);
       if (newLocationData !== locationData && !locationDescribed) {
         locationDescribed = true;
-        describeLocation(gameModelManager, state, displayInstructions);
+        describeLocation(
+          gameModelManager,
+          state,
+          displayInstructions,
+          randomNumber
+        );
       }
     }
   } else {
     if (!locationDescribed) {
       locationDescribed = true;
-      describeLocation(gameModelManager, state, displayInstructions);
+      describeLocation(
+        gameModelManager,
+        state,
+        displayInstructions,
+        randomNumber
+      );
     }
   }
   return displayInstructions.getCollection();

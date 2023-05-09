@@ -10,7 +10,8 @@ import { ObservableList } from "./notificationList";
 export const describeLocation = <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
   state: GameStateManager<Game>,
-  list: ObservableList<DisplayInfo<Game>>
+  list: ObservableList<DisplayInfo<Game>>,
+  random: () => number
 ): void => {
   const currentLocation = state.get().currentLocation;
   const locationData = getCurrentLocation(gameModelManager, state);
@@ -30,7 +31,13 @@ export const describeLocation = <Game extends GameWorld>(
         (item) => item.to === currentLocation
       );
       if (exitScript) {
-        runScript<Game>(exitScript.script, state, gameModelManager, list);
+        runScript<Game>(
+          exitScript.script,
+          state,
+          gameModelManager,
+          list,
+          random
+        );
       }
     }
 
@@ -42,7 +49,13 @@ export const describeLocation = <Game extends GameWorld>(
       previousLocation: currentLocation,
     }));
     if (enterScript) {
-      runScript<Game>(enterScript.script, state, gameModelManager, list);
+      runScript<Game>(
+        enterScript.script,
+        state,
+        gameModelManager,
+        list,
+        random
+      );
     }
   }
 
@@ -50,7 +63,8 @@ export const describeLocation = <Game extends GameWorld>(
     locationData?.describe.script || [],
     state,
     gameModelManager,
-    list
+    list,
+    random
   );
   // When location changes happen during a location description,
   // this needs to be updated to get the proper translation key
@@ -69,6 +83,12 @@ export const describeLocation = <Game extends GameWorld>(
       ...state,
       currentOverlay: overlayData.id,
     }));
-    runScript(overlayData.onEnter.script, state, gameModelManager, list);
+    runScript(
+      overlayData.onEnter.script,
+      state,
+      gameModelManager,
+      list,
+      random
+    );
   }
 };
