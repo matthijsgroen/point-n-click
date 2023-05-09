@@ -1,24 +1,17 @@
 import {
+  DEFAULT_ACTION_PROMPT,
+  getContentPlugin,
+  isContentPluginStatement,
+} from "@point-n-click/engine";
+import {
   ConditionElse,
   ConditionStatement,
   ContentPluginStatement,
   GameModel,
   GameWorld,
-  Locale,
   ScriptAST,
   TranslationFile,
 } from "@point-n-click/types";
-import {
-  isContentPluginStatement,
-  DEFAULT_ACTION_PROMPT,
-  getContentPlugin,
-} from "@point-n-click/engine";
-import { mkdir, writeFile, readFile } from "fs/promises";
-import { join } from "path";
-import { mergeTranslations } from "./mergeTranslations";
-
-export const isLocale = (item: unknown): item is Locale =>
-  !!(typeof item === "string" && item.match(/^\w{2}-\w{2}$/));
 
 const applyTranslations = (
   translations: TranslationFile,
@@ -87,8 +80,6 @@ const processScript = <Game extends GameWorld>(
           exportBody(testStatement.else);
         }
       };
-      // processScript(statement.body, enterScriptScope, setTranslationKey);
-      // processScript(statement.elseBody, enterScriptScope, setTranslationKey);
       exportBody(statement);
     }
     if (statement.statementType === "SetGameObjectText") {
@@ -123,13 +114,10 @@ const processScript = <Game extends GameWorld>(
     }
   }
 };
-
-export const exportTranslations = async <Game extends GameWorld>(
-  folder: string,
-  resolver: (packageName: string) => string,
-  locales: Locale[],
-  gameModel: GameModel<Game>
-) => {
+export const generateTranslationFile = async <Game extends GameWorld>(
+  gameModel: GameModel<Game>,
+  resolver: (packageName: string) => string
+): Promise<TranslationFile> => {
   const translationObject: TranslationFile = {};
   const setTranslationKey = (key: string[], value: string) => {
     if (value === "") return;
@@ -237,37 +225,5 @@ export const exportTranslations = async <Game extends GameWorld>(
       setTranslationKey
     );
   }
-
-  try {
-    await mkdir(folder);
-  } catch (e) {
-    if (
-      "code" in (e as Error) &&
-      (e as Error & { code: string }).code === "EEXIST"
-    ) {
-      // no problem
-    } else {
-      throw e;
-    }
-  }
-  for (const locale of locales) {
-    const filePath = join(folder, `${locale}.json`);
-    let existingTranslations: TranslationFile = {};
-
-    try {
-      const fileData = await readFile(filePath, {
-        encoding: "utf-8",
-      });
-      if (fileData) {
-        existingTranslations = JSON.parse(fileData);
-      }
-    } catch (e) {}
-
-    const mergedTranslations = mergeTranslations(
-      translationObject,
-      existingTranslations
-    );
-
-    await writeFile(filePath, JSON.stringify(mergedTranslations, undefined, 2));
-  }
+  return translationObject;
 };

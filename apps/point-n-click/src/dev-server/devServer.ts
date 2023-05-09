@@ -9,7 +9,7 @@ import { cls, resetStyling, setColor } from "../cli-client/utils";
 import { hexColor } from "..";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { progressSpinner } from "./spinner";
+import { progressSpinner } from "../cli-utils/spinner";
 import { resetDisplayType } from "../cli-client/displayType";
 
 type ServerOptions = {
@@ -48,21 +48,31 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
     modelManager.restoreModel();
   });
 
+  // If model is not loaded yet, wait
+  while (!modelManager.hasModel()) {
+    await modelManager.waitForChange();
+  }
+
   const clearScreen = () => {
     cls();
     setColor(hexColor("ffff00"));
+
+    const model = modelManager.getModel();
+    const supportedLocales = Object.keys(
+      model.settings.locales.supported
+    ) as `${string}-${string}`[];
+    const langId =
+      supportedLocales.find((l) => l === options.lang) ??
+      model.settings.locales.default;
+    const languageName = model.settings.locales.supported[langId];
+
     console.log(
-      `Server: http://localhost:${runningPort}. Use space to skip, q to quit. Lang: ${options.lang}`
+      `Server: http://localhost:${runningPort}. Use space to skip, q to quit. Lang: ${languageName}`
     );
     resetStyling();
     console.log("");
     resetDisplayType();
   };
-
-  // If model is not loaded yet, wait
-  while (!modelManager.hasModel()) {
-    await modelManager.waitForChange();
-  }
 
   await runGame(
     { color: true, translationData, lightMode: options.lightMode },

@@ -11,11 +11,11 @@ import { join } from "path";
 import {
   isLocale,
   exportTranslations,
-} from "../export-translations/exportTranslations";
+} from "../translations/exportTranslations";
 import { CACHE_FOLDER } from "../dev-server/constants";
 import { displayTypescriptError } from "../dev-server/displayTypescriptError";
 import { mkdir } from "./mkdir";
-import { setTerminalTitle } from "../dev-server/terminalTitle";
+import { setTerminalTitle } from "../cli-utils/terminalTitle";
 import { watchTranslations } from "./watchTranslations";
 import { convertToGameModel } from "./convertToGameModel";
 

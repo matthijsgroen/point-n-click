@@ -1,9 +1,11 @@
 import { Command } from "commander";
 import { devServer } from "./dev-server/devServer";
 import "@parcel/config-default";
-import { setTerminalTitle } from "./dev-server/terminalTitle";
+import { setTerminalTitle } from "./cli-utils/terminalTitle";
 import packageInfo from "../package.json";
 import { buildContent } from "./content-builder/contentBuilder";
+import { progressSpinner } from "./cli-utils/spinner";
+import { validateContent } from "./validator/validateContent";
 
 export const cli = (
   args: string[],
@@ -37,12 +39,10 @@ export const cli = (
     });
 
   program
-    .command("verify <source>")
-    .summary("verify game content")
+    .command("validate <source>")
+    .summary("validate game content")
     .action(async (source) => {
-      const gameContent = await buildContent(source, { resolver });
-
-      console.log(gameContent);
+      validateContent(source, { resolver });
     });
 
   setTerminalTitle("point-n-click");
