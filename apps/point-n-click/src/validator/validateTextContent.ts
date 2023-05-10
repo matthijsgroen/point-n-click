@@ -1,5 +1,14 @@
 import { getTranslationScope, parseText } from "@point-n-click/engine";
-import { GameModel, GameWorld, TranslationFile } from "@point-n-click/types";
+import {
+  GameModel,
+  GameWorld,
+  Locale,
+  TranslationFile,
+} from "@point-n-click/types";
+import { readFile } from "fs/promises";
+import { join } from "path";
+import { mergeTranslations } from "../translations/mergeTranslations";
+import { existsSync } from "fs";
 
 export type TextValidationReport = {
   messages: {
@@ -9,6 +18,7 @@ export type TextValidationReport = {
       | "stateError"
       | "parsingError"
       | "outdatedTranslation"
+      | "translationFileMissing"
       | "notTranslated";
   }[];
 
@@ -59,16 +69,18 @@ const checkGroup = <Game extends GameWorld>(
   }
 };
 
+const createBlankReport = (): TextValidationReport => ({
+  messages: [],
+  totalLines: 0,
+  totalOutdated: 0,
+  totalTranslated: 0,
+});
+
 export const validateTextContent = async <Game extends GameWorld>(
   translations: TranslationFile,
   gameModel: GameModel<Game>
 ): Promise<TextValidationReport> => {
-  const report: TextValidationReport = {
-    messages: [],
-    totalLines: 0,
-    totalOutdated: 0,
-    totalTranslated: 0,
-  };
+  const report = createBlankReport();
 
   // Check locations
   checkGroup(
@@ -103,4 +115,36 @@ export const validateTextContent = async <Game extends GameWorld>(
   checkGroup(actionsAsMap, report, ["global", "interactions"], gameModel);
 
   return report;
+};
+
+export const validateExternalTextContent = async <Game extends GameWorld>(
+  baseTranslations: TranslationFile,
+  gameModel: GameModel<Game>,
+  locale: Locale
+): Promise<TextValidationReport> => {
+  const runRoot = process.cwd();
+  const translationFilePath = join(
+    runRoot,
+    "src",
+    "translations",
+    `${locale}.json`
+  );
+  if (!existsSync(translationFilePath)) {
+    const report = createBlankReport();
+    report.messages.push({
+      sentence: translationFilePath,
+      key: [],
+      type: "translationFileMissing",
+    });
+    return report;
+  }
+  const data = await readFile(translationFilePath, { encoding: "utf-8" });
+
+  const translationData = JSON.parse(data) as unknown as TranslationFile;
+  const checkTranslations = mergeTranslations(
+    baseTranslations,
+    translationData
+  );
+
+  return validateTextContent(checkTranslations, gameModel);
 };

@@ -76,8 +76,8 @@ export const ThemeProvider: React.FC = () => {
   const themeTranslations = useMemo((): TranslationFile => {
     const defaultTranslations = activeTheme.getTextContent();
     const themeTranslations = getTranslationScope(
-      ["themes", activeTheme.packageName],
-      getTranslation().translationData
+      getTranslation().translationData,
+      ["themes", activeTheme.packageName]
     );
 
     return {
