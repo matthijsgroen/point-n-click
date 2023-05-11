@@ -1,4 +1,9 @@
-import { getTranslationScope, parseText } from "@point-n-click/engine";
+import {
+  ParseSyntaxError,
+  StateError,
+  getDisplayText,
+  getTranslationScope,
+} from "@point-n-click/engine";
 import {
   GameModel,
   GameWorld,
@@ -9,6 +14,9 @@ import { readFile } from "fs/promises";
 import { join } from "path";
 import { mergeTranslations } from "../translations/mergeTranslations";
 import { existsSync } from "fs";
+import { createDefaultState } from "@point-n-click/state";
+import { createState } from "@point-n-click/types";
+import { GameStateManager } from "@point-n-click/types";
 
 export type TextValidationReport = {
   messages: {
@@ -31,7 +39,8 @@ const checkGroup = <Game extends GameWorld>(
   group: TranslationFile,
   report: TextValidationReport,
   path: string[],
-  gameModel: GameModel<Game>
+  gameModel: GameModel<Game>,
+  stateManager: GameStateManager<Game>
 ): void => {
   for (const key in group) {
     const translations = group[key];
@@ -55,16 +64,40 @@ const checkGroup = <Game extends GameWorld>(
         });
       }
       try {
-        parseText(translations);
+        const translationPath = ["characters", path.slice(-1)[0]];
+        getDisplayText(
+          translations,
+          stateManager,
+          gameModel,
+          [],
+          translationPath
+        );
       } catch (e) {
-        report.messages.push({
-          sentence: translations,
-          key: path.concat(key),
-          type: "parsingError",
-        });
+        if ((e as ParseSyntaxError).name === "SyntaxError") {
+          report.messages.push({
+            sentence: translations,
+            key: path.concat(key),
+            type: "parsingError",
+          });
+        }
+        if ((e as StateError).name === "StateError") {
+          if (e.stateKey.split(".")[0] !== "items") {
+            report.messages.push({
+              sentence: translations,
+              key: path.concat(key),
+              type: "stateError",
+            });
+          }
+        }
       }
     } else {
-      checkGroup(translations, report, path.concat(key), gameModel);
+      checkGroup(
+        translations,
+        report,
+        path.concat(key),
+        gameModel,
+        stateManager
+      );
     }
   }
 };
@@ -82,12 +115,16 @@ export const validateTextContent = async <Game extends GameWorld>(
 ): Promise<TextValidationReport> => {
   const report = createBlankReport();
 
+  const state = createDefaultState(gameModel);
+  const stateManager = createState(state);
+
   // Check locations
   checkGroup(
     translations["locations"] as TranslationFile,
     report,
     ["locations"],
-    gameModel
+    gameModel,
+    stateManager
   );
 
   // Check overlays
@@ -95,7 +132,8 @@ export const validateTextContent = async <Game extends GameWorld>(
     translations["overlays"] as TranslationFile,
     report,
     ["overlays"],
-    gameModel
+    gameModel,
+    stateManager
   );
 
   // Misc
@@ -103,7 +141,8 @@ export const validateTextContent = async <Game extends GameWorld>(
     translations["prompts"] as TranslationFile,
     report,
     ["prompts"],
-    gameModel
+    gameModel,
+    stateManager
   );
 
   const gi = getTranslationScope(translations, ["global", "interactions"]) as {
@@ -112,7 +151,13 @@ export const validateTextContent = async <Game extends GameWorld>(
   const actionsAsMap = Object.fromEntries(
     Object.entries(gi).map(([key, value]) => [key, value.label])
   );
-  checkGroup(actionsAsMap, report, ["global", "interactions"], gameModel);
+  checkGroup(
+    actionsAsMap,
+    report,
+    ["global", "interactions"],
+    gameModel,
+    stateManager
+  );
 
   return report;
 };
