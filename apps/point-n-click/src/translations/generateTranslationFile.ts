@@ -114,6 +114,7 @@ const processScript = <Game extends GameWorld>(
     }
   }
 };
+
 export const generateTranslationFile = async <Game extends GameWorld>(
   gameModel: GameModel<Game>,
   resolver: (packageName: string) => string
