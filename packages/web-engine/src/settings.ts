@@ -1,5 +1,5 @@
 import { settings } from "@point-n-click/engine";
-import { Locale } from "@point-n-click/state";
+import { Locale } from "@point-n-click/types";
 
 const webClientSettings = settings<{
   skipMode: boolean;

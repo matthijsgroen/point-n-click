@@ -1,4 +1,4 @@
-import { DisplayErrorText } from "@point-n-click/engine";
+import { DisplayErrorText } from "@point-n-click/types";
 import styles from "./Error.module.css";
 import React from "react";
 import { formatText } from "../formatText";

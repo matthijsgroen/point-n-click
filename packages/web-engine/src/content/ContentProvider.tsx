@@ -10,17 +10,16 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { createDefaultState, emptyGameModel } from "@point-n-click/state";
 import {
   GameModel,
-  createDefaultState,
-  emptyGameModel,
-  Locale,
-} from "@point-n-click/state";
-import {
+  GameSaveStateManager,
   GameState,
   GameStateManager,
   GameWorld,
+  Locale,
   TranslationFile,
+  createState,
 } from "@point-n-click/types";
 import {
   gameModelManager,
@@ -60,24 +59,21 @@ export type UpdateGameState<World extends GameWorld> = Dispatch<
   SetStateAction<GameState<World>>
 >;
 
-export const useGameState = (): GameStateManager<GameWorld> & {
+export const useGameState = (): GameSaveStateManager<GameWorld> & {
   setInteraction: Dispatch<string>;
 } => {
   const gameState = useContext(GameStateContext);
 
   return {
-    getState: (): GameState<GameWorld> =>
-      gameState.stateRef.current as GameState<GameWorld>,
+    activeState: () =>
+      createState(gameState.stateRef.current) as GameStateManager<GameWorld>,
+    stableState: () =>
+      createState(gameState.gameSavePointState) as GameStateManager<GameWorld>,
+    updateState: (action) => {},
+    getState: () => gameState.stateRef.current as GameState<GameWorld>,
     getSaveState: () => gameState.gameSavePointState as GameState<GameWorld>,
-    updateState: (action) => {
-      if (typeof action === "function") {
-        if (gameState.stateRef.current) {
-          gameState.stateRef.current = action(gameState.stateRef.current);
-        }
-      } else {
-        gameState.stateRef.current = action;
-      }
-    },
+    storeInput: (key: string, value: unknown) => {},
+
     getPlayState: () => "playing",
     setPlayState: () => {},
     isAborting: () => false,
@@ -158,7 +154,8 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
       : { enabled: !!gameContent }
   );
 
-  // const [, rerender] = useState(0);
+  const [, rerender] = useState(0); // Required as trigger after a language update.
+
   const queryClient = useQueryClient();
   const [gameSavePointState, setGameSavePointState] = useState<
     GameState<GameWorld> | undefined
@@ -178,7 +175,7 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
         refetchIntervalInBackground: true,
       }
     );
-    if (saveData !== gameSavePointState) {
+    if (saveData !== gameSavePointState && saveData !== undefined) {
       gameStateRef.current = saveData;
       modelManager.setNewModel(gameContent);
       setGameSavePointState(saveData);
@@ -226,9 +223,8 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
     if (gameStateRef.current) {
       setClientSettings({ skipMode: true });
-      console.log("provide new game content");
       modelManager.setNewModel(gameContent);
-      // rerender((s) => (s + 1) % 100);
+      rerender((s) => (s + 1) % 100); // required to reload and use new model / language data
     }
   }, [gameContent, languageData]);
 
@@ -236,7 +232,6 @@ export const ContentProvider: React.FC<PropsWithChildren> = ({ children }) => {
     const unsubscribe = subscribeClientSettings((newSettings, oldSettings) => {
       if (newSettings.currentLocale !== oldSettings.currentLocale) {
         queryClient.invalidateQueries(["languageContent"]);
-        // rerender((s) => (s + 1) % 100);
       }
     });
     return unsubscribe;

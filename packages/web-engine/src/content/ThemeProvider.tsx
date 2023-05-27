@@ -1,5 +1,4 @@
 import {
-  DisplayErrorText,
   getDisplayInfo,
   getInteractions,
   getRegisteredThemes,
@@ -16,7 +15,7 @@ import {
 } from "../settings";
 import { Error } from "./Error";
 import { Loading } from "./Loading";
-import { TranslationFile } from "@point-n-click/types";
+import { DisplayErrorText, TranslationFile } from "@point-n-click/types";
 
 export type GameTheme = {
   index: number;
@@ -55,8 +54,8 @@ export const ThemeProvider: React.FC = () => {
   const gameStateManager = useGameState();
   gameStateManager.restoreSaveState();
 
-  const displayInfo = getDisplayInfo(content, gameStateManager);
-  const interactions = getInteractions(content, gameStateManager);
+  const displayInfo = getDisplayInfo(content, gameStateManager.activeState());
+  const interactions = getInteractions(content, gameStateManager.activeState());
 
   const [, rerender] = useState(0);
 

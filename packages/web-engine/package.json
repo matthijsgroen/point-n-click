@@ -21,6 +21,7 @@
     "react-dom": "^18.2.0"
   },
   "dependencies": {
+    "@point-n-click/types": "workspace:^",
     "@point-n-click/engine": "workspace:^",
     "@point-n-click/puzzle-dependency-diagram": "workspace:^",
     "@point-n-click/state": "workspace:^",
