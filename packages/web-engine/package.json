@@ -21,16 +21,16 @@
     "react-dom": "^18.2.0"
   },
   "dependencies": {
-    "@point-n-click/types": "workspace:^",
     "@point-n-click/engine": "workspace:^",
     "@point-n-click/puzzle-dependency-diagram": "workspace:^",
     "@point-n-click/state": "workspace:^",
     "@point-n-click/themes": "workspace:^",
+    "@point-n-click/types": "workspace:^",
     "@tanstack/react-query": "^4.19.1",
     "immer": "^9.0.21",
     "jotai": "^2.0.3",
     "jotai-optics": "^0.3.0",
-    "mermaid": "^10.0.2",
+    "mermaid": "10.0.2",
     "optics-ts": "^2.4.0"
   },
   "devDependencies": {
