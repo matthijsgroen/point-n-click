@@ -32,7 +32,10 @@ export type LocationScript<
   hasFlag: (
     flag: Game["locations"][Location]["flags"]
   ) => GameObjectFlagCondition<Game, "location">;
-  setPrompt: (interactionPrompt: string) => void;
+  setPrompt: (
+    interactionPrompt: string,
+    condition?: StateCondition<Game>
+  ) => void;
 }) => void;
 
 export type OverlayScript<
@@ -47,7 +50,10 @@ export type OverlayScript<
     state: Game["overlays"][Overlay]["states"] | "unknown"
   ) => GameObjectStateCondition<Game, "overlay">;
   setState: (newState: Game["overlays"][Overlay]["states"] | "unknown") => void;
-  setPrompt: (interactionPrompt: string) => void;
+  setPrompt: (
+    interactionPrompt: string,
+    condition?: StateCondition<Game>
+  ) => void;
 }) => void;
 
 export type EvaluateStateCondition<Game extends GameWorld> = (
@@ -88,14 +94,14 @@ export type GameLocation<Game extends GameWorld> = {
   onLeave: { to: keyof Game["locations"]; script: ScriptAST<Game> }[];
   describe: { script: ScriptAST<Game> };
   interactions: GameInteraction<Game>[];
-  prompt?: string;
+  prompts: { prompt: string; condition: StateCondition<Game> }[];
 };
 export type GameOverlay<Game extends GameWorld> = {
   id: keyof Game["overlays"];
   onEnter: { script: ScriptAST<Game> };
   onLeave: { script: ScriptAST<Game> };
   interactions: GameInteraction<Game>[];
-  prompt?: string;
+  prompts: { prompt: string; condition?: StateCondition<Game> }[];
 };
 export type ScriptAST<Game extends GameWorld> = (
   | ScriptStatement<Game>

@@ -300,6 +300,7 @@ export const world =
           onEnter: { script: [] },
           onLeave: { script: [] },
           interactions: [],
+          prompts: [],
         };
 
         handleOverlay({
@@ -339,8 +340,8 @@ export const world =
             op: "StateEquals",
             state,
           }),
-          setPrompt: (prompt) => {
-            overlayAST.prompt = prompt;
+          setPrompt: (prompt, condition) => {
+            overlayAST.prompts.push({ prompt, condition });
           },
         });
         worldModel?.overlays.push(overlayAST as unknown as GameOverlay<Game>);
@@ -355,6 +356,7 @@ export const world =
           onEnter: [],
           onLeave: [],
           interactions: [],
+          prompts: [],
         };
         script({
           describe: (script) => {
@@ -406,8 +408,8 @@ export const world =
             op: "IsFlagSet",
             flag,
           }),
-          setPrompt: (prompt) => {
-            locationAST.prompt = prompt;
+          setPrompt: (prompt, condition) => {
+            locationAST.prompts.push({ prompt, condition });
           },
         });
         worldModel?.locations.push(

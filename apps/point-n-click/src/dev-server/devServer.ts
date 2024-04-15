@@ -67,8 +67,9 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
     const languageName = model.settings.locales.supported[langId];
 
     console.log(
-      `Server: http://localhost:${runningPort}. Use space to skip, q to quit. Lang: ${languageName}`
+      `Server: http://localhost:${runningPort}. Diagram: http://localhost:${runningPort}/diagram.html`
     );
+    console.log(`Use space to skip, q to quit. Lang: ${languageName}`);
     resetStyling();
     console.log("");
     resetDisplayType();

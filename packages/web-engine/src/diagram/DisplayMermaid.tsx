@@ -19,7 +19,12 @@ const DisplayMermaid: React.FC<{
   diagram: string;
 }> = ({ diagram }) => {
   const [image, setImage] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+
   useEffect(() => {
+    mermaid.parse(diagram).catch((error) => {
+      setErrorMsg(error.message);
+    });
     mermaid.render("graphDiv", diagram).then(({ svg }) => {
       setImage(svg);
     });
@@ -27,6 +32,7 @@ const DisplayMermaid: React.FC<{
 
   return (
     <div style={{ position: "relative", width: "100%" }}>
+      {errorMsg && <p>{errorMsg}</p>}
       <div
         style={{ position: "absolute", top: 0, left: 0, width: "100%" }}
         dangerouslySetInnerHTML={{ __html: image }}

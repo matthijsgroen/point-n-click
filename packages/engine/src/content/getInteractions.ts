@@ -34,12 +34,15 @@ export const getInteractions = <Game extends GameWorld>(
     ? currentOverlayData.interactions
     : locationData?.interactions ?? [];
 
-  const actionPrompt = currentOverlayData
-    ? currentOverlayData.prompt
-    : locationData?.prompt;
+  const actionPrompt = (currentOverlayData?.prompts ?? [])
+    .concat(locationData?.prompts ?? [])
+    .find(
+      (prompt) =>
+        prompt.condition === undefined || testCondition(prompt.condition, state)
+    );
 
   const translatedPrompt = actionPrompt
-    ? getTranslationText(["prompts"], actionPrompt)
+    ? getTranslationText(["prompts"], actionPrompt.prompt)
     : undefined;
 
   const prompt =

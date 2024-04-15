@@ -177,8 +177,8 @@ export const generateTranslationFile = async <Game extends GameWorld>(
       setTranslationKey(interactionScope, interaction.label);
       processScript(interaction.script, locationScope, setTranslationKey);
     }
-    if (location.prompt) {
-      setTranslationKey(["prompts", location.prompt], location.prompt);
+    for (const prompt of location.prompts) {
+      setTranslationKey(["prompts", prompt.prompt], prompt.prompt);
     }
   }
 
@@ -193,8 +193,8 @@ export const generateTranslationFile = async <Game extends GameWorld>(
       );
       processScript(interaction.script, overlayScope, setTranslationKey);
     }
-    if (overlay.prompt) {
-      setTranslationKey(["prompts", overlay.prompt], overlay.prompt);
+    for (const prompt of overlay.prompts) {
+      setTranslationKey(["prompts", prompt.prompt], prompt.prompt);
     }
   }
   for (const globalInteraction of gameModel.globalInteractions) {

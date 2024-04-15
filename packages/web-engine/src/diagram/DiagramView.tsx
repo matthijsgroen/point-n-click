@@ -87,6 +87,7 @@ export const DiagramView: React.FC<{
 
   return (
     <>
+      <pre style={{ display: "none" }}>{mermaidDiagram}</pre>
       <div style={{ display: "grid", gridTemplateColumns: "1fr max-content" }}>
         <div
           style={{ overflow: "scroll", height: "100vh" }}
@@ -115,11 +116,13 @@ export const DiagramView: React.FC<{
             </button>
             Zoom
           </div>
-          {[
-            { mode: "default", label: "default" },
-            { mode: "hierarchy", label: "hierarchy" },
-            { mode: "overview", label: "overview" },
-          ].map(({ mode, label }) => (
+          {(
+            [
+              { mode: "default", label: "default" },
+              { mode: "hierarchy", label: "hierarchy" },
+              { mode: "overview", label: "overview" },
+            ] as { mode: RenderMode; label: string }[]
+          ).map(({ mode, label }) => (
             <label style={{ display: "block", textTransform: "capitalize" }}>
               <input
                 name={"renderMode"}
@@ -173,7 +176,6 @@ export const DiagramView: React.FC<{
           })}
         </div>
       </div>
-      <pre style={{ display: "none" }}>{mermaidDiagram}</pre>
     </>
   );
 };
