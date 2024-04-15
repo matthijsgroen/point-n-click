@@ -94,7 +94,7 @@ export type GameLocation<Game extends GameWorld> = {
   onLeave: { to: keyof Game["locations"]; script: ScriptAST<Game> }[];
   describe: { script: ScriptAST<Game> };
   interactions: GameInteraction<Game>[];
-  prompts: { prompt: string; condition: StateCondition<Game> }[];
+  prompts: { prompt: string; condition?: StateCondition<Game> }[];
 };
 export type GameOverlay<Game extends GameWorld> = {
   id: keyof Game["overlays"];
