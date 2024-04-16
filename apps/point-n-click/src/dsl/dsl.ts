@@ -19,6 +19,7 @@ import {
   ConditionElse,
   ChainedStateCondition,
   StateCondition,
+  WorldMap,
 } from "@point-n-click/types";
 import {
   characterDSLFunctions,
@@ -111,6 +112,7 @@ type BaseDSL<Version extends number, Game extends GameWorld<Version>> = {
   definePuzzleDependencies: <MetaData extends BasePuzzleEventStates>(
     diagram: PuzzleDependencyDiagram<MetaData>
   ) => void;
+  defineMap: (map: WorldMap<Game>) => void;
   globalInteraction: GlobalInteraction<Game>;
 
   text: (...sentences: string[]) => void;
@@ -204,6 +206,10 @@ export const world =
       })),
       diagram: {
         events: {},
+      },
+      worldMap: {
+        start: "",
+        locations: {},
       },
     };
 
@@ -418,6 +424,9 @@ export const world =
       },
       definePuzzleDependencies: (diagram) => {
         worldModel.diagram = diagram;
+      },
+      defineMap: (map) => {
+        worldModel.worldMap = map;
       },
       globalInteraction: (text, shortcutKey, condition, script) => {
         worldModel.globalInteractions.push({

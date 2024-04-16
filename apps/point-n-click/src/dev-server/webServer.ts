@@ -2,7 +2,6 @@ import { GameModelManager, getTranslationText } from "@point-n-click/engine";
 import {
   GameModel,
   GameSaveStateManager,
-  GameStateManager,
   GameWorld,
 } from "@point-n-click/types";
 import express from "express";
@@ -15,13 +14,44 @@ import { writeFile } from "node:fs/promises";
 import Parcel, { createWorkerFarm } from "@parcel/core";
 import { PackagedBundle } from "@parcel/types";
 import { htmlFile, indexFile } from "./templates/game";
-import { htmlFile as diagramHtmlFile, scriptFile } from "./templates/diagram";
+import {
+  htmlFile as diagramHtmlFile,
+  scriptFile as diagramScriptFile,
+} from "./templates/diagram";
+import {
+  htmlFile as mapHtmlFile,
+  scriptFile as mapScriptFile,
+} from "./templates/map";
 import { watch } from "fs";
 
 const defaultWatchList = [
   "@point-n-click/engine",
   "@point-n-click/web-engine",
   "@point-n-click/puzzle-dependency-diagram",
+];
+
+type HTMLSettings = {
+  title: string;
+  lang: string;
+  scriptPath: string;
+};
+type EntryPoint = {
+  entryName: string;
+  htmlProducer: (templateSettings: HTMLSettings) => string;
+  scriptProducer: () => string;
+};
+
+const supportEntryPoints: EntryPoint[] = [
+  {
+    entryName: "diagram",
+    htmlProducer: diagramHtmlFile,
+    scriptProducer: diagramScriptFile,
+  },
+  {
+    entryName: "map",
+    htmlProducer: mapHtmlFile,
+    scriptProducer: mapScriptFile,
+  },
 ];
 
 export const startWebserver = async (
@@ -70,7 +100,10 @@ export const startWebserver = async (
   );
 
   const gameEntryFile = join(devServerPath, "index.html");
-  const diagramEntryFile = join(devServerPath, "diagram.html");
+
+  const extraEntries = supportEntryPoints.map((settings) =>
+    join(devServerPath, `${settings.entryName}.html`)
+  );
 
   const buildWebFiles = async (model: GameModel<GameWorld>) => {
     const indexPromise = writeFile(
@@ -100,27 +133,32 @@ export const startWebserver = async (
     await Promise.all([configPromise, indexPromise, entryPromise]);
   };
 
-  const buildDiagramFiles = async (model: GameModel<GameWorld>) => {
-    const indexPromise = writeFile(
-      join(devServerPath, "diagram.tsx"),
-      scriptFile(),
+  const buildEntry = async (
+    settings: EntryPoint,
+    model: GameModel<GameWorld>
+  ) => {
+    const scriptFile = `${settings.entryName}.tsx`;
+    const scriptPromise = writeFile(
+      join(devServerPath, scriptFile),
+      settings.scriptProducer(),
       { encoding: "utf8" }
     );
 
     const entryPromise = writeFile(
-      diagramEntryFile,
-      diagramHtmlFile({
+      join(devServerPath, `${settings.entryName}.html`),
+      settings.htmlProducer({
         title: getTranslationText([], "title") ?? model.settings.gameTitle,
         lang: lang ?? model.settings.locales.default,
+        scriptPath: scriptFile,
       }),
       { encoding: "utf8" }
     );
 
-    await Promise.all([configPromise, indexPromise, entryPromise]);
+    await Promise.all([configPromise, scriptPromise, entryPromise]);
   };
 
   const webappBundler = new Parcel({
-    entries: [gameEntryFile, diagramEntryFile],
+    entries: [gameEntryFile, ...extraEntries],
     defaultConfig: configFile,
     // workerFarm,
     // outputFS,
@@ -153,7 +191,9 @@ export const startWebserver = async (
   };
 
   await buildWebFiles(model);
-  await buildDiagramFiles(model);
+  for (const settings of supportEntryPoints) {
+    await buildEntry(settings, model);
+  }
 
   let watchAbort: AbortController = new AbortController();
   let watchPromise: Promise<void> = new Promise(() => {});
@@ -207,7 +247,9 @@ export const startWebserver = async (
           updateWatch(newModel);
           // const start = new Date().getTime();
           await buildWebFiles(newModel);
-          await buildDiagramFiles(newModel);
+          for (const settings of supportEntryPoints) {
+            await buildEntry(settings, newModel);
+          }
           await bundleEngine();
           // const end = new Date().getTime();
           // console.log(

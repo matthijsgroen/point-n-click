@@ -6,3 +6,4 @@ export * from "./contentPlugin";
 export * from "./hexColor";
 export * from "./text";
 export * from "./colorPalette";
+export * from "./map";

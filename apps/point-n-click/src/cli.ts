@@ -36,6 +36,7 @@ export const cli = (
       });
     });
 
+  // Add command option to list untranslated texts for a language
   program
     .command("validate <source>")
     .summary("validate game content")
@@ -44,6 +45,15 @@ export const cli = (
       if (!result) {
         process.exit(1);
       }
+    });
+
+  // Add command to show progress on tag
+  // Add command to show next tasks for tag
+  program
+    .command("diagram")
+    .summary("shows info from the puzzle dependency diagram")
+    .action(() => {
+      console.log("Hello there");
     });
 
   setTerminalTitle("point-n-click");

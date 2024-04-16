@@ -7,7 +7,7 @@ import {
 import React, { ChangeEventHandler, useEffect, useRef, useState } from "react";
 import { produce } from "immer";
 
-const DisplayDiagram = React.lazy(() => import("./DisplayMermaid"));
+const DisplayDiagram = React.lazy(() => import("../shared/DisplayMermaid"));
 
 const getPercentage = (
   diagram: PuzzleDependencyDiagram,

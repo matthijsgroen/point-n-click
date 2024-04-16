@@ -11,8 +11,8 @@ export const htmlFile = (settings: TemplateSettings) =>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <meta name="description" content="Diagram created using Point-n-click" />
-    <title>${settings.title} Puzzle Dependency Chart</title>
+    <meta name="description" content="Map created using Point-n-click" />
+    <title>${settings.title} World Map</title>
   </head>
   <body data-environment="development">
     <div id="root"></div>
@@ -22,13 +22,13 @@ export const htmlFile = (settings: TemplateSettings) =>
 
 export const scriptFile = () => `import React from "react";
 import { createRoot } from "react-dom/client";
-import { DiagramApp } from "@point-n-click/web-engine";
+import { MapApp } from "@point-n-click/web-engine";
 
 const root = createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <DiagramApp />
+    <MapApp />
   </React.StrictMode>
 );`;

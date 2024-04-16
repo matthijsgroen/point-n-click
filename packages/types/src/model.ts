@@ -3,6 +3,7 @@ import { GameInteraction, GameLocation, GameOverlay } from "./ast";
 import { ColorPalette, PaletteColor } from "./colorPalette";
 import { GameWorld } from "./world";
 import { GameState } from "./state";
+import { WorldMap } from "./map";
 
 export type RecursivePartial<T extends Record<string, unknown>> = {
   [Key in keyof T]?: T[Key] extends Record<string, unknown>
@@ -76,4 +77,5 @@ export type GameModel<Game extends GameWorld> = {
   globalInteractions: GameInteraction<Game>[];
   themes: ThemeInfo[];
   diagram: PuzzleDependencyDiagram;
+  worldMap: WorldMap<Game>;
 };
