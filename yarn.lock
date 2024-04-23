@@ -3683,6 +3683,7 @@ __metadata:
     "@point-n-click/types": "workspace:^"
     "@tanstack/react-query": ^4.19.1
     "@types/react": ^18.0.21
+    clsx: ^2.1.0
     immer: ^9.0.21
     jotai: ^2.0.3
     jotai-optics: ^0.3.0
@@ -6110,6 +6111,13 @@ __metadata:
   version: 2.1.2
   resolution: "clone@npm:2.1.2"
   checksum: aaf106e9bc025b21333e2f4c12da539b568db4925c0501a1bf4070836c9e848c892fa22c35548ce0d1132b08bbbfa17a00144fe58fccdab6fa900fec4250f67d
+  languageName: node
+  linkType: hard
+
+"clsx@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "clsx@npm:2.1.0"
+  checksum: 43fefc29b6b49c9476fbce4f8b1cc75c27b67747738e598e6651dd40d63692135dc60b18fa1c5b78a2a9ba8ae6fd2055a068924b94e20b42039bd53b78b98e1d
   languageName: node
   linkType: hard
 

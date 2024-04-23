@@ -87,9 +87,11 @@ export type StateCondition<Game extends GameWorld> =
   | GameObjectFlagCondition<Game, "character">
   | GameObjectFlagCondition<Game, "item">
   | GameObjectFlagCondition<Game, "location">
+  | GameObjectFlagCondition<Game, "overlay">
   | GameObjectCounterCondition<Game, "character">
   | GameObjectCounterCondition<Game, "item">
   | GameObjectCounterCondition<Game, "location">
+  | GameObjectCounterCondition<Game, "overlay">
   | ListItemCondition<Game>
   | OverlayOpenCondition<Game>
   | LocationCondition<Game>

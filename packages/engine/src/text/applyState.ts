@@ -12,7 +12,7 @@ export type StateError = Error & {
   stateKey: string;
 };
 
-const existingRootStates = ["items", "characters"];
+const existingRootStates = ["items", "characters", "locations", "overlays"];
 const existingCharacterProperties = [
   "name",
   "defaultName",
@@ -45,6 +45,11 @@ export const characterDefaultName = <Game extends GameWorld>(
 ): string =>
   getTranslationText(["characters", String(character)], "defaultName") ??
   model.settings.characterConfigs[character].defaultName;
+
+const isRootLevelStateObject = (
+  rootLevel: string
+): rootLevel is "items" | "locations" | "overlays" =>
+  ["items", "locations", "overlays"].includes(rootLevel);
 
 export const applyState = <Game extends GameWorld>(
   text: ParsedText,
@@ -137,16 +142,17 @@ export const applyState = <Game extends GameWorld>(
           }
         }
       }
-      if (rootLevel === "items") {
+
+      if (isRootLevelStateObject(rootLevel)) {
         const item = resolveStatePath[1] as keyof Game["items"];
         const property = resolveStatePath[2];
 
-        if (!state.items[item]) {
+        if (!state[rootLevel][item]) {
           throwStateError(
             `${value} ${String(
               item
             )} does not exist. Do you mean one of ${Object.keys(
-              state.items
+              state[rootLevel]
             ).join(",")}`
           );
         }
@@ -158,7 +164,7 @@ export const applyState = <Game extends GameWorld>(
           );
         }
         if (property === "counters") {
-          const itemCounter = state.items[item]?.counters;
+          const itemCounter = state[rootLevel][item]?.counters;
           type CounterKey = keyof typeof itemCounter;
           if (itemCounter) {
             const valueKey = resolveStatePath[3] as CounterKey;
@@ -166,7 +172,7 @@ export const applyState = <Game extends GameWorld>(
           }
         }
         if (property === "texts") {
-          const itemText = state.items[item]?.texts;
+          const itemText = state[rootLevel][item]?.texts;
           type TextKey = keyof typeof itemText;
           const valueKey = resolveStatePath[3] as TextKey;
           if (itemText) {

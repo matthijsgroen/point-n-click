@@ -4,21 +4,23 @@ export type MapDirection =
   | Exclude<`${"north" | "south" | ""}${"east" | "west" | ""}`, "">
   | "teleport"
   | "contains"
-  | "parent";
+  | "parent"
+  | "floor-up"
+  | "floor-down";
 
 export type WorldMap<G extends GameWorld> = {
-  start: string;
+  start: keyof G["locations"];
   locations: {
     [key in keyof G["locations"]]?: {
       characters?: {
         [key in keyof G["characters"]]?: {
-          availability: string;
+          availability?: string;
         };
       };
       connections: {
         [key in keyof G["locations"]]?: {
           direction: MapDirection;
-          lockedTill?: string;
+          availability?: string;
         };
       };
     };

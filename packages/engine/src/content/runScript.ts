@@ -201,7 +201,7 @@ const statementHandler = <
           const item = (draft as GameState<Game>)[`${objectType}s`][
             stateItem
           ] as { counters: Record<string, number> };
-          const prevValue = item ? item.counters[String(name)] : 0;
+          const prevValue = item ? item.counters[String(name)] ?? 0 : 0;
 
           const value = getNumberValue(valueRangeStart, valueRangeEnd, random);
 

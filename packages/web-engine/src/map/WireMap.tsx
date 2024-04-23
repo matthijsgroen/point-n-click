@@ -1,7 +1,7 @@
 import { useAtomValue } from "jotai";
 import React from "react";
 import { gameContentAtom } from "../content/gameContent";
-import { MapView } from "./MapView";
+import { MapLayoutView } from "./MapLayoutView";
 
 export const WireMap = () => {
   const gameContent = useAtomValue(gameContentAtom);
@@ -9,5 +9,5 @@ export const WireMap = () => {
     return null;
   }
 
-  return <MapView map={gameContent.worldMap} />;
+  return <MapLayoutView map={gameContent.worldMap} />;
 };

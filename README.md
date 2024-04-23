@@ -37,6 +37,7 @@ This will be a package and template to create webbased 'point-n-click' adventure
 - Development Experience
 
   - [x] Plan puzzles and work using puzzle dependency diagrams
+  - [x] Plan traversal and character locations using maps
   - [x] Code completion for fast coding of content and logic
   - [x] Play the game while building, leveraging live reload to update content while maintaining the game state (in browser and terminal)
   - [x] State between terminal and browser is shared, allowing quick jumping back and forth

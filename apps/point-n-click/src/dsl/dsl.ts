@@ -20,6 +20,8 @@ import {
   ChainedStateCondition,
   StateCondition,
   WorldMap,
+  Interaction,
+  ContentPluginStatement,
 } from "@point-n-click/types";
 import {
   characterDSLFunctions,
@@ -35,6 +37,7 @@ import {
   BasePuzzleEventStates,
   PuzzleDependencyDiagram,
 } from "@point-n-click/puzzle-dependency-diagram";
+import { objectStateManagement } from "./object-state-conditions";
 
 type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) extends (
   x: infer R
@@ -309,7 +312,16 @@ export const world =
           prompts: [],
         };
 
-        handleOverlay({
+        const overlayFunctions: {
+          onEnter: (script: Script) => void;
+          onLeave: (script: Script) => void;
+          interaction: Interaction<Game>;
+          closeOverlay: () => void;
+          setPrompt: (
+            interactionPrompt: string,
+            condition?: StateCondition<Game>
+          ) => void;
+        } = {
           onEnter: (script) => {
             const startScript = wrapScript(script);
             overlayAST.onEnter.script = startScript;
@@ -332,24 +344,23 @@ export const world =
               overlayId: overlay,
             });
           },
-          setState: (newState) => {
-            activeScriptScope.push({
-              statementType: "UpdateGameObjectState",
-              objectType: "overlay",
-              stateItem: overlay,
-              newState,
-            });
-          },
-          hasState: (state) => ({
-            objectType: "overlay",
-            item: overlay,
-            op: "StateEquals",
-            state,
-          }),
           setPrompt: (prompt, condition) => {
             overlayAST.prompts.push({ prompt, condition });
           },
-        });
+        };
+
+        handleOverlay(
+          Object.assign(
+            overlayFunctions,
+            objectStateManagement(
+              (statement: ScriptStatement<Game> | ContentPluginStatement) => {
+                activeScriptScope.push(statement);
+              },
+              "overlay",
+              overlay
+            )
+          )
+        );
         worldModel?.overlays.push(overlayAST as unknown as GameOverlay<Game>);
       },
       defineLocation: <Location extends keyof Game["locations"]>(
@@ -364,7 +375,23 @@ export const world =
           interactions: [],
           prompts: [],
         };
-        script({
+
+        const locationFunctions: {
+          onEnter: (
+            from: Exclude<keyof Game["locations"], Location>,
+            script: Script
+          ) => void;
+          onLeave: (
+            to: Exclude<keyof Game["locations"], Location>,
+            script: Script
+          ) => void;
+          describe: (script: Script) => void;
+          interaction: Interaction<Game>;
+          setPrompt: (
+            interactionPrompt: string,
+            condition?: StateCondition<Game>
+          ) => void;
+        } = {
           describe: (script) => {
             const description = wrapScript(script);
             locationAST.describe = { script: description };
@@ -394,30 +421,23 @@ export const world =
               script: interactionScript,
             });
           },
-          setState: (newState) => {
-            activeScriptScope.push({
-              statementType: "UpdateGameObjectState",
-              objectType: "location",
-              stateItem: location,
-              newState,
-            });
-          },
-          hasState: (state) => ({
-            objectType: "location",
-            item: location,
-            op: "StateEquals",
-            state,
-          }),
-          hasFlag: (flag) => ({
-            objectType: "location",
-            item: location,
-            op: "IsFlagSet",
-            flag,
-          }),
           setPrompt: (prompt, condition) => {
             locationAST.prompts.push({ prompt, condition });
           },
-        });
+        };
+
+        script(
+          Object.assign(
+            locationFunctions,
+            objectStateManagement(
+              (statement: ScriptStatement<Game> | ContentPluginStatement) => {
+                activeScriptScope.push(statement);
+              },
+              "location",
+              location
+            )
+          )
+        );
         worldModel?.locations.push(
           locationAST as unknown as GameLocation<Game>
         );

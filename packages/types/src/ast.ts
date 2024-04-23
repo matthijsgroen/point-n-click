@@ -1,60 +1,91 @@
 import {
+  GameObjectCounterCondition,
   GameObjectFlagCondition,
   GameObjectStateCondition,
   StateCondition,
 } from "./conditions";
 import { ContentPluginStatement } from "./contentPlugin";
 import { StateObject } from "./state";
-import { GameWorld } from "./world";
+import { GameWorld, WorldObjectSettings } from "./world";
 
 export type Script = () => void;
+
+export type ObjectStateDSL<
+  Game extends GameWorld,
+  T extends StateObject,
+  I extends keyof Game[`${T}s`]
+> = {
+  setState: (newState: Game[`${T}s`][I]["states"] | "unknown") => void;
+  setFlag: (flag: Game[`${T}s`][I]["flags"]) => void;
+  clearFlag: (flag: Game[`${T}s`][I]["flags"]) => void;
+  setCounter: (
+    counter: Game[`${T}s`][I]["counters"],
+    value: number,
+    randomAdd?: number
+  ) => void;
+  increaseCounter: (
+    counter: Game[`${T}s`][I]["counters"],
+    value?: number,
+    randomIncrease?: number
+  ) => void;
+  decreaseCounter: (
+    counter: Game[`${T}s`][I]["counters"],
+    value?: number,
+    randomDecrease?: number
+  ) => void;
+  setText: (key: Game[`${T}s`][I]["texts"], value: string) => void;
+  hasState: (
+    state: Game[`${T}s`][I]["states"] | "unknown"
+  ) => GameObjectStateCondition<Game, T>;
+  hasFlag: (
+    flag: Game[`${T}s`][I]["flags"]
+  ) => GameObjectFlagCondition<Game, T>;
+  hasCounter: (counterName: Game[`${T}s`][I]["counters"]) => {
+    equals: (value: number) => GameObjectCounterCondition<Game, T>;
+    lessThan: (value: number) => GameObjectCounterCondition<Game, T>;
+    lessThanEquals: (value: number) => GameObjectCounterCondition<Game, T>;
+    moreThan: (value: number) => GameObjectCounterCondition<Game, T>;
+    moreThanEquals: (value: number) => GameObjectCounterCondition<Game, T>;
+  };
+};
 
 export type LocationScript<
   Game extends GameWorld,
   Location extends keyof Game["locations"]
-> = (events: {
-  onEnter: (
-    from: Exclude<keyof Game["locations"], Location>,
-    script: Script
-  ) => void;
-  onLeave: (
-    to: Exclude<keyof Game["locations"], Location>,
-    script: Script
-  ) => void;
-  describe: (script: Script) => void;
-  interaction: Interaction<Game>;
-  hasState: (
-    state: Game["locations"][Location]["states"] | "unknown"
-  ) => GameObjectStateCondition<Game, "location">;
-  setState: (
-    newState: Game["locations"][Location]["states"] | "unknown"
-  ) => void;
-  hasFlag: (
-    flag: Game["locations"][Location]["flags"]
-  ) => GameObjectFlagCondition<Game, "location">;
-  setPrompt: (
-    interactionPrompt: string,
-    condition?: StateCondition<Game>
-  ) => void;
-}) => void;
+> = (
+  events: {
+    onEnter: (
+      from: Exclude<keyof Game["locations"], Location>,
+      script: Script
+    ) => void;
+    onLeave: (
+      to: Exclude<keyof Game["locations"], Location>,
+      script: Script
+    ) => void;
+    describe: (script: Script) => void;
+    interaction: Interaction<Game>;
+    setPrompt: (
+      interactionPrompt: string,
+      condition?: StateCondition<Game>
+    ) => void;
+  } & ObjectStateDSL<Game, "location", Location>
+) => void;
 
 export type OverlayScript<
   Game extends GameWorld,
   Overlay extends keyof Game["overlays"]
-> = (events: {
-  onEnter: (script: Script) => void;
-  onLeave: (script: Script) => void;
-  interaction: Interaction<Game>;
-  closeOverlay: () => void;
-  hasState: (
-    state: Game["overlays"][Overlay]["states"] | "unknown"
-  ) => GameObjectStateCondition<Game, "overlay">;
-  setState: (newState: Game["overlays"][Overlay]["states"] | "unknown") => void;
-  setPrompt: (
-    interactionPrompt: string,
-    condition?: StateCondition<Game>
-  ) => void;
-}) => void;
+> = (
+  events: {
+    onEnter: (script: Script) => void;
+    onLeave: (script: Script) => void;
+    interaction: Interaction<Game>;
+    closeOverlay: () => void;
+    setPrompt: (
+      interactionPrompt: string,
+      condition?: StateCondition<Game>
+    ) => void;
+  } & ObjectStateDSL<Game, "overlay", Overlay>
+) => void;
 
 export type EvaluateStateCondition<Game extends GameWorld> = (
   condition: StateCondition<Game>,

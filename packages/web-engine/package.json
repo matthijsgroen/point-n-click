@@ -27,6 +27,7 @@
     "@point-n-click/themes": "workspace:^",
     "@point-n-click/types": "workspace:^",
     "@tanstack/react-query": "^4.19.1",
+    "clsx": "^2.1.0",
     "immer": "^9.0.21",
     "jotai": "^2.0.3",
     "jotai-optics": "^0.3.0",

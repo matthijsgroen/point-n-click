@@ -92,7 +92,7 @@ export const objectStateManagement = <
       valueRangeEnd: value + randomAdd,
     });
   },
-  increaseCounter: (name, value, randomAdd = 0) => {
+  increaseCounter: (name, value = 1, randomAdd = 0) => {
     addToActiveScript({
       statementType: "UpdateGameObjectCounter",
       objectType,
@@ -103,7 +103,7 @@ export const objectStateManagement = <
       valueRangeEnd: value + randomAdd,
     });
   },
-  decreaseCounter: (name, value, randomDecrease = 0) => {
+  decreaseCounter: (name, value = 1, randomDecrease = 0) => {
     addToActiveScript({
       statementType: "UpdateGameObjectCounter",
       objectType,
