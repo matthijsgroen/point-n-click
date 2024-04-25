@@ -142,7 +142,9 @@ export const renderLine = async (
 
         for (const char of chars) {
           process.stdout.write(char);
-          await wait(delay);
+          if (char !== " ") {
+            await wait(delay);
+          }
         }
       }
     }

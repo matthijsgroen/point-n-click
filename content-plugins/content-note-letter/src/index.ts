@@ -9,7 +9,7 @@ const PLUGIN_SOURCE = "notesAndLetters" as const;
 
 type TextBoxAST = {
   statementType: "TextBox";
-  decoration: "Note";
+  decoration: "Note" | "Page";
   decorationPosition: "start" | "end";
 };
 
@@ -17,7 +17,7 @@ type TextBoxDisplay = {
   type: "TextBox";
   pluginSource: typeof PLUGIN_SOURCE;
   statementClassification: "output";
-  decoration: "Note";
+  decoration: "Note" | "Page";
   decorationPosition: "start" | "end";
 };
 
@@ -35,6 +35,19 @@ const textDslFunctions = {
     system.addPluginContent<TextBoxAST>({
       statementType: "TextBox",
       decoration: "Note",
+      decorationPosition: "end",
+    });
+  },
+  page: (system: SystemInterface, script: Script) => {
+    system.addPluginContent<TextBoxAST>({
+      statementType: "TextBox",
+      decoration: "Page",
+      decorationPosition: "start",
+    });
+    system.addScript(script);
+    system.addPluginContent<TextBoxAST>({
+      statementType: "TextBox",
+      decoration: "Page",
       decorationPosition: "end",
     });
   },
