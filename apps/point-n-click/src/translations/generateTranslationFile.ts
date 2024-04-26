@@ -175,6 +175,15 @@ export const generateTranslationFile = async <Game extends GameWorld>(
         interaction.label
       );
       setTranslationKey(interactionScope, interaction.label);
+      if (interaction.shortcutKey) {
+        const keyScope = locationScope.concat(
+          "interactions",
+          "shortcutKeys",
+          interaction.label
+        );
+        setTranslationKey(keyScope, interaction.shortcutKey);
+      }
+
       processScript(interaction.script, locationScope, setTranslationKey);
     }
     for (const prompt of location.prompts) {
@@ -191,6 +200,14 @@ export const generateTranslationFile = async <Game extends GameWorld>(
         overlayScope.concat("interactions", interaction.label),
         interaction.label
       );
+      if (interaction.shortcutKey) {
+        const keyScope = overlayScope.concat(
+          "interactions",
+          "shortcutKeys",
+          interaction.label
+        );
+        setTranslationKey(keyScope, interaction.shortcutKey);
+      }
       processScript(interaction.script, overlayScope, setTranslationKey);
     }
     for (const prompt of overlay.prompts) {

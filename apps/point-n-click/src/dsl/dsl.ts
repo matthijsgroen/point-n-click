@@ -330,11 +330,13 @@ export const world =
             const endScript = wrapScript(script);
             overlayAST.onLeave.script = endScript;
           },
-          interaction: (label, condition, script) => {
+          interaction: (label, condition, script, options) => {
             const interactionScript = wrapScript(script);
+            const shortcutKey = options?.shortcutKey;
             overlayAST.interactions.push({
               label,
               condition,
+              shortcutKey,
               script: interactionScript,
             });
           },
@@ -413,11 +415,13 @@ export const world =
               script: enterScript,
             });
           },
-          interaction: (label, condition, script) => {
+          interaction: (label, condition, script, options) => {
             const interactionScript = wrapScript(script);
+            const shortcutKey = options?.shortcutKey;
             locationAST.interactions.push({
               label,
               condition,
+              shortcutKey,
               script: interactionScript,
             });
           },

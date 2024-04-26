@@ -22,12 +22,12 @@ export type ObjectStateDSL<
   ) => void;
   increaseCounter: (
     counter: Game[`${T}s`][I]["counters"],
-    value: number,
+    value?: number,
     randomIncrease?: number
   ) => void;
   decreaseCounter: (
     counter: Game[`${T}s`][I]["counters"],
-    value: number,
+    value?: number,
     randomDecrease?: number
   ) => void;
   setText: (key: Game[`${T}s`][I]["texts"], value: string) => void;

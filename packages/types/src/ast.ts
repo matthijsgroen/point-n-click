@@ -99,10 +99,15 @@ export type ChainedStateCondition<Game extends GameWorld> = {
   (script: Script): void;
 };
 
+export type InteractionOptions = {
+  shortcutKey?: string;
+};
+
 export type Interaction<Game extends GameWorld> = (
   text: string,
   condition: StateCondition<Game>,
-  script: Script
+  script: Script,
+  options?: InteractionOptions
 ) => void;
 
 export type GlobalInteraction<Game extends GameWorld> = (

@@ -73,7 +73,7 @@ export const getInteractions = <Game extends GameWorld>(
 
   const possibleInteractions = interactions
     .filter((interaction) => testCondition(interaction.condition, state))
-    .map<InteractionAction>(({ label }) => ({
+    .map<InteractionAction>(({ label, shortcutKey }) => ({
       label: getDisplayText(
         label,
         state,
@@ -81,6 +81,10 @@ export const getInteractions = <Game extends GameWorld>(
         textScope,
         textScope
       ),
+      shortcutKey: shortcutKey
+        ? getTranslationText([...textScope, "shortcutKeys"], label) ||
+          shortcutKey
+        : undefined,
       isGlobal: false,
       id: label,
     }));
