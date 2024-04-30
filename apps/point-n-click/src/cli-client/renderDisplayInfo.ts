@@ -14,7 +14,7 @@ import {
 import { renderText } from "./renderText";
 import { getSettings } from "./settings";
 import { isListItem, resetStyling, setColor } from "./utils";
-import { saveProgress } from "./saveProgress";
+import { saveProgress } from "./saveGame";
 import { setDisplayType } from "./displayType";
 import {
   handleDescriptionText,

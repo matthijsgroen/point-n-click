@@ -9,7 +9,7 @@ import {
 } from "@point-n-click/engine";
 import { join } from "node:path";
 import { writeFile } from "node:fs/promises";
-import { saveProgress } from "./saveProgress";
+import { saveProgress } from "./saveGame";
 
 type TextInteraction = {
   label: FormattedText;
@@ -67,6 +67,9 @@ export const handleInteractions = async <Game extends GameWorld>(
     // input = await keypress();
     if (input === "q") {
       stateManager.setPlayState("quitting");
+    }
+    if (input === "m") {
+      stateManager.setPlayState("pausing");
     }
     if (input === "r") {
       stateManager.setPlayState("reloading");

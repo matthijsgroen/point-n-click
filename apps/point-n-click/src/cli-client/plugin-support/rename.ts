@@ -10,7 +10,6 @@ import { getSettings } from "../settings";
 import { getPaletteColor } from "@point-n-click/engine";
 import { renderText } from "../renderText";
 import { resetStyling, setColor } from "../utils";
-import { saveProgress } from "../saveProgress";
 import { produce } from "immer";
 
 const stdin = process.stdin;

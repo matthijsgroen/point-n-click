@@ -9,7 +9,7 @@ export type MapDirection =
   | "floor-down";
 
 export type WorldMap<G extends GameWorld> = {
-  start: keyof G["locations"];
+  start: keyof G["locations"] | undefined;
   locations: {
     [key in keyof G["locations"]]?: {
       characters?: {

@@ -47,15 +47,6 @@ export const cli = (
       }
     });
 
-  // Add command to show progress on tag
-  // Add command to show next tasks for tag
-  program
-    .command("diagram")
-    .summary("shows info from the puzzle dependency diagram")
-    .action(() => {
-      console.log("Hello there");
-    });
-
   setTerminalTitle("point-n-click");
   program.parse(args);
 };

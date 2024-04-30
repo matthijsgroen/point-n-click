@@ -9,7 +9,9 @@ export const emptyGameModel = <Game extends GameWorld>(): GameModel<Game> => ({
         "en-US": "English",
       },
     },
-    initialState: {},
+    initialState: {
+      version: 0,
+    },
     characterConfigs: {} as Settings<Game>["characterConfigs"],
     colors: {
       lightPalette: {},
@@ -23,4 +25,5 @@ export const emptyGameModel = <Game extends GameWorld>(): GameModel<Game> => ({
   diagram: {
     events: {},
   },
+  worldMap: { start: undefined, locations: {} },
 });

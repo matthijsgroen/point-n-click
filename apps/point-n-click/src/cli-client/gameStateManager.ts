@@ -10,7 +10,8 @@ import {
 import { produce } from "immer";
 
 export const createGameSaveStateManager = async <Game extends GameWorld>(
-  gameModelManager: GameModelManager<Game>
+  gameModelManager: GameModelManager<Game>,
+  version: Game["version"]
 ): Promise<GameSaveStateManager<Game>> => {
   let model = gameModelManager.getModel();
   while (!gameModelManager.hasModel()) {
@@ -53,7 +54,10 @@ export const createGameSaveStateManager = async <Game extends GameWorld>(
     restoreSaveState: () => {
       gameState.update(() => savePoint.get());
     },
-    isAborting: () => playState === "quitting" || playState === "reloading",
+    isAborting: () =>
+      playState === "quitting" ||
+      playState === "reloading" ||
+      playState === "pausing",
   };
   return stateManager;
 };

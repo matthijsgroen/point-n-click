@@ -1,5 +1,4 @@
 import { gameModelManager } from "@point-n-click/engine";
-import { mergeState } from "@point-n-click/state";
 import { createGameSaveStateManager } from "../cli-client/gameStateManager";
 import { runGame } from "../cli-client/run";
 import { startContentBuilder } from "../content-builder/contentBuilder";
@@ -7,10 +6,9 @@ import { loadTranslationData } from "../content-builder/loadTranslationData";
 import { startWebserver } from "./webServer";
 import { cls, resetStyling, setColor } from "../cli-client/utils";
 import { hexColor } from "..";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { progressSpinner } from "../cli-utils/spinner";
 import { resetDisplayType } from "../cli-client/displayType";
+import { loadGame } from "../cli-client/loadGame";
 
 type ServerOptions = {
   lang: string;
@@ -28,16 +26,8 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
   );
   const translationData = await loadTranslationData(options.lang);
 
-  const gameStateManager = await createGameSaveStateManager(modelManager);
-  try {
-    const saveFilePath = join(process.cwd(), ".autosave.json");
-    const saveFile = await readFile(saveFilePath, { encoding: "utf-8" });
-    const contents = JSON.parse(saveFile);
-    gameStateManager
-      .activeState()
-      .update((state) => mergeState(state, contents));
-    gameStateManager.updateSaveState();
-  } catch (e) {}
+  const gameStateManager = await createGameSaveStateManager(modelManager, 0);
+  await loadGame("autosave", gameStateManager);
 
   const [stopServer, runningPort] = await progressSpinner(
     "Creating initial build...",
@@ -66,17 +56,19 @@ export const devServer = async (fileName: string, options: ServerOptions) => {
       model.settings.locales.default;
     const languageName = model.settings.locales.supported[langId];
 
-    console.log(
-      `Server: http://localhost:${runningPort}. Diagram: http://localhost:${runningPort}/diagram.html`
-    );
-    console.log(`Use space to skip, q to quit. Lang: ${languageName}`);
+    console.log(`Use m for menu, q to quit. Lang: ${languageName}`);
     resetStyling();
     console.log("");
     resetDisplayType();
   };
 
   await runGame(
-    { color: true, translationData, lightMode: options.lightMode },
+    {
+      color: true,
+      translationData,
+      lightMode: options.lightMode,
+      port: runningPort,
+    },
     modelManager,
     gameStateManager,
     clearScreen

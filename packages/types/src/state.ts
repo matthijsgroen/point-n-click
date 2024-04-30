@@ -22,6 +22,7 @@ export type GameObjectState<State extends WorldObjectSettings> = {
 };
 
 export type GameState<Game extends GameWorld> = {
+  version: number;
   currentLocation?: keyof Game["locations"];
   previousLocation?: keyof Game["locations"];
   currentInteraction?: string;
@@ -53,7 +54,12 @@ export type GameState<Game extends GameWorld> = {
   inputs: Record<string, unknown>;
 };
 
-export type PlayState = "playing" | "loading" | "quitting" | "reloading";
+export type PlayState =
+  | "playing"
+  | "loading"
+  | "pausing"
+  | "quitting"
+  | "reloading";
 
 export type GameStateManager<Game extends GameWorld> = ReadWritableState<
   GameState<Game>

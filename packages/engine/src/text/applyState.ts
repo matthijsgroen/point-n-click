@@ -3,6 +3,7 @@ import {
   GameStateManager,
   GameState,
   GameModel,
+  StateText,
 } from "@point-n-click/types";
 import { getTranslationText } from "./getTranslationText";
 import { FormattedText, ParsedText } from "./types";
@@ -51,11 +52,157 @@ const isRootLevelStateObject = (
 ): rootLevel is "items" | "locations" | "overlays" =>
   ["items", "locations", "overlays"].includes(rootLevel);
 
-export const applyState = <Game extends GameWorld>(
+export type Interpolator = (textElement: StateText) => FormattedText;
+
+const makeInterpolator =
+  <Game extends GameWorld>(
+    gameState: GameStateManager<Game>,
+    model: GameModel<Game>,
+    stateScope: string[]
+  ): Interpolator =>
+  (element) => {
+    const result: FormattedText = [];
+    const statePath = element.value.split(".");
+    const resolveStatePath =
+      statePath[0] === ""
+        ? [...stateScope].concat(statePath.slice(1))
+        : statePath;
+
+    const state = gameState.get();
+    const throwStateError = (message: string) => {
+      const error = new Error(message);
+      (error as StateError).name = "StateError";
+      (error as StateError).stateKey = element.value;
+      throw error;
+    };
+
+    let value = `STATE NOT FOUND '${element.value}'`;
+    const rootLevel = resolveStatePath[0];
+    if (!existingRootStates.includes(rootLevel)) {
+      throwStateError(
+        `${value} ${rootLevel} does not exist. Do you mean one of ${existingRootStates.join(
+          ","
+        )}`
+      );
+    }
+
+    if (rootLevel === "characters") {
+      const character = resolveStatePath[1] as keyof Game["characters"];
+      const property = resolveStatePath[2];
+
+      if (!state.characters[character]) {
+        throwStateError(
+          `${value} ${String(
+            character
+          )} does not exist. Do you mean one of ${Object.keys(
+            state.characters
+          ).join(",")}`
+        );
+      }
+      if (!existingCharacterProperties.includes(property)) {
+        throwStateError(
+          `${value} ${property} does not exist. Do you mean one of ${existingCharacterProperties.join(
+            ","
+          )}`
+        );
+      }
+
+      if (property === "defaultName") {
+        value = characterDefaultName(character, model);
+      }
+      if (property === "name") {
+        value = characterName(character, state, model);
+      }
+      if (property === "counters") {
+        const characterCounters = state.characters[character].counters;
+        type CounterKey = keyof typeof characterCounters;
+        const valueKey = resolveStatePath[3] as CounterKey;
+        value = String(characterCounters?.[valueKey] ?? 0);
+      }
+      if (property === "texts") {
+        const itemText = state.characters[character]?.texts;
+        type TextKey = keyof typeof itemText;
+        const valueKey = resolveStatePath[3] as TextKey;
+        if (itemText) {
+          const text = String(itemText[valueKey] ?? false);
+          if (text) {
+            value =
+              getTranslationText(
+                ["character", String(character), "texts", String(valueKey)],
+                text
+              ) || text;
+          }
+        }
+      }
+    }
+
+    if (isRootLevelStateObject(rootLevel)) {
+      const item = resolveStatePath[1] as keyof Game["items"];
+      const property = resolveStatePath[2];
+
+      if (!state[rootLevel][item]) {
+        throwStateError(
+          `${value} ${String(
+            item
+          )} does not exist. Do you mean one of ${Object.keys(
+            state[rootLevel]
+          ).join(",")}`
+        );
+      }
+      if (!existingItemProperties.includes(property)) {
+        throwStateError(
+          `${value} ${property} does not exist. Do you mean one of ${existingItemProperties.join(
+            ","
+          )}`
+        );
+      }
+      if (property === "counters") {
+        const itemCounter = state[rootLevel][item]?.counters;
+        type CounterKey = keyof typeof itemCounter;
+        if (itemCounter) {
+          const valueKey = resolveStatePath[3] as CounterKey;
+          value = String(itemCounter[valueKey] ?? 0);
+        }
+      }
+      if (property === "texts") {
+        const itemText = state[rootLevel][item]?.texts;
+        type TextKey = keyof typeof itemText;
+        const valueKey = resolveStatePath[3] as TextKey;
+        if (itemText) {
+          const text = itemText[valueKey];
+          value =
+            getTranslationText(
+              ["item", String(item), "texts", String(valueKey)],
+              text
+            ) || text;
+        }
+      }
+    }
+    if (value === `STATE NOT FOUND '${element.value}'`) {
+      throwStateError(value);
+    }
+
+    result.push({
+      type: "text",
+      text: value,
+    });
+    return result;
+  };
+
+export const applyGameState = <Game extends GameWorld>(
   text: ParsedText,
   gameState: GameStateManager<Game>,
   model: GameModel<Game>,
   stateScope: string[]
+): FormattedText => {
+  const interpolator = makeInterpolator(gameState, model, stateScope);
+
+  return applyState(text, interpolator);
+};
+
+export const applyState = (
+  text: ParsedText,
+  interpolator: Interpolator
 ): FormattedText => {
   const result: FormattedText = [];
   for (const element of text) {
@@ -65,134 +212,11 @@ export const applyState = <Game extends GameWorld>(
     if (element.type === "formatting") {
       result.push({
         ...element,
-        contents: applyState(element.contents, gameState, model, stateScope),
+        contents: applyState(element.contents, interpolator),
       });
     }
     if (element.type === "interpolation") {
-      const statePath = element.value.split(".");
-      const resolveStatePath =
-        statePath[0] === ""
-          ? [...stateScope].concat(statePath.slice(1))
-          : statePath;
-
-      const state = gameState.get();
-      const throwStateError = (message: string) => {
-        const error = new Error(message);
-        (error as StateError).name = "StateError";
-        (error as StateError).stateKey = element.value;
-        throw error;
-      };
-
-      let value = `STATE NOT FOUND '${element.value}'`;
-      const rootLevel = resolveStatePath[0];
-      if (!existingRootStates.includes(rootLevel)) {
-        throwStateError(
-          `${value} ${rootLevel} does not exist. Do you mean one of ${existingRootStates.join(
-            ","
-          )}`
-        );
-      }
-
-      if (rootLevel === "characters") {
-        const character = resolveStatePath[1] as keyof Game["characters"];
-        const property = resolveStatePath[2];
-
-        if (!state.characters[character]) {
-          throwStateError(
-            `${value} ${String(
-              character
-            )} does not exist. Do you mean one of ${Object.keys(
-              state.characters
-            ).join(",")}`
-          );
-        }
-        if (!existingCharacterProperties.includes(property)) {
-          throwStateError(
-            `${value} ${property} does not exist. Do you mean one of ${existingCharacterProperties.join(
-              ","
-            )}`
-          );
-        }
-
-        if (property === "defaultName") {
-          value = characterDefaultName(character, model);
-        }
-        if (property === "name") {
-          value = characterName(character, state, model);
-        }
-        if (property === "counters") {
-          const characterCounters = state.characters[character].counters;
-          type CounterKey = keyof typeof characterCounters;
-          const valueKey = resolveStatePath[3] as CounterKey;
-          value = String(characterCounters?.[valueKey] ?? 0);
-        }
-        if (property === "texts") {
-          const itemText = state.characters[character]?.texts;
-          type TextKey = keyof typeof itemText;
-          const valueKey = resolveStatePath[3] as TextKey;
-          if (itemText) {
-            const text = String(itemText[valueKey] ?? false);
-            if (text) {
-              value =
-                getTranslationText(
-                  ["character", String(character), "texts", String(valueKey)],
-                  text
-                ) || text;
-            }
-          }
-        }
-      }
-
-      if (isRootLevelStateObject(rootLevel)) {
-        const item = resolveStatePath[1] as keyof Game["items"];
-        const property = resolveStatePath[2];
-
-        if (!state[rootLevel][item]) {
-          throwStateError(
-            `${value} ${String(
-              item
-            )} does not exist. Do you mean one of ${Object.keys(
-              state[rootLevel]
-            ).join(",")}`
-          );
-        }
-        if (!existingItemProperties.includes(property)) {
-          throwStateError(
-            `${value} ${property} does not exist. Do you mean one of ${existingItemProperties.join(
-              ","
-            )}`
-          );
-        }
-        if (property === "counters") {
-          const itemCounter = state[rootLevel][item]?.counters;
-          type CounterKey = keyof typeof itemCounter;
-          if (itemCounter) {
-            const valueKey = resolveStatePath[3] as CounterKey;
-            value = String(itemCounter[valueKey] ?? 0);
-          }
-        }
-        if (property === "texts") {
-          const itemText = state[rootLevel][item]?.texts;
-          type TextKey = keyof typeof itemText;
-          const valueKey = resolveStatePath[3] as TextKey;
-          if (itemText) {
-            const text = itemText[valueKey];
-            value =
-              getTranslationText(
-                ["item", String(item), "texts", String(valueKey)],
-                text
-              ) || text;
-          }
-        }
-      }
-      if (value === `STATE NOT FOUND '${element.value}'`) {
-        throwStateError(value);
-      }
-
-      result.push({
-        type: "text",
-        text: value,
-      });
+      result.push(...interpolator(element));
     }
   }
   return result;

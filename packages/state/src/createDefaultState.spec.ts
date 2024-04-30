@@ -41,6 +41,7 @@ describe("createDefaultState", () => {
           gameTitle: "Red riding hood",
           locales: { default: "de-DE", supported: { "de-DE": "German" } },
           initialState: {
+            version: 1,
             items: {
               axe: {
                 state: "unknown",
@@ -65,6 +66,7 @@ describe("createDefaultState", () => {
         globalInteractions: [],
         themes: [],
         diagram: {},
+        worldMap: { start: undefined, locations: {} },
       });
 
       expect(result.characters).toEqual({
@@ -93,6 +95,7 @@ describe("createDefaultState", () => {
           gameTitle: "Red riding hood",
           locales: { default: "de-DE", supported: { "de-DE": "German" } },
           initialState: {
+            version: 1,
             characters: {
               redRidingHood: {
                 counters: {
@@ -122,6 +125,7 @@ describe("createDefaultState", () => {
         globalInteractions: [],
         themes: [],
         diagram: {},
+        worldMap: { start: undefined, locations: {} },
       });
 
       expect(result.characters).toEqual({

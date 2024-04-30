@@ -2,7 +2,7 @@ import { GameWorld, GameStateManager, GameModel } from "@point-n-click/types";
 import { getTranslationText } from "./getTranslationText";
 import { parse } from "./parser";
 import { FormattedText, ParsedText } from "./types";
-import { applyState } from "./applyState";
+import { applyGameState } from "./applyState";
 
 export const parseText = (text: string): ParsedText => {
   try {
@@ -25,7 +25,7 @@ export const getDisplayText = <Game extends GameWorld>(
 ): FormattedText => {
   const renderSentence = getTranslationText(textScope, sentence) || sentence;
   const parsedText = parseText(renderSentence);
-  return applyState(parsedText, stateManager, model, stateScope);
+  return applyGameState(parsedText, stateManager, model, stateScope);
 };
 
 export type ParseSyntaxError = Error & {

@@ -13,14 +13,12 @@ const mergeState = <T extends Record<string, unknown>>(
   updates: RecursivePartial<T>
 ): T => {
   const result = state;
-
   for (const [key, value] of Object.entries(updates)) {
     const stateValue = result[key] ?? {};
     (result as Record<string, unknown>)[key] = isObject(value)
       ? mergeState(stateValue as Record<string, unknown>, value)
       : value;
   }
-
   return result;
 };
 
@@ -28,6 +26,7 @@ export const createDefaultState = <Game extends GameWorld>(
   gameModel: GameModel<Game>
 ): GameState<Game> => {
   const startState: GameState<Game> = {
+    version: gameModel.settings.initialState.version,
     currentLocation: undefined,
     overlayStack: [],
     settings: {

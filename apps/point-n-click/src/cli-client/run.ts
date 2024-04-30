@@ -8,13 +8,15 @@ import {
   updateTranslation,
   GameModelManager,
 } from "@point-n-click/engine";
+import { menu } from "./menu";
 
 export const runGame = async <Game extends GameWorld>(
   {
     color = true,
     translationData,
     lightMode,
-  }: CLISettings & TranslationSettings & { lightMode: boolean },
+    port,
+  }: CLISettings & TranslationSettings & { lightMode: boolean; port: number },
   gameModelManager: GameModelManager<Game>,
   stateManager: GameSaveStateManager<Game>,
   clearScreen: () => void
@@ -30,6 +32,13 @@ export const runGame = async <Game extends GameWorld>(
     await runLocation(gameModelManager, stateManager, clearScreen, {
       lightMode,
     });
+    if (stateManager.getPlayState() === "pausing") {
+      await menu(gameModelManager, stateManager, { port });
+
+      clearScreen();
+      startSkip();
+      stateManager.restoreSaveState();
+    }
     if (stateManager.getPlayState() === "reloading") {
       let model = gameModelManager.getModel();
       while (!gameModelManager.hasModel()) {

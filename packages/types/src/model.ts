@@ -54,7 +54,9 @@ export type Settings<Game extends GameWorld> = {
     default: Locale;
     supported: { [key: Locale]: string };
   };
-  initialState: RecursivePartial<GameState<Game>>;
+  initialState: RecursivePartial<GameState<Game>> & {
+    version: Game["version"];
+  };
   colors: {
     defaultTextColor?: PaletteColor;
     lightPalette: ColorPalette;
