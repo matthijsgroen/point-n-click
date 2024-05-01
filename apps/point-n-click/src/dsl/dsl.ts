@@ -38,6 +38,7 @@ import {
   PuzzleDependencyDiagram,
 } from "@point-n-click/puzzle-dependency-diagram";
 import { objectStateManagement } from "./object-state-conditions";
+import { OverlayInterface, overlayDSLFunctions } from "./overlay";
 
 type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) extends (
   x: infer R
@@ -120,7 +121,6 @@ type BaseDSL<Version extends number, Game extends GameWorld<Version>> = {
 
   text: (...sentences: string[]) => void;
   describeLocation: () => void;
-  openOverlay: (id: keyof Game["overlays"]) => void;
 
   onState: EvaluateStateCondition<Game>;
 
@@ -134,6 +134,7 @@ type BaseGameWorldDSL<
   BaseCharacterInterface<Game> &
   ItemInterface<Game> &
   LocationInterface<Game> &
+  OverlayInterface<Game> &
   ListInterface<Game> &
   ConditionSet<Game>;
 
@@ -163,6 +164,7 @@ type GameWorldDSL<
   CharacterInterface<Game, ThemeDSLMap<T>> &
   ItemInterface<Game> &
   LocationInterface<Game> &
+  OverlayInterface<Game> &
   ListInterface<Game> &
   ConditionSet<Game> &
   Omit<UnionToIntersection<RemapFunctions<ThemeDSLMap<T>>>, "character">;
@@ -464,6 +466,7 @@ export const world =
       ...characterDSLFunctions(addToActiveScript, pluginCharacterDSLFunctions),
       ...itemDSLFunctions(addToActiveScript),
       ...locationDSLFunctions(addToActiveScript),
+      ...overlayDSLFunctions(addToActiveScript),
       ...listDSLFunctions(addToActiveScript, wrapScript),
 
       text: (...sentences) => {
@@ -475,12 +478,6 @@ export const world =
       describeLocation: () => {
         addToActiveScript({
           statementType: "DescribeLocation",
-        });
-      },
-      openOverlay: (id) => {
-        addToActiveScript({
-          statementType: "OpenOverlay",
-          overlayId: id,
         });
       },
       onState,

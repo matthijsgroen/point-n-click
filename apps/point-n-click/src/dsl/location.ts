@@ -7,13 +7,14 @@ import {
 export type LocationDSL<
   Game extends GameWorld,
   I extends keyof Game["locations"]
-> = ObjectStateDSL<Game, "location", I>;
+> = ObjectStateDSL<Game, "location", I> & {
+  travel: () => void;
+};
 
 export type LocationInterface<Game extends GameWorld> = {
   location: <I extends keyof Game["locations"]>(
     location: I
   ) => LocationDSL<Game, I>;
-  travel: (location: keyof Game["locations"]) => void;
 };
 
 export const locationDSLFunctions = <Game extends GameWorld>(
@@ -21,11 +22,11 @@ export const locationDSLFunctions = <Game extends GameWorld>(
 ): LocationInterface<Game> => ({
   location: <I extends keyof Game["locations"]>(location: I) => ({
     ...objectStateManagement(addToActiveScript, "location", location),
+    travel: () => {
+      addToActiveScript({
+        statementType: "Travel",
+        destination: String(location),
+      });
+    },
   }),
-  travel: (location: keyof Game["locations"]) => {
-    addToActiveScript({
-      statementType: "Travel",
-      destination: String(location),
-    });
-  },
 });
