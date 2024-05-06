@@ -34,13 +34,10 @@ export const formatParserError = (e: ParseSyntaxError): DisplayErrorText => ({
   ],
 });
 
-export const formatStateError = (
-  text: string,
-  e: StateError
-): DisplayErrorText => ({
+export const formatStateError = (e: StateError): DisplayErrorText => ({
   type: "error",
   message: [
-    [{ type: "text", text: `Could not interpolate:\n'${text}'` }],
+    [{ type: "text", text: `Could not interpolate:\n'${e.sentence}'` }],
     [{ type: "text", text: e.message }],
   ],
 });

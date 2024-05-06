@@ -10,8 +10,12 @@ import { FormattedText, ParsedText } from "./types";
 
 export type StateError = Error & {
   name: "StateError";
+  sentence: string;
   stateKey: string;
 };
+
+export const isStateError = (e: unknown): e is StateError =>
+  (e as StateError).name === "StateError";
 
 const existingRootStates = ["items", "characters", "locations", "overlays"];
 const existingCharacterProperties = [
@@ -20,6 +24,7 @@ const existingCharacterProperties = [
   "counters",
   "texts",
 ];
+
 const existingItemProperties = ["counters", "texts"];
 
 export const characterName = <Game extends GameWorld>(
@@ -52,7 +57,10 @@ const isRootLevelStateObject = (
 ): rootLevel is "items" | "locations" | "overlays" =>
   ["items", "locations", "overlays"].includes(rootLevel);
 
-export type Interpolator = (textElement: StateText) => FormattedText;
+export type Interpolator = (
+  textElement: StateText,
+  text: ParsedText
+) => FormattedText;
 
 const makeInterpolator =
   <Game extends GameWorld>(
@@ -60,23 +68,25 @@ const makeInterpolator =
     model: GameModel<Game>,
     stateScope: string[]
   ): Interpolator =>
-  (element) => {
+  (element, text) => {
     const result: FormattedText = [];
     const statePath = element.value.split(".");
     const resolveStatePath =
       statePath[0] === ""
-        ? [...stateScope].concat(statePath.slice(1))
+        ? [...stateScope.slice(0, -1)].concat(statePath.slice(1))
         : statePath;
 
     const state = gameState.get();
+
     const throwStateError = (message: string) => {
       const error = new Error(message);
       (error as StateError).name = "StateError";
       (error as StateError).stateKey = element.value;
+      (error as StateError).sentence = printParsed(text);
       throw error;
     };
 
-    let value = `STATE NOT FOUND '${element.value}'`;
+    let value = `STATE NOT FOUND '${resolveStatePath.join(".")}'`;
     const rootLevel = resolveStatePath[0];
     if (!existingRootStates.includes(rootLevel)) {
       throwStateError(
@@ -216,8 +226,21 @@ export const applyState = (
       });
     }
     if (element.type === "interpolation") {
-      result.push(...interpolator(element));
+      result.push(...interpolator(element, text));
     }
   }
   return result;
+};
+
+export const printParsed = (text: ParsedText): string => {
+  return text
+    .map((e) => {
+      if (e.type === "text") return e.text;
+      if (e.type === "interpolation") return `[${e.value}]`;
+      if (e.type === "formatting") {
+        // TODO Add support for value
+        return `{${e.format}}${printParsed(e.contents)}{/${e.format}}`;
+      }
+    })
+    .join("");
 };

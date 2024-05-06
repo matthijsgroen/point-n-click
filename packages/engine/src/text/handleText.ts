@@ -5,9 +5,9 @@ import {
   GameModel,
 } from "@point-n-click/types";
 import { formatParserError, formatStateError } from "../errors/formatErrors";
-import { StateError } from "./applyState";
+import { isStateError } from "./applyState";
 import { determineTextScope } from "./determineTextScope";
-import { getDisplayText, ParseSyntaxError } from "./processText";
+import { getDisplayText, isParseError } from "./processText";
 import { FormattedText } from "./types";
 
 export const handleTextContent = <Game extends GameWorld>(
@@ -30,16 +30,16 @@ export const handleTextContent = <Game extends GameWorld>(
         )
       );
     } catch (e) {
-      if ((e as ParseSyntaxError).name === "SyntaxError") {
+      if (isParseError(e)) {
         return {
           result: text,
-          error: formatParserError(e as ParseSyntaxError),
+          error: formatParserError(e),
         };
       }
-      if ((e as StateError).name === "StateError") {
+      if (isStateError(e)) {
         return {
           result: text,
-          error: formatStateError(sentence, e as StateError),
+          error: formatStateError(e),
         };
       }
       break;

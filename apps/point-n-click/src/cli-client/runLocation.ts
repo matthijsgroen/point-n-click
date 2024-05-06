@@ -1,19 +1,24 @@
 import {
   GameWorld,
-  GameStateManager,
   GameModel,
   GameState,
   FormattedText,
   GameSaveStateManager,
   PatchFunction,
+  DisplayErrorText,
 } from "@point-n-click/types";
 import {
   GameModelManager,
+  formatParserError,
+  formatStateError,
   getDisplayInfo,
   getInteractions,
+  isParseError,
+  isStateError,
 } from "@point-n-click/engine";
 import { handleInteractions } from "./handleInteractions";
 import { renderDisplayInfo } from "./renderDisplayInfo";
+import { renderText } from "./renderText";
 
 export const runLocation = async <Game extends GameWorld>(
   gameModelManager: GameModelManager<Game>,
@@ -99,15 +104,34 @@ export const runLocation = async <Game extends GameWorld>(
       }
     }
 
-    const interactions = getInteractions(
-      gameModelManager,
-      stateManager.activeState()
-    );
-    await handleInteractions(
-      interactions,
-      stateManager,
-      gameModelManager,
-      clearScreen
-    );
+    try {
+      const interactions = getInteractions(
+        gameModelManager,
+        stateManager.activeState()
+      );
+      await handleInteractions(
+        interactions,
+        stateManager,
+        gameModelManager,
+        clearScreen
+      );
+    } catch (e) {
+      let errorData: DisplayErrorText | null = null;
+      if (isParseError(e)) {
+        errorData = formatParserError(e);
+      }
+      if (isStateError(e)) {
+        errorData = formatStateError(e);
+      }
+      if (errorData) {
+        stateManager.setPlayState("reloading");
+        gameModelManager.backupModel();
+
+        for (const sentence of errorData.message) {
+          await renderText(sentence, Infinity, {});
+        }
+      }
+      break;
+    }
   }
 };

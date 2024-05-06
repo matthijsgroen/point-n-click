@@ -1,8 +1,8 @@
 import {
-  ParseSyntaxError,
-  StateError,
   getDisplayText,
   getTranslationScope,
+  isParseError,
+  isStateError,
 } from "@point-n-click/engine";
 import {
   GameModel,
@@ -18,12 +18,6 @@ import { createDefaultState } from "@point-n-click/state";
 import { createState } from "@point-n-click/types";
 import { GameStateManager } from "@point-n-click/types";
 import { ValidationMessage } from "./ValidationMessage";
-
-const isParseError = (e: unknown): e is ParseSyntaxError =>
-  (e as ParseSyntaxError).name === "SyntaxError";
-
-const isStateError = (e: unknown): e is StateError =>
-  (e as StateError).name === "StateError";
 
 type TextReport = {
   messages: ValidationMessage[];

@@ -14,6 +14,7 @@ export {
   characterName,
   applyGameState,
   applyState,
+  isStateError,
   type Interpolator,
 } from "./text/applyState";
 export * from "./translations";

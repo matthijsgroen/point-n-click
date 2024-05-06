@@ -12,11 +12,11 @@ import {
   ScriptStatement,
 } from "@point-n-click/types";
 import { testCondition } from "@point-n-click/state";
-import { getDisplayText, ParseSyntaxError } from "../text/processText";
+import { getDisplayText, isParseError } from "../text/processText";
 import { determineTextScope } from "../text/determineTextScope";
 import { FormattedText } from "../text/types";
 import { formatParserError, formatStateError } from "../errors/formatErrors";
-import { characterName, StateError } from "../text/applyState";
+import { characterName, isStateError } from "../text/applyState";
 import { getTranslationText } from "../text/getTranslationText";
 import { getContentPlugin, isContentPluginStatement } from "../contentPlugin";
 import { handleTextContent } from "../text/handleText";
@@ -299,11 +299,11 @@ const statementHandler = <
             )
           );
         } catch (e) {
-          if ((e as ParseSyntaxError).name === "SyntaxError") {
-            list.add(result, formatParserError(e as ParseSyntaxError));
+          if (isParseError(e)) {
+            list.add(result, formatParserError(e));
           }
-          if ((e as StateError).name === "StateError") {
-            list.add(result, formatStateError(sentence, e as StateError));
+          if (isStateError(e)) {
+            list.add(result, formatStateError(e));
           }
           break;
         }

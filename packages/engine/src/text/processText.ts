@@ -8,8 +8,8 @@ export const parseText = (text: string): ParsedText => {
   try {
     return parse(text);
   } catch (e) {
-    if ((e as ParseSyntaxError).name === "SyntaxError") {
-      (e as ParseSyntaxError).text = text;
+    if (isParseError(e)) {
+      e.text = text;
     }
 
     throw e;
@@ -37,3 +37,6 @@ export type ParseSyntaxError = Error & {
   found: string;
   text: string;
 };
+
+export const isParseError = (e: unknown): e is ParseSyntaxError =>
+  (e as ParseSyntaxError).name === "SyntaxError";
