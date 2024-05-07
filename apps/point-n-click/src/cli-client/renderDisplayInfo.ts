@@ -49,13 +49,19 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
     gameModelManager,
     lightMode ? "light" : "dark"
   );
+  const options = { addNewLine: true, getColor };
 
   const state = stateManager.activeState();
   const renderEmptyLine = ({ pre, post } = { pre: prefix, post: postfix }) =>
-    renderText([{ type: "text", text: "" }], 0, {
-      prefix: pre,
-      postfix: post,
-    });
+    renderText(
+      [{ type: "text", text: "" }],
+      0,
+      {
+        prefix: pre,
+        postfix: post,
+      },
+      options
+    );
 
   if (isContentPluginContent(displayItem)) {
     const storeCustomInput = async <T>(
@@ -109,12 +115,17 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
     await setDisplayType("text", renderEmptyLine);
     for (const sentence of displayItem.text) {
       const color = getColor(textColor);
-      await renderText(sentence, displayItem.cpm, {
-        color,
-        prefix,
-        postfix,
-        indent: isListItem(sentence) ? 2 : 0,
-      });
+      await renderText(
+        sentence,
+        displayItem.cpm,
+        {
+          color,
+          prefix,
+          postfix,
+          indent: isListItem(sentence) ? 2 : 0,
+        },
+        options
+      );
     }
     resetStyling();
   } else if (displayItem.type === "characterText") {
@@ -155,12 +166,17 @@ export const renderDisplayInfo = async <Game extends GameWorld>(
       }
       const c = getColor(color);
 
-      await renderText(text, displayItem.cpm, {
-        color: c,
-        indent: 2,
-        prefix,
-        postfix,
-      });
+      await renderText(
+        text,
+        displayItem.cpm,
+        {
+          color: c,
+          indent: 2,
+          prefix,
+          postfix,
+        },
+        options
+      );
     }
 
     resetStyling();

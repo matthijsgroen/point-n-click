@@ -2,6 +2,7 @@ import { FormattedText } from "@point-n-click/engine";
 import { hexColor } from "..";
 import { getSettings } from "./settings";
 import { wait, resetStyling, setStyling, TextStyling } from "./utils";
+import { HexColor, PaletteColor } from "@point-n-click/types";
 
 const minute = 60e3;
 
@@ -113,21 +114,32 @@ export const renderText = async (
   text: FormattedText,
   cpm: number,
   styling: TextStyling,
-  addNewline = true
+  {
+    addNewline = true,
+    getColor,
+  }: {
+    addNewline?: boolean;
+    getColor?: (name: PaletteColor | undefined) => HexColor | undefined;
+  } = {
+    addNewline: true,
+  }
 ) => {
   const width = process.stdout.columns ?? Infinity;
   const line = splitLines(text, styling, width);
-  await renderLine(line, cpm, styling);
+  await renderLine(line, cpm, styling, { getColor });
 
   if (addNewline) {
     process.stdout.write("\n");
   }
 };
 
-export const renderLine = async (
+const renderLine = async (
   text: FormattedText,
   cpm: number,
-  styling: TextStyling
+  styling: TextStyling,
+  options: {
+    getColor?: (name: PaletteColor | undefined) => HexColor | undefined;
+  }
 ) => {
   if (getSettings().color) {
     setStyling(styling);
@@ -165,9 +177,12 @@ export const renderLine = async (
         newStyling.strikeThrough = true;
       }
       if (element.format === "color" && element.value) {
-        newStyling.color = hexColor(element.value);
+        const color = options?.getColor?.(element.value as PaletteColor);
+        if (color !== undefined) {
+          newStyling.color = color;
+        }
       }
-      await renderLine(element.contents, cpm, newStyling);
+      await renderLine(element.contents, cpm, newStyling, options);
       if (getSettings().color) {
         resetStyling();
         setStyling(styling);

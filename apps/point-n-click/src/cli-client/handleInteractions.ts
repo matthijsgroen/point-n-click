@@ -34,12 +34,13 @@ export const handleInteractions = async <Game extends GameWorld>(
   console.log("");
 
   let key = 0;
+  const keyList = "123456789abcdefghijkl";
   const textInteractions = interactions.actions.map<TextInteraction>(
     ({ label, id, shortcutKey, isGlobal }) => ({
       label,
       id,
       isGlobal,
-      key: `${shortcutKey || ++key}`,
+      key: `${shortcutKey || keyList.slice(key++, key)}`,
     })
   );
 

@@ -46,12 +46,17 @@ export const handleDescriptionText = async <Game extends GameWorld>(
   for (const sentence of displayItem.text) {
     const cpm = state.get().settings.cpm;
     const color = getColor(textColor);
-    await renderText(sentence, cpm, {
-      color,
-      prefix,
-      postfix,
-      indent: isListItem(sentence) ? 2 : 0,
-    });
+    await renderText(
+      sentence,
+      cpm,
+      {
+        color,
+        prefix,
+        postfix,
+        indent: isListItem(sentence) ? 2 : 0,
+      },
+      { addNewline: true, getColor }
+    );
   }
   resetStyling();
 };

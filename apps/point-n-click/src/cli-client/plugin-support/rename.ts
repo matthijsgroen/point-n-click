@@ -68,11 +68,16 @@ export const handleRename = async <Game extends GameWorld>(
   const color = getColor(textColor);
   const cpm = state.get().settings.cpm;
   // 1. Show input prompt
-  await renderText(displayItem.prompt, cpm, {
-    color,
-    prefix,
-    postfix,
-  });
+  await renderText(
+    displayItem.prompt,
+    cpm,
+    {
+      color,
+      prefix,
+      postfix,
+    },
+    { addNewline: true, getColor }
+  );
   // 2. Gather result
   setColor(
     getColor(
