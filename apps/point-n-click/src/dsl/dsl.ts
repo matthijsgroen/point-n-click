@@ -22,6 +22,7 @@ import {
   WorldMap,
   Interaction,
   ContentPluginStatement,
+  GameScene,
 } from "@point-n-click/types";
 import {
   characterDSLFunctions,
@@ -31,6 +32,9 @@ import {
 import { ConditionSet, dslStateConditions } from "./dsl-conditions";
 import { itemDSLFunctions, ItemInterface } from "./item";
 import { locationDSLFunctions, LocationInterface } from "./location";
+import { OverlayInterface, overlayDSLFunctions } from "./overlay";
+import { SceneInterface, sceneDSLFunctions } from "./scene";
+
 import { listDSLFunctions, ListInterface } from "./list";
 import { ThemeSettings } from "@point-n-click/themes";
 import {
@@ -38,7 +42,6 @@ import {
   PuzzleDependencyDiagram,
 } from "@point-n-click/puzzle-dependency-diagram";
 import { objectStateManagement } from "./object-state-conditions";
-import { OverlayInterface, overlayDSLFunctions } from "./overlay";
 
 type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) extends (
   x: infer R
@@ -113,6 +116,10 @@ type BaseDSL<Version extends number, Game extends GameWorld<Version>> = {
     location: Location,
     script: LocationScript<Game, Location>
   ) => void;
+  defineScene: <Scene extends Game["scenes"]>(
+    scene: Scene,
+    script: Script
+  ) => void;
   definePuzzleDependencies: <MetaData extends BasePuzzleEventStates>(
     diagram: PuzzleDependencyDiagram<MetaData>
   ) => void;
@@ -135,6 +142,7 @@ type BaseGameWorldDSL<
   ItemInterface<Game> &
   LocationInterface<Game> &
   OverlayInterface<Game> &
+  SceneInterface<Game> &
   ListInterface<Game> &
   ConditionSet<Game>;
 
@@ -165,6 +173,7 @@ type GameWorldDSL<
   ItemInterface<Game> &
   LocationInterface<Game> &
   OverlayInterface<Game> &
+  SceneInterface<Game> &
   ListInterface<Game> &
   ConditionSet<Game> &
   Omit<UnionToIntersection<RemapFunctions<ThemeDSLMap<T>>>, "character">;
@@ -203,6 +212,7 @@ export const world =
       settings,
       locations: [],
       overlays: [],
+      scenes: [],
       globalInteractions: [],
       themes: themes.map<ThemeInfo>((t) => ({
         themePackage: t.packageName,
@@ -448,6 +458,18 @@ export const world =
           locationAST as unknown as GameLocation<Game>
         );
       },
+      defineScene: <Scene extends Game["scenes"]>(
+        scene: Scene,
+        script: Script
+      ) => {
+        const sceneAST: GameScene<Game> = {
+          id: scene,
+          script: [],
+        };
+        sceneAST.script = wrapScript(script);
+
+        worldModel?.scenes.push(sceneAST);
+      },
       definePuzzleDependencies: (diagram) => {
         worldModel.diagram = diagram;
       },
@@ -466,6 +488,7 @@ export const world =
       ...characterDSLFunctions(addToActiveScript, pluginCharacterDSLFunctions),
       ...itemDSLFunctions(addToActiveScript),
       ...locationDSLFunctions(addToActiveScript),
+      ...sceneDSLFunctions(addToActiveScript),
       ...overlayDSLFunctions(addToActiveScript),
       ...listDSLFunctions(addToActiveScript, wrapScript),
 

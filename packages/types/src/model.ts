@@ -1,5 +1,5 @@
 import { PuzzleDependencyDiagram } from "@point-n-click/puzzle-dependency-diagram";
-import { GameInteraction, GameLocation, GameOverlay } from "./ast";
+import { GameInteraction, GameLocation, GameOverlay, GameScene } from "./ast";
 import { ColorPalette, PaletteColor } from "./colorPalette";
 import { GameWorld } from "./world";
 import { GameState } from "./state";
@@ -76,6 +76,7 @@ export type GameModel<Game extends GameWorld> = {
   settings: Settings<Game>;
   locations: GameLocation<Game>[];
   overlays: GameOverlay<Game>[];
+  scenes: GameScene<Game>[];
   globalInteractions: GameInteraction<Game>[];
   themes: ThemeInfo[];
   diagram: PuzzleDependencyDiagram;

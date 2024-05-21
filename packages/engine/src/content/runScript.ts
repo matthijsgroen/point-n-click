@@ -136,9 +136,35 @@ const statementHandler = <
       );
     },
     Travel: ({ destination }, stateManager) => {
+      // TODO: Check in state if in scene, abort if in scene.
+      // Scenes should not switch location.
+
       stateManager.update((state) => ({
         ...state,
         currentLocation: destination,
+      }));
+    },
+    PlayScene: ({ scene }, stateManager, gameModelManager) => {
+      const currentScene = stateManager.get().currentScene;
+
+      const sceneScript = gameModelManager
+        .getModel()
+        .scenes.find((sceneData) => sceneData.id === scene);
+      if (sceneScript === undefined) return null;
+      stateManager.update((state) => ({
+        ...state,
+        currentScene: scene,
+      }));
+      runScript(
+        sceneScript.script,
+        stateManager,
+        gameModelManager,
+        list,
+        random
+      );
+      stateManager.update((state) => ({
+        ...state,
+        currentScene,
       }));
     },
     UpdateGameObjectState: ({ stateItem, newState, objectType }, state) => {
@@ -333,6 +359,9 @@ const statementHandler = <
       test(statement);
     },
     OpenOverlay: (statement, state) => {
+      // TODO: Check in state if in scene, abort if in scene.
+      // Scenes should not switch overlays
+
       state.update((state) => ({
         ...state,
         overlayStack: state.overlayStack.concat(statement.overlayId),

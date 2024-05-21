@@ -139,6 +139,10 @@ export type GameOverlay<Game extends GameWorld> = {
   interactions: GameInteraction<Game>[];
   prompts: { prompt: string; condition?: StateCondition<Game> }[];
 };
+export type GameScene<Game extends GameWorld> = {
+  id: Game["scenes"];
+  script: ScriptAST<Game>;
+};
 export type ScriptAST<Game extends GameWorld> = (
   | ScriptStatement<Game>
   | ContentPluginStatement
@@ -148,6 +152,7 @@ export type ScriptStatement<Game extends GameWorld> =
   | TextStatement
   | DescribeLocationStatement
   | TravelStatement<Game>
+  | PlaySceneStatement<Game>
   | ConditionStatement<Game>
   | UpdateState<Game>
   | UpdateCounter<Game>
@@ -173,6 +178,11 @@ export type OpenGameOverlay<Game extends GameWorld> = {
 export type CloseGameOverlay<Game extends GameWorld> = {
   statementType: "CloseOverlay";
   overlayId: keyof Game["overlays"];
+};
+
+export type PlaySceneStatement<Game extends GameWorld> = {
+  statementType: "PlayScene";
+  scene: Game["scenes"];
 };
 
 export type TravelStatement<Game extends GameWorld> = {

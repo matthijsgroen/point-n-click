@@ -29,6 +29,7 @@ export type GameState<Game extends GameWorld> = {
   lastInteractionAt?: number;
   overlayStack: (keyof Game["overlays"])[];
   currentOverlay?: keyof Game["overlays"];
+  currentScene?: Game["scenes"];
   settings: {
     cpm: number;
     skipMode: "tillChoice" | "screen" | "off";

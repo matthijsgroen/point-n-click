@@ -43,4 +43,5 @@ export type GameWorld<Version extends number = number> = {
    * a puzzle to solve, lock to pick.
    */
   overlays: Record<string, WorldObjectSettings>;
+  scenes: string;
 };

@@ -214,6 +214,12 @@ export const generateTranslationFile = async <Game extends GameWorld>(
       setTranslationKey(["prompts", prompt.prompt], prompt.prompt);
     }
   }
+
+  for (const scene of gameModel.scenes) {
+    const sceneScope = ["scenes", String(scene.id)];
+    processScript(scene.script, sceneScope, setTranslationKey);
+  }
+
   for (const globalInteraction of gameModel.globalInteractions) {
     const overlayScope = [
       "global",
@@ -229,6 +235,7 @@ export const generateTranslationFile = async <Game extends GameWorld>(
     }
     processScript(globalInteraction.script, overlayScope, setTranslationKey);
   }
+
   for (const theme of gameModel.themes || []) {
     const resolvedPackage = resolver(theme.themePackage);
     const themePluginLib = await import(resolvedPackage);
