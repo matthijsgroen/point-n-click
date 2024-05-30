@@ -63,13 +63,15 @@ export const useGameState = (): GameSaveStateManager<GameWorld> & {
   setInteraction: Dispatch<string>;
 } => {
   const gameState = useContext(GameStateContext);
+  const activeState = createState(
+    gameState.stateRef.current
+  ) as GameStateManager<GameWorld>;
 
   return {
-    activeState: () =>
-      createState(gameState.stateRef.current) as GameStateManager<GameWorld>,
+    activeState: () => activeState,
     stableState: () =>
       createState(gameState.gameSavePointState) as GameStateManager<GameWorld>,
-    updateState: (action) => {},
+    updateState: (_action) => {},
     getState: () => gameState.stateRef.current as GameState<GameWorld>,
     getSaveState: () => gameState.gameSavePointState as GameState<GameWorld>,
     storeInput: (key: string, value: unknown) => {},
