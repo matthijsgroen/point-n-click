@@ -11,7 +11,7 @@ import { produce } from "immer";
 import { CACHE_FOLDER } from "./constants";
 import { mkdir } from "../content-builder/mkdir";
 import { writeFile } from "node:fs/promises";
-import Parcel, { createWorkerFarm } from "@parcel/core";
+import Parcel from "@parcel/core";
 import { PackagedBundle } from "@parcel/types";
 import { htmlFile, indexFile } from "./templates/game";
 import {

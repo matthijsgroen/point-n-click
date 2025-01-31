@@ -92,6 +92,7 @@ export const menu = async <Game extends GameWorld>(
 
       "Server: [addr]",
       "Diagram: [addr]/diagram.html",
+      "Map: [addr]/map.html",
       "",
       "{b}[title] - Menu{/b}",
       "",
