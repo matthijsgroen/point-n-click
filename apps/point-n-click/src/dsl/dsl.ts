@@ -1,6 +1,7 @@
 import {
   GameWorld,
   OverlayScript,
+  OverlayObject,
   LocationScript,
   ScriptAST,
   ScriptStatement,
@@ -99,6 +100,9 @@ type BaseDSL<Version extends number, Game extends GameWorld<Version>> = {
     id: Overlay,
     handleOverlay: OverlayScript<Game, Overlay>
   ) => void;
+
+  defineOverlay2: <Overlay extends keyof Game["overlays"]>(id: Overlay, overlayObject: OverlayObject<Game, Overlay>) => void;
+
   /**
    * # Location
    *
