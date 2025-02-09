@@ -3,7 +3,7 @@ import g from "../game";
 g.defineOverlay("bakerConversation", {
   prompt: "What will you say:",
   onEnter: (w) => {
-    if (!w.characters.baker.toldDaughter && w.characters.dragon.toothPulled) {
+    if (!w.characters.baker.hasToldDaughter && w.characters.dragon.isToothPulled) {
       w.characters.baker.say(
         "People told me the dragon was slain. I heard the really loud roar.",
         `Did you see {b}${w.characters.daughter.name}{/b}? Is she still alive?`
@@ -74,15 +74,15 @@ g.defineOverlay("bakerConversation", {
     action(
       `Yes, I've seen ${state.characters.daughter.name}.`,
       state.state === "visiting" &&
-        state.characters.dragon.toothPulled &&
-        !state.characters.baker.toldDaughter,
+        state.characters.dragon.isToothPulled &&
+        !state.characters.baker.hasToldDaughter,
       (w) => {
         w.characters.player.say(
           `Yes, I've seen ${w.characters.daughter.name}! She is alive and well.`,
           "I think she will be back here shortly."
         );
         w.characters.baker.say("Thank you! I cannot wait!");
-        w.characters.baker.toldDaughter = true;
+        w.characters.baker.hasToldDaughter = true;
       }
     );
 
@@ -107,7 +107,7 @@ g.defineOverlay("bakerConversation", {
         if (w.items.sword.state === "unknown") {
           w.items.sword.state = "need";
         }
-        w.characters.baker.toldDragon = true;
+        w.characters.baker.hasToldDragon = true;
       }
     );
 
@@ -132,7 +132,7 @@ g.defineOverlay("bakerConversation", {
         w.characters.baker.say(
           "... Let's say I'm avoiding her for the moment."
         );
-        w.locations.swamp.allowEntrance = true;
+        w.locations.swamp.canAccess = true;
       }
     );
 
@@ -155,7 +155,7 @@ g.defineOverlay("bakerConversation", {
         );
         w.text("You find this very interesting, and make a note of it.");
         w.lists.inventory.addUnique("treasureNotes");
-        w.items.treasureNotes.moonStone = true;
+        w.items.treasureNotes.knowsMoonStone = true;
       }
     );
 
@@ -163,7 +163,7 @@ g.defineOverlay("bakerConversation", {
       "I brought you some grain",
       state.state === "visiting" &&
         state.characters.horse.state === "following" &&
-        state.characters.horse.cart &&
+        state.characters.horse.hasCart &&
         state.items.grain.state === "cart",
       (w) => {
         w.characters.player.say("I brought you some grain.");
@@ -178,7 +178,7 @@ g.defineOverlay("bakerConversation", {
       "I brought you some flour",
       state.state === "visiting" &&
         state.characters.horse.state === "following" &&
-        state.characters.horse.cart &&
+        state.characters.horse.hasCart &&
         state.items.grain.state === "flour",
       (w) => {
         w.characters.player.say("I brought you some flour.");

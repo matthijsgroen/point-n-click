@@ -6,24 +6,24 @@ export type GameState = GameDefinition<
     version: 1;
     locations: {
       home: { states: "home" };
-      forest: { flags: "visited" };
-      farmland: { flags: "visited" };
-      farm: { flags: "visited" };
-      hills: { flags: "visited" };
-      mine: { flags: "visited" };
-      mill: { flags: "visited"; states: "fixed" };
-      swamp: { flags: "allowEntrance" };
-      cabin: { flags: "visited"; states: "accessible" };
-      cabinInside: { flags: "visited" };
-      village: { flags: "visited" };
-      bakery: { flags: "visited" };
-      smithy: { flags: "visited"; states: "browsing" };
-      darkwoods: { flags: "visited" };
-      tower: { flags: "visited"; states: "firstVisit" | "inside" | "visited" };
-      towerTop: { flags: "visited"; states: "sneakIn" };
+      forest: { flags: "hasVisited" };
+      farmland: { flags: "hasVisited" };
+      farm: { flags: "hasVisited" };
+      hills: { flags: "hasVisited" };
+      mine: { flags: "hasVisited" };
+      mill: { flags: "hasVisited"; states: "isFixed" };
+      swamp: { flags: "canAccess" };
+      cabin: { flags: "hasVisited"; states: "accessible" };
+      cabinInside: { flags: "hasVisited" };
+      village: { flags: "hasVisited" };
+      bakery: { flags: "hasVisited" };
+      smithy: { flags: "hasVisited"; states: "browsing" };
+      darkwoods: { flags: "hasVisited" };
+      tower: { flags: "hasVisited"; states: "firstVisit" | "inside" | "visited" };
+      towerTop: { flags: "hasVisited"; states: "sneakIn" };
       towerTopElevator: {};
-      towerBaseElevator: { flags: "cellarDoorOpen" };
-      river: { flags: "visited" };
+      towerBaseElevator: { flags: "isCellarDoorOpen" };
+      river: { flags: "hasVisited" };
       treasureRoute: { counters: "steps" };
       cellar: {};
     };
@@ -35,28 +35,28 @@ export type GameState = GameDefinition<
       pickaxe: { states: "broken" | "fixed" | "given" };
       rope: {
         states: "possession" | "tying" | "cut";
-        flags: "tiedElevator" | "tiedTooth";
+        flags: "isTiedElevator" | "isTiedTooth";
       };
       millstone: { states: "seen" | "cart" | "elevator" | "used" | "rope" };
       grain: { states: "access" | "cart" | "flour" | "delivered" };
       fabric: { states: "possession" | "used" };
-      medicine: { flags: "recipe" };
+      medicine: { flags: "hasRecipe" };
       cookies: { states: "price" | "possession" | "given" };
       gemstone: { states: "chopped" | "possession" | "used" };
       sword: { states: "need" | "possession" };
       necklace: { states: "need" | "possession" | "given" };
       treasureNotes: {
         states: "existence" | "possession";
-        flags: "moonStone" | "route" | "startPoint";
+        flags: "knowsMoonStone" | "knowsRoute" | "knowsStartPoint";
       };
       ingredientList: {
         states: "possession";
-        flags: "seen" | "roundLeaves" | "thornyLeaves" | "tooth" | "toadstools";
+        flags: "hasSeen" | "hasRoundLeaves" | "hasThornyLeaves" | "hasTooth" | "hasToadstools";
       };
-      treasureHunt: { flags: "active" | "done" };
+      treasureHunt: { flags: "isActive" | "isDone" };
       moonStone: { states: "possession" };
       gold: { states: "possession" | "used" };
-      runeStone: { states: "possession"; flags: "knowledgeUsage" };
+      runeStone: { states: "possession"; flags: "knowsUsage" };
       plants: { counters: "roundLeaves" | "thornyLeaves" | "heartLeaves" };
       mushrooms: { counters: "lightblue" | "brown" | "orange" };
       moss: { counters: "starmoss" | "cosmoss" | "moonmoss" };
@@ -68,19 +68,19 @@ export type GameState = GameDefinition<
     characters: {
       player: {
         counters: "coins";
-        flags: "male" | "herbKnowledge" | "fungiKnowledge" | "mossKnowledge";
+        flags: "isMale" | "hasHerbKnowledge" | "hasFungiKnowledge" | "hasMossKnowledge";
       };
-      dwarf: { flags: "nameKnown"; states: "happy" };
+      dwarf: { flags: "isNameKnown"; states: "happy" };
       miller: {};
       horse: {
         states: "river" | "following" | "stable";
-        flags: "hooves" | "cart" | "found" | "known";
+        flags: "hasHoovesFixed" | "hasCart" | "isFound" | "isKnown";
       };
-      dragon: { states: "known" | "found"; flags: "toothPulled" | "canTalk" };
-      farmer: { flags: "visited" | "toldDragon" | "returnedHorse" };
+      dragon: { states: "known" | "found"; flags: "isToothPulled" | "canTalk" };
+      farmer: { flags: "isVisited" | "hasToldDragon" | "hasReturnedHorse" };
       daughter: { states: "unloadStone" | "bakery" };
       witch: {};
-      baker: { flags: "toldDragon" | "toldDaughter" };
+      baker: { flags: "hasToldDragon" | "hasToldDaughter" };
       farrier: {};
       goldsmith: {};
       armorer: {};
@@ -111,7 +111,7 @@ export type GameState = GameDefinition<
 
       books: {};
       ingredientBook: { counters: "page" };
-      recipeBook: { counters: "page"; flags: "open" };
+      recipeBook: { counters: "page"; flags: "isOpen" };
       cauldron: {
         states:
           | "addIngredient"

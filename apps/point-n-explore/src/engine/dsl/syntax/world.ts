@@ -2,6 +2,11 @@ import { Settings } from "../types/settings";
 import { GameWorld } from "../types/world";
 import { OverlayObject } from "./script";
 
+type GameData<Game extends GameWorld<number>> = {
+  settings: Settings<Game>;
+  overlays: Record<string, OverlayObject<Game, string>>;
+}
+
 type BaseDSL<Version extends number, Game extends GameWorld<Version>> = {
   /**
    * # Overlay
@@ -23,10 +28,10 @@ type BaseDSL<Version extends number, Game extends GameWorld<Version>> = {
     overlayObject: OverlayObject<Game, Overlay>
   ) => void;
 
-  compile: () => unknown;
+  compile: () => GameData<Game>;
 };
 
-type GameWorldDSL<
+export type GameWorldDSL<
   Version extends number,
   Game extends GameWorld<Version>
 > = BaseDSL<Version, Game>;
@@ -43,13 +48,17 @@ type GameWorldDSL<
 export const world = <Game extends GameWorld<number>>(
   settings: Settings<Game>
 ): GameWorldDSL<Game["version"], Game> => {
-  console.log("Hello world");
+  const gameData: GameData<Game> = {
+    settings,
+    overlays: {}
+  }
+
   return {
     defineOverlay: (id, overlayObject) => {
-      console.log("Define overlay", id, overlayObject);
+      gameData.overlays[id as string] = overlayObject;
     },
     compile: () => {
-      console.log("Compile");
+      return gameData
     },
   };
 };

@@ -92,7 +92,7 @@ const game = world<GameState>({
     characters: {
       player: {
         flags: {
-          male: true,
+          isMale: true,
         },
       },
     },

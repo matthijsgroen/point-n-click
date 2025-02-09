@@ -17,7 +17,7 @@ export type WorldObjectSettings = {
      *
      */
     states?: string;
-    flags?: string;
+    flags?: `is${string}` | `has${string}` | `can${string}` | `knows${string}`;
     counters?: string;
     texts?: string;
 };
