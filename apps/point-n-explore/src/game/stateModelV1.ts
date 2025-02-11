@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import { GameDefinition } from "../engine/dsl/types/world";
 
 export type GameState = GameDefinition<
@@ -19,7 +20,10 @@ export type GameState = GameDefinition<
       bakery: { flags: "hasVisited" };
       smithy: { flags: "hasVisited"; states: "browsing" };
       darkwoods: { flags: "hasVisited" };
-      tower: { flags: "hasVisited"; states: "firstVisit" | "inside" | "visited" };
+      tower: {
+        flags: "hasVisited";
+        states: "firstVisit" | "inside" | "visited";
+      };
       towerTop: { flags: "hasVisited"; states: "sneakIn" };
       towerTopElevator: {};
       towerBaseElevator: { flags: "isCellarDoorOpen" };
@@ -51,7 +55,12 @@ export type GameState = GameDefinition<
       };
       ingredientList: {
         states: "possession";
-        flags: "hasSeen" | "hasRoundLeaves" | "hasThornyLeaves" | "hasTooth" | "hasToadstools";
+        flags:
+          | "hasSeen"
+          | "hasRoundLeaves"
+          | "hasThornyLeaves"
+          | "hasTooth"
+          | "hasToadstools";
       };
       treasureHunt: { flags: "isActive" | "isDone" };
       moonStone: { states: "possession" };
@@ -68,7 +77,11 @@ export type GameState = GameDefinition<
     characters: {
       player: {
         counters: "coins";
-        flags: "isMale" | "hasHerbKnowledge" | "hasFungiKnowledge" | "hasMossKnowledge";
+        flags:
+          | "isMale"
+          | "hasHerbKnowledge"
+          | "hasFungiKnowledge"
+          | "hasMossKnowledge";
       };
       dwarf: { flags: "isNameKnown"; states: "happy" };
       miller: {};

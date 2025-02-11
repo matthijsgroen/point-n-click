@@ -14,10 +14,10 @@ export type Settings<Game extends GameWorld> = {
   };
   initialState: GameState<Game>;
   defaultActionPrompt?: string;
-  characterConfigs: Record<
-    keyof Game["characters"],
-    {
-      defaultName: string;
-    }
-  >;
+  //   characterConfigs: Record<
+  //     keyof Game["characters"],
+  //     {
+  //       defaultName: string;
+  //     }
+  //   >;
 };

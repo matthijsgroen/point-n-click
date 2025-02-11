@@ -88,7 +88,8 @@ const game = world<GameState>({
   // },
   initialState: {
     version: 1,
-    currentLocation: "home",
+    currentLocation: "bakery",
+    overlayStack: ["bakerConversation"],
     characters: {
       player: {
         name: "Matthijs",
@@ -144,60 +145,60 @@ const game = world<GameState>({
       moonStone: { name: "Moonstone" },
     },
   },
-  characterConfigs: {
-    player: {
-      defaultName: "Matthijs",
-      // textColor: palette.color("player"),
-    },
-    dwarf: {
-      defaultName: "Thorin",
-      // textColor: palette.color("dwarf"),
-    },
-    miller: {
-      defaultName: "Smock",
-      // textColor: palette.color("miller"),
-    },
-    horse: {
-      defaultName: "Teun",
-      // textColor: palette.color("horse"),
-    },
-    dragon: {
-      defaultName: "Dins",
-      // textColor: palette.color("dragon"),
-    },
-    farmer: {
-      defaultName: "Piedmont",
-      // textColor: palette.color("farmer"),
-    },
-    baker: {
-      defaultName: "Barley",
-      // textColor: palette.color("baker"),
-    },
-    daughter: {
-      defaultName: "Flower",
-      // textColor: palette.color("daughter"),
-    },
-    witch: {
-      defaultName: "Eucalypta",
-      // textColor: palette.color("witch"),
-    },
-    farrier: {
-      defaultName: "Luk",
-      // textColor: palette.color("farrier"),
-    },
-    goldsmith: {
-      defaultName: "Luuk",
-      // textColor: palette.color("goldsmith"),
-    },
-    armorer: {
-      defaultName: "Lucy",
-      // textColor: palette.color("armorer"),
-    },
-    villager: {
-      defaultName: "Villager",
-      // textColor: palette.color("villager"),
-    },
-  },
+  // characterConfigs: {
+  //   player: {
+  //     defaultName: "Matthijs",
+  //     // textColor: palette.color("player"),
+  //   },
+  //   dwarf: {
+  //     defaultName: "Thorin",
+  //     // textColor: palette.color("dwarf"),
+  //   },
+  //   miller: {
+  //     defaultName: "Smock",
+  //     // textColor: palette.color("miller"),
+  //   },
+  //   horse: {
+  //     defaultName: "Teun",
+  //     // textColor: palette.color("horse"),
+  //   },
+  //   dragon: {
+  //     defaultName: "Dins",
+  //     // textColor: palette.color("dragon"),
+  //   },
+  //   farmer: {
+  //     defaultName: "Piedmont",
+  //     // textColor: palette.color("farmer"),
+  //   },
+  //   baker: {
+  //     defaultName: "Barley",
+  //     // textColor: palette.color("baker"),
+  //   },
+  //   daughter: {
+  //     defaultName: "Flower",
+  //     // textColor: palette.color("daughter"),
+  //   },
+  //   witch: {
+  //     defaultName: "Eucalypta",
+  //     // textColor: palette.color("witch"),
+  //   },
+  //   farrier: {
+  //     defaultName: "Luk",
+  //     // textColor: palette.color("farrier"),
+  //   },
+  //   goldsmith: {
+  //     defaultName: "Luuk",
+  //     // textColor: palette.color("goldsmith"),
+  //   },
+  //   armorer: {
+  //     defaultName: "Lucy",
+  //     // textColor: palette.color("armorer"),
+  //   },
+  //   villager: {
+  //     defaultName: "Villager",
+  //     // textColor: palette.color("villager"),
+  //   },
+  // },
 });
 
 export default game;

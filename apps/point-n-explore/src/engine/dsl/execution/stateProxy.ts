@@ -1,6 +1,11 @@
 import { produce } from "immer";
 import { GameWorld, StateObject } from "../types/world";
-import { GameState, ObjectGroupState, ObjectState } from "../syntax/state";
+import {
+  GameState,
+  ObjectGroupState,
+  ObjectState,
+  PartialObjectGroupState,
+} from "../syntax/state";
 import { ReadStateHelper } from "../syntax/script";
 
 const isFlag = <
@@ -50,14 +55,26 @@ export const stateItemProxy = <
       return itemState?.state ?? "unknown";
     }
   },
-  set(_target: { [key: string]: unknown }, prop: string | symbol, value: any) {
+  set(
+    _target: { [key: string]: unknown },
+    prop: string | symbol,
+    value: string | number | boolean
+  ) {
     if (String(prop) === "state") {
       console.log("set", itemType, itemName, prop, value);
       updateState(
         produce((currentState) => {
-          currentState[`${itemType}s`] ??= {};
-          currentState[`${itemType}s`][itemName] ??= {};
-          currentState[`${itemType}s`][itemName].state = value;
+          type ItemsState = PartialObjectGroupState<
+            Game,
+            ItemType,
+            { name?: string; [key: string]: unknown }
+          >;
+          (currentState[`${itemType}s`] as ItemsState | undefined) ??=
+            {} as ItemsState;
+
+          (currentState[`${itemType}s`] as ItemsState)[itemName] ??= {};
+          (currentState[`${itemType}s`] as ItemsState)[itemName].state =
+            value as ItemsState[typeof itemName]["state"];
         })
       );
     }
@@ -65,10 +82,21 @@ export const stateItemProxy = <
       console.log("set", itemType, itemName, prop, value);
       updateState(
         produce((currentState) => {
-          currentState[`${itemType}s`] ??= {};
-          currentState[`${itemType}s`][itemName] ??= {};
-          currentState[`${itemType}s`][itemName].flags ??= {};
-          currentState[`${itemType}s`][itemName].flags[String(prop)] = value;
+          type ItemsState = PartialObjectGroupState<
+            Game,
+            ItemType,
+            { name?: string }
+          >;
+          (currentState[`${itemType}s`] as ItemsState | undefined) ??=
+            {} as ItemsState;
+
+          (currentState[`${itemType}s`] as ItemsState)[itemName] ??= {};
+
+          (
+            (currentState[`${itemType}s`] as ItemsState)[itemName] as {
+              [key: string]: string | boolean | number;
+            }
+          )[prop] = value;
         })
       );
     }
@@ -128,8 +156,8 @@ const readonlyItemProxy = <
         return new Proxy(
           {
             get name() {
-              // TODO: Add real implementation
-              return state[`${entry}s`]?.[String(prop)].name;
+              return (state[`${entry}s`]?.[String(prop)] as { name?: string })
+                ?.name;
             },
           },
           readStateItemProxy(state, entry, String(prop))
