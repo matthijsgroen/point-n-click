@@ -1,7 +1,7 @@
 // import {  world } from "point-n-click";
 // import terminalTheme from "@point-n-click/theme-cli";
 // import bookTheme from "@point-n-click/theme-book";
-import { world } from "../engine/dsl/syntax/world";
+import { world } from "../engine/dsl/syntax/dsl";
 import { GameState } from "./stateModelV1";
 
 // const palette = createColorPalette([
@@ -91,10 +91,57 @@ const game = world<GameState>({
     currentLocation: "home",
     characters: {
       player: {
-        flags: {
-          isMale: true,
-        },
+        name: "Matthijs",
+        isMale: true,
       },
+      dwarf: { name: "Thorin" },
+      miller: { name: "Smock" },
+      horse: { name: "Teun" },
+      dragon: { name: "Dins" },
+      daughter: { name: "Flower" },
+      farmer: { name: "Piedmont" },
+      baker: { name: "Barley" },
+      witch: { name: "Eucalypta" },
+      farrier: { name: "Luk" },
+      goldsmith: { name: "Luuk" },
+      armorer: { name: "Lucy" },
+      villager: { name: "Villager" },
+    },
+    locations: {
+      home: { name: "Home" },
+      village: { name: "Village" },
+      bakery: { name: "Bakery" },
+      cabin: { name: "Cabin" },
+      forest: { name: "Forest" },
+      cellar: { name: "Cellar" },
+      tower: { name: "Tower" },
+      farm: { name: "Farm" },
+      hills: { name: "Hills" },
+      smithy: { name: "Smithy" },
+      mill: { name: "Mill" },
+      mine: { name: "Mine" },
+      cabinInside: { name: "Inside the cabin" },
+      treasureRoute: { name: "Treasure route" },
+      towerTop: { name: "Top of the tower" },
+      towerBaseElevator: { name: "Base of the tower" },
+      towerTopElevator: { name: "Top of the tower" },
+      farmland: { name: "Farmland" },
+      swamp: { name: "Swamp" },
+      darkwoods: { name: "Dark woods" },
+      river: { name: "River" },
+    },
+    items: {
+      bag: { name: "Bag" },
+      beaker: { name: "Beaker" },
+      branch: { name: "Branch" },
+      cookies: { name: "Cookies" },
+      gemstone: { name: "Gemstone" },
+      gold: { name: "Gold" },
+      grain: { name: "Grain" },
+      ingredientList: { name: "Ingredient list" },
+      medicine: { name: "Medicine" },
+      millstone: { name: "Millstone" },
+      moonStone: { name: "Moonstone" },
     },
   },
   characterConfigs: {

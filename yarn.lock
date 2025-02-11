@@ -10409,6 +10409,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"immer@npm:^10.1.1":
+  version: 10.1.1
+  resolution: "immer@npm:10.1.1"
+  checksum: 07c67970b7d22aded73607193d84861bf786f07d47f7d7c98bb10016c7a88f6654ad78ae1e220b3c623695b133aabbf24f5eb8d9e8060cff11e89ccd81c9c10b
+  languageName: node
+  linkType: hard
+
 "immer@npm:^9.0.21":
   version: 9.0.21
   resolution: "immer@npm:9.0.21"
@@ -13855,6 +13862,7 @@ __metadata:
     eslint-plugin-react-hooks: ^5.0.0
     eslint-plugin-react-refresh: ^0.4.18
     globals: ^15.14.0
+    immer: ^10.1.1
     react: ^19.0.0
     react-dom: ^19.0.0
     typescript: ~5.7.2

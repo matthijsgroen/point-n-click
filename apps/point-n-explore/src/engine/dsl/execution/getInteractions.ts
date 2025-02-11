@@ -1,12 +1,16 @@
-import { GameState, Interactions, StateObject } from "../syntax/script";
-import { RecursivePartial } from "../types/utils";
-import { GameWorld } from "../types/world";
+import { Interactions, NewScript } from "../syntax/script";
+import { GameState } from "../syntax/state";
+import { GameWorld, StateObject } from "../types/world";
 import { getReadStateProxy } from "./stateProxy";
 
-type Interaction = {
+type Interaction<
+  Game extends GameWorld,
+  ItemType extends StateObject,
+  Item extends keyof Game[`${ItemType}s`]
+> = {
   name: string;
   enabled: boolean;
-  actionScript: (s: RecursivePartial<GameState<Game>>) => void;
+  actionScript: NewScript<Game, ItemType, Item>;
 };
 
 export const getInteractions = <
@@ -15,15 +19,18 @@ export const getInteractions = <
   Item extends keyof Game[`${ItemType}s`]
 >(
   interactions: Interactions<Game, ItemType, Item>,
-  state: RecursivePartial<GameState<Game>>,
+  state: GameState<Game>,
   itemType: ItemType,
   item: Item
-): Interaction[] => {
-  const result: Interaction[] = [];
-
+): Interaction<Game, ItemType, Item>[] => {
+  const result: Interaction<Game, ItemType, Item>[] = [];
   const stateProxy = getReadStateProxy(state, itemType, item);
 
-  const action = (name: string, enabled: boolean, actionScript: any) => {
+  const action = (
+    name: string,
+    enabled: boolean,
+    actionScript: NewScript<Game, ItemType, Item>
+  ) => {
     result.push({
       name,
       enabled,

@@ -1,48 +1,31 @@
-import {
-  GameState,
-  ObjectReadStateHelper,
-  ReadStateHelper,
-  StateObject,
-} from "../syntax/script";
-import { RecursivePartial } from "../types/utils";
-import { GameWorld } from "../types/world";
+import { produce } from "immer";
+import { GameWorld, StateObject } from "../types/world";
+import { GameState, ObjectGroupState, ObjectState } from "../syntax/state";
+import { ReadStateHelper } from "../syntax/script";
 
-const isFlag = (prop: string | symbol) =>
+const isFlag = <
+  Game extends GameWorld,
+  ItemType extends StateObject,
+  ItemName extends keyof Game[`${ItemType}s`]
+>(
+  _itemType: ItemType,
+  _itemName: ItemName,
+  prop: unknown
+): prop is Game[`${ItemType}s`][ItemName]["flags"] & string =>
   String(prop).startsWith("is") ||
   String(prop).startsWith("has") ||
   String(prop).startsWith("can") ||
   String(prop).startsWith("knows");
 
-export const stateItemProxy = (
-  getState: () => any,
-  _updateState: (newState: any) => void
-) => ({
-  get(
-    target: { _itemType: StateObject; _itemName: string } & {
-      [key: string]: unknown;
-    },
-    prop: string | symbol,
-    receiver: any
-  ) {
-    if (prop in target) {
-      return Reflect.get(target, prop, receiver);
-    }
-    const itemState = getState()[`${target._itemType}s`]?.[target._itemName];
-    if (isFlag(prop)) {
-      if (!itemState) {
-        return false;
-      }
-      console.log("itemState", itemState);
-    }
-  },
-});
-
-export const readStateItemProxy = <
+export const stateItemProxy = <
   Game extends GameWorld,
   ItemType extends StateObject,
   ItemName extends keyof Game[`${ItemType}s`]
 >(
-  state: RecursivePartial<GameState<Game>>,
+  getState: () => GameState<Game>,
+  updateState: (
+    patch: (currentState: GameState<Game>) => GameState<Game>
+  ) => void,
   itemType: ItemType,
   itemName: ItemName
 ) => ({
@@ -51,14 +34,13 @@ export const readStateItemProxy = <
       [key: string]: unknown;
     },
     prop: string | symbol,
-    receiver: any
+    receiver: unknown
   ) {
     if (prop in target) {
       return Reflect.get(target, prop, receiver);
     }
-    const itemState = state[`${itemType}s`]?.[itemName];
-    console.log("path", `${itemType}s`, itemName, prop);
-    if (isFlag(prop)) {
+    const itemState = getState()[`${itemType}s`]?.[itemName];
+    if (isFlag(itemType, itemName, prop)) {
       if (!itemState) {
         return false;
       }
@@ -68,43 +50,109 @@ export const readStateItemProxy = <
       return itemState?.state ?? "unknown";
     }
   },
+  set(_target: { [key: string]: unknown }, prop: string | symbol, value: any) {
+    if (String(prop) === "state") {
+      console.log("set", itemType, itemName, prop, value);
+      updateState(
+        produce((currentState) => {
+          currentState[`${itemType}s`] ??= {};
+          currentState[`${itemType}s`][itemName] ??= {};
+          currentState[`${itemType}s`][itemName].state = value;
+        })
+      );
+    }
+    if (isFlag(itemType, itemName, prop)) {
+      console.log("set", itemType, itemName, prop, value);
+      updateState(
+        produce((currentState) => {
+          currentState[`${itemType}s`] ??= {};
+          currentState[`${itemType}s`][itemName] ??= {};
+          currentState[`${itemType}s`][itemName].flags ??= {};
+          currentState[`${itemType}s`][itemName].flags[String(prop)] = value;
+        })
+      );
+    }
+    return true;
+  },
 });
 
-const readonlyCharacterProxy = <Game extends GameWorld>(
-  state: RecursivePartial<GameState<Game>>
-): ReadStateHelper<Game, "character"> =>
+export const readStateItemProxy = <
+  Game extends GameWorld,
+  ItemType extends StateObject,
+  ItemName extends keyof Game[`${ItemType}s`]
+>(
+  state: GameState<Game>,
+  itemType: ItemType,
+  itemName: ItemName
+) => ({
+  get(
+    target: {
+      [key: string]: unknown;
+    },
+    prop: string | symbol,
+    receiver: unknown
+  ) {
+    if (prop in target) {
+      return Reflect.get(target, prop, receiver);
+    }
+    const itemState = state[`${itemType}s`]?.[itemName] as ObjectState<
+      Game,
+      ItemType,
+      ItemName
+    >;
+    console.log("path", `${itemType}s`, itemName, prop);
+    if (isFlag(itemType, itemName, prop)) {
+      if (!itemState) {
+        return false;
+      }
+      return itemState?.[prop as keyof typeof itemState] ?? false;
+    }
+    if (prop === "state") {
+      return itemState?.state ?? "unknown";
+    }
+    console.log("other", itemState, String(prop));
+  },
+});
+
+const readonlyItemProxy = <
+  Game extends GameWorld,
+  ItemType extends StateObject
+>(
+  state: GameState<Game>,
+  entry: ItemType
+): ObjectGroupState<Game, ItemType> =>
   new Proxy(
     {},
     {
       get(_target, prop) {
         return new Proxy(
           {
-            _itemType: "character",
-            _itemName: String(prop),
             get name() {
               // TODO: Add real implementation
-              return "Truus";
+              return state[`${entry}s`]?.[String(prop)].name;
             },
           },
-          readStateItemProxy(state, "character", String(prop))
+          readStateItemProxy(state, entry, String(prop))
         );
       },
     }
-  ) as ReadStateHelper<Game, "character">;
+  ) as ObjectGroupState<Game, ItemType>;
 
 export const getReadStateProxy = <
   Game extends GameWorld,
-  T extends StateObject,
-  Item extends keyof Game[`${T}s`]
+  ItemType extends StateObject,
+  ItemName extends keyof Game[`${ItemType}s`]
 >(
-  state: RecursivePartial<GameState<Game>>,
-  key: T,
-  item: Item
-): GameState<Game> & ObjectReadStateHelper<Game, T, Item> => {
-  return new Proxy(
+  state: GameState<Game>,
+  key: ItemType,
+  item: ItemName
+): ReadStateHelper<Game, ItemType, ItemName> =>
+  new Proxy(
     {
-      characters: readonlyCharacterProxy(state),
+      characters: readonlyItemProxy(state, "character"),
+      overlays: readonlyItemProxy(state, "overlay"),
+      items: readonlyItemProxy(state, "item"),
+      locations: readonlyItemProxy(state, "location"),
     },
     readStateItemProxy(state, key, item)
-  ) as GameState<Game> & ObjectReadStateHelper<Game, T, Item>;
-};
+  ) as ReadStateHelper<Game, ItemType, ItemName>;

@@ -3,7 +3,10 @@ import g from "../game";
 g.defineOverlay("bakerConversation", {
   prompt: "What will you say:",
   onEnter: (w) => {
-    if (!w.characters.baker.hasToldDaughter && w.characters.dragon.isToothPulled) {
+    if (
+      !w.characters.baker.hasToldDaughter &&
+      w.characters.dragon.isToothPulled
+    ) {
       w.characters.baker.say(
         "People told me the dragon was slain. I heard the really loud roar.",
         `Did you see {b}${w.characters.daughter.name}{/b}? Is she still alive?`
@@ -25,12 +28,10 @@ g.defineOverlay("bakerConversation", {
     }
   },
 
-  interactions: (state, action) => {
-    action("Hello, is everything alright?", state.state === "unknown", (w) => {
+  interactions: (s, action) => {
+    action("Hello, is everything alright?", s.state === "unknown", (w) => {
       w.text("The baker is staring in the distance.");
       w.characters.player.say("Hello? Are you alright?");
-      w.characters.baker.say("Oh. Sorry, I was not paying attention.");
-      w.text("The baker is startled. He was not aware you were in his shop.");
       w.characters.baker.say("Oh. Sorry, I was not paying attention.");
       w.text("The baker is startled. He was not aware you were in his shop.");
       w.characters.baker.say(
@@ -46,36 +47,32 @@ g.defineOverlay("bakerConversation", {
       w.state = "intro";
     });
 
-    action(
-      "Monster? What are you talking about?",
-      state.state === "intro",
-      (w) => {
-        w.characters.player.say("Monster? What are you talking about?");
-        w.characters.baker.say(
-          "That ... beast ... in that tower ... in the woods."
-        );
-        w.text("The baker keeps sobbing.");
-        w.characters.player.say(
-          "Why do you think the 'monster' has your daughter?"
-        );
-        w.characters.baker.say(
-          "My daughter is now missing for two days,",
-          "and there is a {i}terrifying roar{/i} coming out of the dark woods for two days as well.",
-          `It all started with that big fire at farmer {b}${w.characters.farmer.name}{/b}'s place.`,
-          `That creature must have my sweet {b}${w.characters.daughter.name}{/b}...`
-        );
-        w.state = "visiting";
-        if (w.characters.dragon.state === "unknown") {
-          w.characters.dragon.state = "known";
-        }
+    action("Monster? What are you talking about?", s.state === "intro", (w) => {
+      w.characters.player.say("Monster? What are you talking about?");
+      w.characters.baker.say(
+        "That ... beast ... in that tower ... in the woods."
+      );
+      w.text("The baker keeps sobbing.");
+      w.characters.player.say(
+        "Why do you think the 'monster' has your daughter?"
+      );
+      w.characters.baker.say(
+        "My daughter is now missing for two days,",
+        "and there is a {i}terrifying roar{/i} coming out of the dark woods for two days as well.",
+        `It all started with that big fire at farmer {b}${w.characters.farmer.name}{/b}'s place.`,
+        `That creature must have my sweet {b}${w.characters.daughter.name}{/b}...`
+      );
+      w.state = "visiting";
+      if (w.characters.dragon.state === "unknown") {
+        w.characters.dragon.state = "known";
       }
-    );
+    });
 
     action(
-      `Yes, I've seen ${state.characters.daughter.name}.`,
-      state.state === "visiting" &&
-        state.characters.dragon.isToothPulled &&
-        !state.characters.baker.hasToldDaughter,
+      `Yes, I've seen ${s.characters.daughter.name}.`,
+      s.state === "visiting" &&
+        s.characters.dragon.isToothPulled &&
+        !s.characters.baker.hasToldDaughter,
       (w) => {
         w.characters.player.say(
           `Yes, I've seen ${w.characters.daughter.name}! She is alive and well.`,
@@ -88,7 +85,7 @@ g.defineOverlay("bakerConversation", {
 
     action(
       "Could you tell me more about that monster?",
-      state.state === "intro",
+      s.state === "intro",
       (w) => {
         w.characters.player.say("Could you tell me more about that monster?");
         w.characters.baker.say(
@@ -113,7 +110,7 @@ g.defineOverlay("bakerConversation", {
 
     action(
       "Do you know where I could get any medicine?",
-      state.state === "visiting",
+      s.state === "visiting",
       (w) => {
         w.characters.player.say("Do you sell any medicine?");
         w.text("{b}[characters.baker.name]{/b} turns red.");
@@ -138,8 +135,7 @@ g.defineOverlay("bakerConversation", {
 
     action(
       "Have you heard something about a treasure nearby?",
-      state.state === "visiting" &&
-        state.items.treasureNotes.state !== "unknown",
+      s.state === "visiting" && s.items.treasureNotes.state !== "unknown",
       (w) => {
         w.characters.player.say(
           "Have you heard something about a treasure nearby?"
@@ -161,10 +157,10 @@ g.defineOverlay("bakerConversation", {
 
     action(
       "I brought you some grain",
-      state.state === "visiting" &&
-        state.characters.horse.state === "following" &&
-        state.characters.horse.hasCart &&
-        state.items.grain.state === "cart",
+      s.state === "visiting" &&
+        s.characters.horse.state === "following" &&
+        s.characters.horse.hasCart &&
+        s.items.grain.state === "cart",
       (w) => {
         w.characters.player.say("I brought you some grain.");
         w.characters.baker.say(
@@ -176,10 +172,10 @@ g.defineOverlay("bakerConversation", {
 
     action(
       "I brought you some flour",
-      state.state === "visiting" &&
-        state.characters.horse.state === "following" &&
-        state.characters.horse.hasCart &&
-        state.items.grain.state === "flour",
+      s.state === "visiting" &&
+        s.characters.horse.state === "following" &&
+        s.characters.horse.hasCart &&
+        s.items.grain.state === "flour",
       (w) => {
         w.characters.player.say("I brought you some flour.");
         w.characters.baker.say(

@@ -1,27 +1,24 @@
-import { CharactersHelper, NewScript, ScriptHelper, StateObject } from "../syntax/script";
-import { GameState } from "../types/state";
-import { RecursivePartial } from "../types/utils";
-import { GameWorld } from "../types/world";
+import { NewScript, ScriptHelper } from "../syntax/script";
+import { GameState } from "../syntax/state";
+import { GameWorld, StateObject } from "../types/world";
 import { Action } from "./actions";
 import { stateItemProxy } from "./stateProxy";
 
-export type ScriptResult<Game extends GameWorld> =  {
-  actionList: Action<Game>[];
-};
+export type ScriptResult<Game extends GameWorld> = Action<Game>[];
 
 const characterHelper = <Game extends GameWorld>(
-  getState: () => RecursivePartial<GameState<Game>>,
+  getState: () => GameState<Game>,
   actions: Action<Game>[],
-  updateState: (newState: RecursivePartial<GameState<Game>>) => void
-): CharactersHelper<Game> =>
+  updateState: (
+    patch: (currentState: GameState<Game>) => GameState<Game>
+  ) => void
+): ScriptHelper<Game, "character", string>["characters"] =>
   new Proxy(
     {},
     {
       get(_target, prop) {
         return new Proxy(
           {
-            _itemType: "character",
-            _itemName: String(prop),
             say: (...text: string[]) => {
               actions.push({
                 type: "say",
@@ -30,41 +27,52 @@ const characterHelper = <Game extends GameWorld>(
               });
             },
           },
-          stateItemProxy(getState, updateState)
+          stateItemProxy(getState, updateState, "character", String(prop))
         );
       },
     }
-  ) as CharactersHelper<Game>;
+  ) as ScriptHelper<Game, "character", string>["characters"];
 
-export const runScript = <Game extends GameWorld>(
+export const runScript = <
+  Game extends GameWorld,
+  ItemType extends StateObject,
+  ItemName extends keyof Game[`${ItemType}s`]
+>(
   script: NewScript<Game, StateObject, string>,
-  state: RecursivePartial<GameState<Game>>
+  state: GameState<Game>,
+  currentItemType: ItemType,
+  currentItemName: ItemName
 ): ScriptResult<Game> => {
   let newState = state;
   const actions: Action<Game>[] = [];
 
-  const worldHelper: ScriptHelper<Game, StateObject, string> = {
-    characters: characterHelper<Game>(
-      () => newState,
-      actions,
-      (update) => {
-        newState = update;
-      }
-    ),
-    items: {},
-    locations: {},
-    lists: {},
-    text: (...text: string[]) => {
-      actions.push({
-        type: "text",
-        text,
-      });
-    },
+  const applyPatch = (
+    patch: (currentState: GameState<Game>) => GameState<Game>
+  ) => {
+    actions.push({
+      type: "state",
+      patch,
+    });
+    newState = patch(newState);
   };
+
+  const worldHelper: ScriptHelper<Game, StateObject, string> = new Proxy(
+    {
+      characters: characterHelper<Game>(() => newState, actions, applyPatch),
+      items: {},
+      locations: {},
+      lists: {},
+      text: (...text: string[]) => {
+        actions.push({
+          type: "text",
+          text,
+        });
+      },
+    },
+    stateItemProxy(() => newState, applyPatch, currentItemType, currentItemName)
+  ) as ScriptHelper<Game, StateObject, string>;
 
   script(worldHelper);
 
-  return {
-    actionList: actions,
-  };
+  return actions;
 };

@@ -1,60 +1,49 @@
-import { GameWorld } from "../types/world";
+import { GameWorld, StateObject } from "../types/world";
+import { ObjectState, ObjectGroupState } from "./state";
 
-export type StateObject = "item" | "location" | "character" | "overlay";
-
-export type ObjectStateHelper<
+type CharactersHelper<
   Game extends GameWorld,
-  T extends StateObject,
-  Item extends keyof Game[`${T}s`]
-> = {
-  [Flag in Exclude<Game[`${T}s`][Item]["flags"], undefined>]: boolean;
-} & {
-  [Counter in Exclude<Game[`${T}s`][Item]["counters"], undefined>]: number;
-} & {
-  name: string;
-  state: Game[`${T}s`][Item]["states"] | "unknown";
-};
+  Actions = unknown
+> = ObjectGroupState<Game, "character", { name: string } & Actions>;
 
-export type ObjectReadStateHelper<
+type ItemsHelper<Game extends GameWorld, Actions = unknown> = ObjectGroupState<
+  Game,
+  "item",
+  { name?: string } & Actions
+>;
+
+type LocationsHelper<
   Game extends GameWorld,
-  T extends StateObject,
-  Item extends keyof Game[`${T}s`]
-> = {
-  readonly [Flag in Exclude<Game[`${T}s`][Item]["flags"], undefined>]: boolean;
-} & {
-  readonly [Counter in Exclude<
-    Game[`${T}s`][Item]["counters"],
-    undefined
-  >]: number;
-} & {
-  readonly name: string;
-  readonly state: Game[`${T}s`][Item]["states"] | "unknown";
-};
+  Actions = unknown
+> = ObjectGroupState<Game, "location", { name: string } & Actions>;
 
-export type CharactersHelper<Game extends GameWorld> = {
-  [K in keyof Game["characters"]]: ObjectStateHelper<Game, "character", K> & {
-    readonly say: (...sentences: string[]) => void;
-  };
-};
-
-export type ItemsHelper<Game extends GameWorld> = {
-  [K in keyof Game["items"]]: ObjectStateHelper<Game, "item", K>;
-};
-
-export type LocationsHelper<Game extends GameWorld> = {
-  [K in keyof Game["locations"]]: ObjectStateHelper<Game, "location", K> & {
-    readonly travel: () => void;
-  };
-};
-
-export type ListsHelper<Game extends GameWorld> = {
+type ListsHelper<Game extends GameWorld, Actions = unknown> = {
   [K in keyof Game["lists"]]: {
-    readonly addUnique: (item: Game["lists"][K]) => void;
     readonly has: (item: Game["lists"][K]) => boolean;
-  };
+  } & Actions;
 };
 
 export type ScriptHelper<
+  Game extends GameWorld,
+  T extends StateObject,
+  Item extends keyof Game[`${T}s`]
+> = {
+  readonly characters: CharactersHelper<
+    Game,
+    { readonly say: (...sentences: string[]) => void }
+  >;
+  readonly items: ItemsHelper<Game>;
+  readonly locations: LocationsHelper<Game, { readonly travel: () => void }>;
+  readonly lists: ListsHelper<
+    Game,
+    {
+      readonly addUnique: (item: Game["lists"][keyof Game["lists"]]) => void;
+    }
+  >;
+  readonly text: (...sentences: string[]) => void;
+} & ObjectState<Game, T, Item> & { name?: string };
+
+export type ReadStateHelper<
   Game extends GameWorld,
   T extends StateObject,
   Item extends keyof Game[`${T}s`]
@@ -63,8 +52,7 @@ export type ScriptHelper<
   readonly items: ItemsHelper<Game>;
   readonly locations: LocationsHelper<Game>;
   readonly lists: ListsHelper<Game>;
-  readonly text: (...sentences: string[]) => void;
-} & ObjectStateHelper<Game, T, Item>;
+} & ObjectState<Game, T, Item> & { name?: string };
 
 export type NewScript<
   Game extends GameWorld,
@@ -72,30 +60,12 @@ export type NewScript<
   Item extends keyof Game[`${T}s`]
 > = (worldHelper: ScriptHelper<Game, T, Item>) => void;
 
-export type ReadStateHelper<Game extends GameWorld, T extends StateObject> = {
-  [K in keyof Game[`${T}s`]]: ObjectReadStateHelper<Game, T, K>;
-};
-
-export type ReadListHelper<Game extends GameWorld> = {
-  [K in keyof Game["lists"]]: {
-    readonly has: (item: Game["lists"][K]) => boolean;
-  };
-};
-
-export type GameState<Game extends GameWorld> = {
-  readonly characters: ReadStateHelper<Game, "character">;
-  readonly locations: ReadStateHelper<Game, "location">;
-  readonly overlays: ReadStateHelper<Game, "overlay">;
-  readonly items: ReadStateHelper<Game, "item">;
-  readonly lists: ReadListHelper<Game>;
-};
-
 export type Interactions<
   Game extends GameWorld,
   T extends StateObject,
   Item extends keyof Game[`${T}s`]
 > = (
-  state: GameState<Game> & ObjectReadStateHelper<Game, T, Item>,
+  state: ReadStateHelper<Game, T, Item>,
   action: (
     name: string,
     condition: boolean,
