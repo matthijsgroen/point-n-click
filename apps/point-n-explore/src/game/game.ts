@@ -89,7 +89,6 @@ const game = world<GameState>({
   initialState: {
     version: 1,
     currentLocation: "bakery",
-    overlayStack: ["bakerConversation"],
     characters: {
       player: {
         name: "Matthijs",
