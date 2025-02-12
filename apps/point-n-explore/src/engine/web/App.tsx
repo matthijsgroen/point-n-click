@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { getInteractions } from "../dsl/execution/getInteractions";
-import { runScript } from "../dsl/execution/runScript";
 import { GameWorldDSL } from "../dsl/syntax/dsl";
 import { GameWorld } from "../dsl/types/world";
 import "./App.css";
+import { executeContentFlow } from "../dsl/execution/contentFlow";
 
 type Props<
   Game extends GameWorld,
@@ -22,20 +21,22 @@ const App = <
   const startingState = gameData.settings.initialState;
   const [state] = useState(startingState);
 
-  const overlay = gameData.overlays["bakerConversation"];
+  const { actions, interactions, prompt } = executeContentFlow(state);
 
-  const actionList = runScript(
-    overlay.onEnter!,
-    state,
-    "overlay",
-    "bakerConversation"
-  );
-  const interactions = getInteractions(
-    overlay.interactions!,
-    state,
-    "overlay",
-    "bakerConversation"
-  );
+  // const overlay = gameData.overlays["bakerConversation"];
+
+  // const actionList = runScript(
+  //   overlay.onEnter!,
+  //   state,
+  //   "overlay",
+  //   "bakerConversation"
+  // );
+  // const interactions = getInteractions(
+  //   overlay.interactions!,
+  //   state,
+  //   "overlay",
+  //   "bakerConversation"
+  // );
 
   return (
     <>
@@ -43,12 +44,12 @@ const App = <
       <h2>Script</h2>
       <div>Active Interaction: {state.currentInteraction ?? "<none>"}</div>
       <ul>
-        {actionList.map((action, index) => (
+        {actions.map((action, index) => (
           <li key={index}>{JSON.stringify(action)}</li>
         ))}
       </ul>
       <h2>Interactions</h2>
-      <strong>{overlay.prompt}</strong>
+      <strong>{prompt}</strong>
       <ul>
         {interactions.map((action, index) =>
           action.enabled ? (

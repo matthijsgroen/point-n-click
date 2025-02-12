@@ -3,7 +3,7 @@ import { GameState } from "../syntax/state";
 import { GameWorld, StateObject } from "../types/world";
 import { getReadStateProxy } from "./stateProxy";
 
-type Interaction<
+export type Interaction<
   Game extends GameWorld,
   ItemType extends StateObject,
   Item extends keyof Game[`${ItemType}s`]

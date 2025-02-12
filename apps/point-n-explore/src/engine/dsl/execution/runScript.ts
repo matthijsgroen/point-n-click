@@ -4,8 +4,6 @@ import { GameWorld, StateObject } from "../types/world";
 import { Action } from "./actions";
 import { stateItemProxy } from "./stateProxy";
 
-export type ScriptResult<Game extends GameWorld> = Action<Game>[];
-
 const characterHelper = <Game extends GameWorld>(
   getState: () => GameState<Game>,
   actions: Action<Game>[],
@@ -42,7 +40,7 @@ export const runScript = <
   state: GameState<Game>,
   currentItemType: ItemType,
   currentItemName: ItemName
-): ScriptResult<Game> => {
+): Action<Game>[] => {
   let newState = state;
   const actions: Action<Game>[] = [];
 
