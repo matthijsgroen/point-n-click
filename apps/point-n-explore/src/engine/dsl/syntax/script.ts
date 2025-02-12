@@ -17,6 +17,11 @@ type LocationsHelper<
   Actions = unknown
 > = ObjectGroupState<Game, "location", { name: string } & Actions>;
 
+type OverlaysHelper<
+  Game extends GameWorld,
+  Actions = unknown
+> = ObjectGroupState<Game, "overlay", Actions>;
+
 type ListsHelper<Game extends GameWorld, Actions = unknown> = {
   [K in keyof Game["lists"]]: {
     readonly has: (item: Game["lists"][K]) => boolean;
@@ -34,6 +39,7 @@ export type ScriptHelper<
   >;
   readonly items: ItemsHelper<Game>;
   readonly locations: LocationsHelper<Game, { readonly travel: () => void }>;
+  readonly overlays: OverlaysHelper<Game, { readonly open: () => void }>;
   readonly lists: ListsHelper<
     Game,
     {
@@ -51,6 +57,7 @@ export type ReadStateHelper<
   readonly characters: CharactersHelper<Game>;
   readonly items: ItemsHelper<Game>;
   readonly locations: LocationsHelper<Game>;
+  readonly overlays: OverlaysHelper<Game>;
   readonly lists: ListsHelper<Game>;
 } & ObjectState<Game, T, Item> & { name?: string };
 
@@ -81,4 +88,23 @@ export type OverlayObject<
   onEnter?: NewScript<Game, "overlay", Overlay>;
   onLeave?: NewScript<Game, "overlay", Overlay>;
   interactions?: Interactions<Game, "overlay", Overlay>;
+};
+
+export type LocationObject<
+  Game extends GameWorld,
+  Location extends keyof Game["locations"]
+> = {
+  prompt?: string;
+  onEnter?: NewScript<Game, "location", Location>;
+  onLeave?: NewScript<Game, "location", Location>;
+  describe?: NewScript<Game, "location", Location>;
+  interactions?: Interactions<Game, "location", Location>;
+} & {
+  [K in keyof Game["locations"] as `onEnterFrom${Capitalize<
+    K & string
+  >}`]?: NewScript<Game, "location", Location>;
+} & {
+  [K in keyof Game["locations"] as `onLeaveTo${Capitalize<
+    K & string
+  >}`]?: NewScript<Game, "location", Location>;
 };

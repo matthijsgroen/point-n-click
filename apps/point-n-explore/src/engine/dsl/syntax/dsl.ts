@@ -1,10 +1,11 @@
 import { Settings } from "../types/settings";
 import { GameWorld } from "../types/world";
-import { OverlayObject } from "./script";
+import { LocationObject, OverlayObject } from "./script";
 
 export type GameData<Game extends GameWorld<number>> = {
   settings: Settings<Game>;
   overlays: Record<string, OverlayObject<Game, string>>;
+  locations: Record<string, LocationObject<Game, string>>;
 };
 
 type BaseDSL<Version extends number, Game extends GameWorld<Version>> = {
@@ -26,6 +27,11 @@ type BaseDSL<Version extends number, Game extends GameWorld<Version>> = {
   defineOverlay: <Overlay extends keyof Game["overlays"]>(
     id: Overlay,
     overlayObject: OverlayObject<Game, Overlay>
+  ) => void;
+
+  defineLocation: <Location extends keyof Game["locations"]>(
+    id: Location,
+    locationObject: LocationObject<Game, Location>
   ) => void;
 
   compile: () => GameData<Game>;
@@ -51,11 +57,15 @@ export const world = <Game extends GameWorld<number>>(
   const gameData: GameData<Game> = {
     settings,
     overlays: {},
+    locations: {},
   };
 
   return {
     defineOverlay: (id, overlayObject) => {
       gameData.overlays[id as string] = overlayObject;
+    },
+    defineLocation: (id, locationObject) => {
+      gameData.locations[id as string] = locationObject;
     },
     compile: () => {
       return gameData;
