@@ -121,15 +121,12 @@ export const getDisplayInfo = <Game extends GameWorld>(
       }
     }
   } else {
-    if (!locationDescribed) {
-      locationDescribed = true;
-      describeLocation(
-        gameModelManager,
-        state,
-        displayInstructions,
-        randomNumber
-      );
-    }
+    describeLocation(
+      gameModelManager,
+      state,
+      displayInstructions,
+      randomNumber
+    );
   }
   return displayInstructions.getCollection();
 };
