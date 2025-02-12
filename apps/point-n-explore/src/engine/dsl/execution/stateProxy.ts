@@ -6,7 +6,8 @@ import {
   ObjectState,
   PartialObjectGroupState,
 } from "../syntax/state";
-import { ReadStateHelper } from "../syntax/script";
+import { ReadStateHelper, ScriptHelper } from "../syntax/script";
+import { Action } from "./actions";
 
 const isFlag = <
   Game extends GameWorld,
@@ -184,3 +185,86 @@ export const getReadStateProxy = <
     },
     readStateItemProxy(state, key, item)
   ) as ReadStateHelper<Game, ItemType, ItemName>;
+
+const characterHelper = <Game extends GameWorld>(
+  getState: () => GameState<Game>,
+  actions: Action<Game>[],
+  updateState: (
+    patch: (currentState: GameState<Game>) => GameState<Game>
+  ) => void
+): ScriptHelper<Game, "character", string>["characters"] =>
+  new Proxy(
+    {},
+    {
+      get(_target, prop) {
+        return new Proxy(
+          {
+            say: (...text: string[]) => {
+              actions.push({
+                type: "say",
+                character: String(prop),
+                text,
+              });
+            },
+          },
+          stateItemProxy(getState, updateState, "character", String(prop))
+        );
+      },
+    }
+  ) as ScriptHelper<Game, "character", string>["characters"];
+
+const locationHelper = <Game extends GameWorld>(
+  getState: () => GameState<Game>,
+  actions: Action<Game>[],
+  updateState: (
+    patch: (currentState: GameState<Game>) => GameState<Game>
+  ) => void
+): ScriptHelper<Game, "location", string>["locations"] =>
+  new Proxy(
+    {},
+    {
+      get(_target, prop) {
+        return new Proxy(
+          {
+            travel: (text: string) => {
+              actions.push({
+                type: "say",
+                character: String(prop),
+                text: [text],
+              });
+            },
+          },
+          stateItemProxy(getState, updateState, "location", String(prop))
+        );
+      },
+    }
+  ) as ScriptHelper<Game, "character", string>["characters"];
+
+export const createScriptHelper = <
+  Game extends GameWorld,
+  ItemType extends StateObject,
+  ItemName extends keyof Game[`${ItemType}s`]
+>(
+  getState: () => GameState<Game>,
+  actions: Action<Game>[],
+  applyPatch: (
+    patch: (currentState: GameState<Game>) => GameState<Game>
+  ) => void,
+  currentItemType: ItemType,
+  currentItemName: ItemName
+): ScriptHelper<Game, ItemType, ItemName> =>
+  new Proxy(
+    {
+      characters: characterHelper<Game>(getState, actions, applyPatch),
+      items: {},
+      locations: locationHelper<Game>(getState, actions, applyPatch),
+      lists: {},
+      text: (...text: string[]) => {
+        actions.push({
+          type: "text",
+          text,
+        });
+      },
+    },
+    stateItemProxy(getState, applyPatch, currentItemType, currentItemName)
+  ) as ScriptHelper<Game, ItemType, ItemName>;

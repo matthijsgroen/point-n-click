@@ -37,7 +37,7 @@ export type InitialListHelper<Game extends GameWorld> = {
 
 export type GameState<Game extends GameWorld> = {
   version: Game["version"];
-  currentLocation?: keyof Game["locations"];
+  currentLocation: keyof Game["locations"];
   previousLocation?: keyof Game["locations"];
   currentInteraction?: string;
   lastInteractionAt?: number;

@@ -3,12 +3,18 @@ import { GameWorld } from "../types/world";
 
 export type Action<Game extends GameWorld> =
   | TextAction
+  | ErrorAction
   | SayAction<Game>
   | StateAction<Game>;
 
 export type TextAction = {
   type: "text";
   text: string[];
+};
+
+export type ErrorAction = {
+  type: "error";
+  message: string;
 };
 
 export type SayAction<Game extends GameWorld> = {

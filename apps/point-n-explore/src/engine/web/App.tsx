@@ -21,7 +21,7 @@ const App = <
   const startingState = gameData.settings.initialState;
   const [state] = useState(startingState);
 
-  const { actions, interactions, prompt } = executeContentFlow(state);
+  const { actions, interactions, prompt } = executeContentFlow(gameData, state);
 
   // const overlay = gameData.overlays["bakerConversation"];
 

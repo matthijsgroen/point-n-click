@@ -4,8 +4,12 @@ import { LocationObject, OverlayObject } from "./script";
 
 export type GameData<Game extends GameWorld<number>> = {
   settings: Settings<Game>;
-  overlays: Record<string, OverlayObject<Game, string>>;
-  locations: Record<string, LocationObject<Game, string>>;
+  overlays: Partial<
+    Record<keyof Game["overlays"], OverlayObject<Game, string>>
+  >;
+  locations: Partial<
+    Record<keyof Game["locations"], LocationObject<Game, string>>
+  >;
 };
 
 type BaseDSL<Version extends number, Game extends GameWorld<Version>> = {
@@ -62,10 +66,10 @@ export const world = <Game extends GameWorld<number>>(
 
   return {
     defineOverlay: (id, overlayObject) => {
-      gameData.overlays[id as string] = overlayObject;
+      gameData.overlays[id] = overlayObject;
     },
     defineLocation: (id, locationObject) => {
-      gameData.locations[id as string] = locationObject;
+      gameData.locations[id] = locationObject;
     },
     compile: () => {
       return gameData;
