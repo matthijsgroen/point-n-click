@@ -3,7 +3,7 @@ import { LocationObject } from "../syntax/script";
 import { GameState } from "../syntax/state";
 import { GameWorld, StateObject } from "../types/world";
 import { Action } from "./actions";
-import { Interaction } from "./getInteractions";
+import { getInteractions, Interaction } from "./getInteractions";
 import { runScript } from "./runScript";
 
 type Content<Game extends GameWorld> = {
@@ -79,7 +79,8 @@ export const executeContentFlow = <Game extends GameWorld>(
     }
   };
 
-  const locationContent = content.locations[state.currentLocation as string];
+  const locationId = state.currentLocation;
+  const locationContent = content.locations[locationId as string];
   if (!locationContent) {
     actions.push({
       type: "error",
@@ -116,9 +117,35 @@ export const executeContentFlow = <Game extends GameWorld>(
     describeLocation(locationContent);
   }
 
+  const interactions: Interaction<
+    Game,
+    StateObject,
+    keyof Game[`${StateObject}s`]
+  >[] = [];
+
+  if (currentOverlayData && currentOverlayData.interactions) {
+    interactions.push(
+      ...getInteractions(
+        currentOverlayData.interactions,
+        state,
+        "overlay",
+        overlayId as string
+      )
+    );
+  } else if (locationContent.interactions) {
+    interactions.push(
+      ...getInteractions(
+        locationContent.interactions,
+        state,
+        "location",
+        locationId as string
+      )
+    );
+  }
+
   return {
     actions,
     prompt: "Your going to:",
-    interactions: [],
+    interactions,
   };
 };
