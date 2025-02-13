@@ -1,28 +1,10 @@
 import { produce } from "immer";
-import { GameWorld, StateObject } from "../types/world";
-import {
-  GameState,
-  ObjectGroupState,
-  ObjectState,
-  PartialObjectGroupState,
-} from "../syntax/state";
-import { ReadStateHelper, ScriptHelper } from "../syntax/script";
-import { Action } from "./actions";
-import { customIfStatement } from "./customIfStatement";
-
-const isFlag = <
-  Game extends GameWorld,
-  ItemType extends StateObject,
-  ItemName extends keyof Game[`${ItemType}s`]
->(
-  _itemType: ItemType,
-  _itemName: ItemName,
-  prop: unknown
-): prop is Game[`${ItemType}s`][ItemName]["flags"] & string =>
-  String(prop).startsWith("is") ||
-  String(prop).startsWith("has") ||
-  String(prop).startsWith("can") ||
-  String(prop).startsWith("knows");
+import { GameWorld, StateObject } from "../../types/world";
+import { GameState, PartialObjectGroupState } from "../../syntax/state";
+import { ScriptHelper } from "../../syntax/script";
+import { Action } from "../actions";
+import { customIfStatement } from "../customIfStatement";
+import { isFlag } from "./isFlag";
 
 export const stateItemProxy = <
   Game extends GameWorld,
@@ -138,90 +120,6 @@ export const stateItemProxy = <
     return true;
   },
 });
-
-export const readStateItemProxy = <
-  Game extends GameWorld,
-  ItemType extends StateObject,
-  ItemName extends keyof Game[`${ItemType}s`]
->(
-  state: GameState<Game>,
-  itemType: ItemType,
-  itemName: ItemName
-) => ({
-  get(
-    target: {
-      [key: string]: unknown;
-    },
-    prop: string | symbol,
-    receiver: unknown
-  ) {
-    if (prop in target) {
-      return Reflect.get(target, prop, receiver);
-    }
-    const itemState = state[`${itemType}s`]?.[itemName] as ObjectState<
-      Game,
-      ItemType,
-      ItemName
-    >;
-    if (isFlag(itemType, itemName, prop)) {
-      if (!itemState) {
-        return false;
-      }
-      return itemState?.[prop as keyof typeof itemState] ?? false;
-    }
-    if (prop === "state") {
-      return itemState?.state ?? "unknown";
-    }
-    if (itemState) {
-      return (
-        (itemState as Record<string, number | undefined>)[prop as string] ?? 0
-      );
-    }
-  },
-});
-
-const readonlyItemProxy = <
-  Game extends GameWorld,
-  ItemType extends StateObject
->(
-  state: GameState<Game>,
-  entry: ItemType
-) =>
-  new Proxy(
-    {},
-    {
-      get(_target, prop) {
-        return new Proxy(
-          {
-            get name() {
-              return (state[`${entry}s`]?.[String(prop)] as { name?: string })
-                ?.name;
-            },
-          },
-          readStateItemProxy(state, entry, String(prop))
-        );
-      },
-    }
-  ) as ObjectGroupState<Game, ItemType>;
-
-export const getReadStateProxy = <
-  Game extends GameWorld,
-  ItemType extends StateObject,
-  ItemName extends keyof Game[`${ItemType}s`]
->(
-  state: GameState<Game>,
-  key: ItemType,
-  item: ItemName
-) =>
-  new Proxy(
-    {
-      characters: readonlyItemProxy(state, "character"),
-      overlays: readonlyItemProxy(state, "overlay"),
-      items: readonlyItemProxy(state, "item"),
-      locations: readonlyItemProxy(state, "location"),
-    },
-    readStateItemProxy(state, key, item)
-  ) as ReadStateHelper<Game, ItemType, ItemName>;
 
 const characterHelper = <Game extends GameWorld>(
   getState: () => GameState<Game>,
@@ -356,7 +254,7 @@ const overlayHelper = <Game extends GameWorld>(
     }
   ) as ScriptHelper<Game, "overlay", string>["overlays"];
 
-export const createScriptHelper = <
+export const createReadWriteProxy = <
   Game extends GameWorld,
   ItemType extends StateObject,
   ItemName extends keyof Game[`${ItemType}s`]

@@ -2,7 +2,7 @@ import { NewScript, ScriptHelper } from "../syntax/script";
 import { GameState } from "../syntax/state";
 import { GameWorld, StateObject } from "../types/world";
 import { Action } from "./actions";
-import { createScriptHelper } from "./stateProxy";
+import { createReadWriteProxy } from "./proxy/readWriteProxy";
 
 export const runScript = <
   Game extends GameWorld,
@@ -28,7 +28,7 @@ export const runScript = <
     newState = patch(newState);
   };
 
-  const worldHelper = createScriptHelper(
+  const worldHelper = createReadWriteProxy(
     () => newState,
     actions,
     applyPatch,

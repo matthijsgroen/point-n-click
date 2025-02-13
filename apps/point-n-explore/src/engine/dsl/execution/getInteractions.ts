@@ -1,7 +1,7 @@
 import { Interactions, NewScript } from "../syntax/script";
 import { GameState } from "../syntax/state";
 import { GameWorld, StateObject } from "../types/world";
-import { getReadStateProxy } from "./stateProxy";
+import { createReadOnlyProxy } from "./proxy/readOnlyProxy";
 
 export type Interaction<
   Game extends GameWorld,
@@ -26,7 +26,7 @@ export const getInteractions = <
   item: Item
 ): Interaction<Game, ItemType, Item, Extra>[] => {
   const result: Interaction<Game, ItemType, Item, Extra>[] = [];
-  const stateProxy = getReadStateProxy(state, itemType, item);
+  const stateProxy = createReadOnlyProxy(state, itemType, item);
 
   const action = (
     name: string,
