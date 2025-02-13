@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { GameWorldDSL } from "../dsl/syntax/dsl";
 import { GameWorld } from "../dsl/types/world";
 import { executeContentFlow } from "../dsl/execution/contentFlow";
@@ -35,7 +35,16 @@ const App = <
       <ul>
         {actions.map((action, index) => {
           if (action.type === "text") {
-            return <li key={index}>{action.text}</li>;
+            return (
+              <li key={index}>
+                {action.text.map((line) => (
+                  <Fragment key={line}>
+                    {line}
+                    <br />
+                  </Fragment>
+                ))}
+              </li>
+            );
           }
 
           if (action.type === "state") {
@@ -45,9 +54,21 @@ const App = <
 
           if (action.type === "say") {
             return (
-              <li key={index} className="italic my-2">
-                <strong>{state.characters[action.character].name}</strong>:{" "}
-                {action.text.join(" ")}
+              <li
+                key={index}
+                className="italic my-2 grid grid-cols-[min-content_1fr] gap-2"
+              >
+                <span>
+                  <strong>{state.characters[action.character].name}</strong>:{" "}
+                </span>
+                <div>
+                  {action.text.map((line) => (
+                    <Fragment key={line}>
+                      {line}
+                      <br />
+                    </Fragment>
+                  ))}
+                </div>
               </li>
             );
           }

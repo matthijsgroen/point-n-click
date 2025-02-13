@@ -71,15 +71,11 @@ export const executeContentFlow = <Game extends GameWorld>(
 
   const actions: Action<Game>[] = [];
 
-  const applyPatch = (
-    patch: (currentState: GameState<Game>) => GameState<Game>
-  ) => {
-    localState = patch(localState);
-  };
-
   const addActions = (newActions: Action<Game>[]) => {
     const patches = newActions.filter((action) => action.type === "state");
-    patches.forEach((patch) => applyPatch(patch.patch));
+    patches.forEach((patch) => {
+      localState = patch.patch(localState);
+    });
     actions.push(...newActions);
   };
 
@@ -140,11 +136,16 @@ export const executeContentFlow = <Game extends GameWorld>(
       );
       addActions(onLeaveActions);
     }
-    applyPatch(
-      produce((draft) => {
-        (draft.currentOverlay as string) = newOverlayId as string;
-      })
-    );
+    addActions([
+      {
+        type: "state",
+        patch: produce((draft) => {
+          (draft.currentOverlay as string | undefined) = newOverlayId as
+            | string
+            | undefined;
+        }),
+      },
+    ]);
 
     if (newOverlayId && newOverlayData?.onEnter) {
       const onEnterActions = runScript<Game, "overlay", typeof newOverlayId>(
@@ -154,6 +155,13 @@ export const executeContentFlow = <Game extends GameWorld>(
         newOverlayId as string
       );
       addActions(onEnterActions);
+    }
+    if (currentOverlayId && !newOverlayId) {
+      const currentLocationContent =
+        content.locations[localState.currentLocation];
+      if (currentLocationContent) {
+        describeLocation(currentLocationContent);
+      }
     }
   };
 
@@ -192,12 +200,12 @@ export const executeContentFlow = <Game extends GameWorld>(
           `Interaction "${currentInteraction}" not found`
         );
       }
-      const interactionActions = runScript<Game, "overlay", typeof overlayId>(
-        interactionData.actionScript,
-        localState,
+      const interactionActions = runScript<
+        Game,
         "overlay",
-        overlayId
-      );
+        typeof overlayId,
+        { readonly closeOverlay: () => void }
+      >(interactionData.actionScript, localState, "overlay", overlayId);
       addActions(interactionActions);
     } else if (locationContent.interactions) {
       const locationInteractionData = getInteractions(
@@ -226,6 +234,7 @@ export const executeContentFlow = <Game extends GameWorld>(
     updateOverlayState();
   }
 
+  console.log("STATE before interactions", localState);
   const interactions: Interaction<
     Game,
     StateObject,
@@ -240,12 +249,16 @@ export const executeContentFlow = <Game extends GameWorld>(
       prompt = finalOverlayData.prompt;
     }
     interactions.push(
-      ...getInteractions(
+      ...(getInteractions(
         finalOverlayData.interactions,
         localState,
         "overlay",
         finalOverlayId as string
-      )
+      ) as Interaction<
+        Game,
+        StateObject,
+        keyof Game["locations" | "characters" | "items" | "overlays"]
+      >[])
     );
   } else if (locationContent.interactions) {
     interactions.push(

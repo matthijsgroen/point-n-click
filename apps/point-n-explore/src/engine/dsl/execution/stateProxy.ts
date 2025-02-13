@@ -8,6 +8,7 @@ import {
 } from "../syntax/state";
 import { ReadStateHelper, ScriptHelper } from "../syntax/script";
 import { Action } from "./actions";
+import { customIfStatement } from "./customIfStatement";
 
 const isFlag = <
   Game extends GameWorld,
@@ -63,6 +64,12 @@ export const stateItemProxy = <
         return itemState?.name;
       }
     }
+
+    if (itemState) {
+      return (
+        (itemState as Record<string, number | undefined>)[prop as string] ?? 0
+      );
+    }
   },
   set(
     _target: { [key: string]: unknown },
@@ -86,27 +93,48 @@ export const stateItemProxy = <
         })
       );
     }
-    if (isFlag(itemType, itemName, prop)) {
+    if (isFlag(itemType, itemName, prop) && typeof value === "boolean") {
+      updateState(
+        produce((currentState) => {
+          type DraftState = Exclude<
+            (typeof currentState)[`${ItemType}s`],
+            undefined
+          >;
+          currentState[`${itemType}s`] ??= {} as DraftState;
+          const flags = ((
+            currentState[`${itemType}s`] as Record<
+              string,
+              Record<string, boolean>
+            >
+          )[itemName as string] ??= {});
+          flags[prop] = value;
+        })
+      );
+    }
+    if (typeof value === "number") {
       updateState(
         produce((currentState) => {
           type ItemsState = PartialObjectGroupState<
             Game,
             ItemType,
-            { name?: string }
+            { name?: string; [key: string]: unknown }
           >;
+
           (currentState[`${itemType}s`] as ItemsState | undefined) ??=
             {} as ItemsState;
 
           (currentState[`${itemType}s`] as ItemsState)[itemName] ??= {};
-
           (
-            (currentState[`${itemType}s`] as ItemsState)[itemName] as {
-              [key: string]: string | boolean | number;
-            }
-          )[prop] = value;
+            (currentState[`${itemType}s`] as ItemsState)[itemName] as Record<
+              string,
+              number
+            >
+          )[String(prop)] = value;
         })
       );
     }
+
+    // TODO: handle numbers
     return true;
   },
 });
@@ -144,7 +172,11 @@ export const readStateItemProxy = <
     if (prop === "state") {
       return itemState?.state ?? "unknown";
     }
-    console.log("other", itemState, String(prop));
+    if (itemState) {
+      return (
+        (itemState as Record<string, number | undefined>)[prop as string] ?? 0
+      );
+    }
   },
 });
 
@@ -154,7 +186,7 @@ const readonlyItemProxy = <
 >(
   state: GameState<Game>,
   entry: ItemType
-): ObjectGroupState<Game, ItemType> =>
+) =>
   new Proxy(
     {},
     {
@@ -180,7 +212,7 @@ export const getReadStateProxy = <
   state: GameState<Game>,
   key: ItemType,
   item: ItemName
-): ReadStateHelper<Game, ItemType, ItemName> =>
+) =>
   new Proxy(
     {
       characters: readonlyItemProxy(state, "character"),
@@ -197,7 +229,7 @@ const characterHelper = <Game extends GameWorld>(
   updateState: (
     patch: (currentState: GameState<Game>) => GameState<Game>
   ) => void
-): ScriptHelper<Game, "character", string>["characters"] =>
+) =>
   new Proxy(
     {},
     {
@@ -224,7 +256,7 @@ const locationHelper = <Game extends GameWorld>(
   updateState: (
     patch: (currentState: GameState<Game>) => GameState<Game>
   ) => void
-): ScriptHelper<Game, "location", string>["locations"] =>
+) =>
   new Proxy(
     {},
     {
@@ -245,9 +277,60 @@ const locationHelper = <Game extends GameWorld>(
     }
   ) as ScriptHelper<Game, "location", string>["locations"];
 
+const listHelper = <Game extends GameWorld>(
+  updateState: (
+    patch: (currentState: GameState<Game>) => GameState<Game>
+  ) => void
+) =>
+  new Proxy(
+    {},
+    {
+      get(_target, prop) {
+        return {
+          addUnique: (item: string) => {
+            updateState(
+              produce((draft) => {
+                type DraftLists = Exclude<(typeof draft)["lists"], undefined>;
+                draft.lists ??= {} as DraftLists;
+                const list = ((
+                  draft.lists as unknown as Record<string, string[]>
+                )[String(prop)] ??= []);
+                if (!list.includes(item)) {
+                  list.push(item);
+                }
+              })
+            );
+            console.log("Adding unique", prop, item);
+          },
+        };
+      },
+    }
+  ) as {
+    [K in keyof Game["lists"]]: {
+      addUnique: (item: Game["lists"][K]) => void;
+    };
+  };
+
+const itemsHelper = <Game extends GameWorld>(
+  getState: () => GameState<Game>,
+  updateState: (
+    patch: (currentState: GameState<Game>) => GameState<Game>
+  ) => void
+): ScriptHelper<Game, "item", string>["items"] =>
+  new Proxy(
+    {},
+    {
+      get(_target, prop) {
+        return new Proxy(
+          {},
+          stateItemProxy(getState, updateState, "item", String(prop))
+        );
+      },
+    }
+  ) as ScriptHelper<Game, "overlay", string>["overlays"];
+
 const overlayHelper = <Game extends GameWorld>(
   getState: () => GameState<Game>,
-  actions: Action<Game>[],
   updateState: (
     patch: (currentState: GameState<Game>) => GameState<Game>
   ) => void
@@ -259,13 +342,12 @@ const overlayHelper = <Game extends GameWorld>(
         return new Proxy(
           {
             open: () => {
-              actions.push({
-                type: "state",
-                patch: produce((draft) => {
+              updateState(
+                produce((draft) => {
                   draft.overlayStack ??= [];
                   (draft.overlayStack as string[]).push(String(prop));
-                }),
-              });
+                })
+              );
             },
           },
           stateItemProxy(getState, updateState, "overlay", String(prop))
@@ -290,15 +372,23 @@ export const createScriptHelper = <
   new Proxy(
     {
       characters: characterHelper<Game>(getState, actions, applyPatch),
-      items: {},
+      items: itemsHelper<Game>(getState, applyPatch),
       locations: locationHelper<Game>(getState, actions, applyPatch),
-      overlays: overlayHelper<Game>(getState, actions, applyPatch),
-      lists: {},
+      overlays: overlayHelper<Game>(getState, applyPatch),
+      lists: listHelper<Game>(applyPatch),
       text: (...text: string[]) => {
         actions.push({
           type: "text",
           text,
         });
+      },
+      if: customIfStatement,
+      closeOverlay: () => {
+        applyPatch(
+          produce((draft) => {
+            draft.overlayStack?.pop();
+          })
+        );
       },
     },
     stateItemProxy(getState, applyPatch, currentItemType, currentItemName)

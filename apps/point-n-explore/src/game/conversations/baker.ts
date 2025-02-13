@@ -3,29 +3,29 @@ import g from "../game";
 g.defineOverlay("bakerConversation", {
   prompt: "What will you say:",
   onEnter: (w) => {
-    if (
-      !w.characters.baker.hasToldDaughter &&
-      w.characters.dragon.isToothPulled
-    ) {
-      w.characters.baker.say(
-        "People told me the dragon was slain. I heard the really loud roar.",
-        `Did you see {b}${w.characters.daughter.name}{/b}? Is she still alive?`
-      );
-    } else {
+    w.if(
+      !w.characters.baker.hasToldDaughter && w.characters.dragon.isToothPulled,
+      () => {
+        w.characters.baker.say(
+          "People told me the dragon was slain. I heard the really loud roar.",
+          `Did you see {b}${w.characters.daughter.name}{/b}? Is she still alive?`
+        );
+      }
+    ).else(() => {
       w.characters.player.say(
         "Hello, my name is {b}[.name]{/b}.",
         "I'm urgently looking for a medicine for the king.",
         "Could you help me?"
       );
       w.text("The baker does not respond and is staring in the distance.");
-    }
+    });
   },
   onLeave: (w) => {
-    if (w.state === "unknown") {
+    w.if(w.state === "unknown", () => {
       w.text("You leave the baker alone and look around in the shop.");
-    } else {
+    }).else(() => {
       w.text("You say goodbye and start browsing the shop.");
-    }
+    });
   },
 
   interactions: (s, action) => {
@@ -101,9 +101,9 @@ g.defineOverlay("bakerConversation", {
           "You won't happen to have a {b}sword{/b} do you?",
           "You definitely would need a {b}sword{/b} to defend you against that monster."
         );
-        if (w.items.sword.state === "unknown") {
+        w.if(w.items.sword.state === "unknown", () => {
           w.items.sword.state = "need";
-        }
+        });
         w.characters.baker.hasToldDragon = true;
       }
     );
@@ -192,5 +192,63 @@ g.defineOverlay("bakerConversation", {
         w.items.grain.state = "delivered";
       }
     );
+
+    action(
+      "Hello, can I buy something to eat?",
+      s.state === "visiting" && s.items.cookies.state === "unknown",
+      (w) => {
+        w.characters.player.say("Hello? Can I buy something to eat?");
+        w.text(
+          "The baker suddenly realizes that there is someone in his store."
+        );
+        w.characters.baker.say(
+          "Oh sorry, I didn't see you there.",
+          "We do have some {b}cookies{/b} for sale.",
+          "The price is {b}2 coins{/b}."
+        );
+        w.items.cookies.state = "price";
+      }
+    );
+
+    action(
+      "I would like to buy some cookies",
+      s.state === "visiting" && s.items.cookies.state === "price",
+      (w) => {
+        w.characters.player.say("I would like to buy some cookies.");
+        w.characters.baker.say("That will be {b}2 coins{/b}.");
+        w.state = "buyCookies";
+      }
+    );
+
+    action(
+      "Here you go, 2 coins",
+      s.state === "buyCookies" && s.characters.player.coins >= 2,
+      (w) => {
+        w.characters.player.say("Here you go, 2 coins.");
+        w.characters.baker.say("Here you go.");
+        w.text("The baker gives a few delicious cookies.");
+        w.items.cookies.state = "possession";
+        w.lists.inventory.addUnique("cookies");
+        w.characters.player.coins -= 2;
+        w.if(w.characters.player.coins <= 0, () => {
+          w.lists.inventory.remove("coins");
+        });
+        w.state = "visiting";
+      }
+    );
+
+    action("Hmm, maybe another time", s.state === "buyCookies", (w) => {
+      w.characters.player.say("Hmm, maybe another time.");
+      w.characters.baker.say("Okay, fine");
+      w.state = "visiting";
+    });
+
+    action("Never mind", s.state === "unknown", (w) => {
+      w.closeOverlay();
+    });
+
+    action("Goodbye", s.state === "visiting", (w) => {
+      w.closeOverlay();
+    });
   },
 });

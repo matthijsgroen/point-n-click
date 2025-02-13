@@ -1,4 +1,4 @@
-import { NewScript } from "../syntax/script";
+import { NewScript, ScriptHelper } from "../syntax/script";
 import { GameState } from "../syntax/state";
 import { GameWorld, StateObject } from "../types/world";
 import { Action } from "./actions";
@@ -7,9 +7,10 @@ import { createScriptHelper } from "./stateProxy";
 export const runScript = <
   Game extends GameWorld,
   ItemType extends StateObject,
-  ItemName extends keyof Game[`${ItemType}s`]
+  ItemName extends keyof Game[`${ItemType}s`],
+  Extra = unknown
 >(
-  script: NewScript<Game, StateObject, string>,
+  script: NewScript<Game, StateObject, string, Extra>,
   state: GameState<Game>,
   currentItemType: ItemType,
   currentItemName: ItemName
@@ -33,7 +34,7 @@ export const runScript = <
     applyPatch,
     currentItemType,
     currentItemName
-  );
+  ) as ScriptHelper<Game, ItemType, ItemName> & Extra;
 
   script(worldHelper);
 

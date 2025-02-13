@@ -93,6 +93,7 @@ const game = world<GameState>({
       player: {
         name: "Matthijs",
         isMale: true,
+        coins: 3,
       },
       dwarf: { name: "Thorin" },
       miller: { name: "Smock" },

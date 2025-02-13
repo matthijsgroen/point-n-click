@@ -1,3 +1,4 @@
+import { CustomIfStatement } from "../execution/customIfStatement";
 import { GameWorld, StateObject } from "../types/world";
 import { ObjectState, ObjectGroupState } from "./state";
 
@@ -44,9 +45,28 @@ export type ScriptHelper<
     Game,
     {
       readonly addUnique: (item: Game["lists"][keyof Game["lists"]]) => void;
+      readonly remove: (item: Game["lists"][keyof Game["lists"]]) => void;
     }
   >;
   readonly text: (...sentences: string[]) => void;
+  /**
+   * By using this custom if statement, you can chain multiple conditions and actions together.
+   * The engine will be able to browse all content when using this custom if statement, to collect
+   * all potentially used assets and text for translation.
+   *
+   * @example
+   *
+   * ```typescript
+   *   customIfStatement(someIfCondition, () => {
+   *     console.log("This is an 'if'");
+   *   }).else(someElseCondition, () => {
+   *     console.log("This is an 'if else'");
+   *   }).else( () => {
+   *     console.log("This is an 'else'");
+   *   });
+   * ```
+   */
+  readonly if: CustomIfStatement;
 } & ObjectState<Game, T, Item> & { name?: string };
 
 export type ReadStateHelper<
@@ -64,19 +84,21 @@ export type ReadStateHelper<
 export type NewScript<
   Game extends GameWorld,
   T extends StateObject,
-  Item extends keyof Game[`${T}s`]
-> = (worldHelper: ScriptHelper<Game, T, Item>) => void;
+  Item extends keyof Game[`${T}s`],
+  ExtraActions = unknown
+> = (worldHelper: ScriptHelper<Game, T, Item> & ExtraActions) => void;
 
 export type Interactions<
   Game extends GameWorld,
   T extends StateObject,
-  Item extends keyof Game[`${T}s`]
+  Item extends keyof Game[`${T}s`],
+  ExtraActions = unknown
 > = (
   state: ReadStateHelper<Game, T, Item>,
   action: (
     name: string,
     condition: boolean,
-    action: NewScript<Game, T, Item>
+    action: NewScript<Game, T, Item, ExtraActions>
   ) => void
 ) => void;
 
@@ -87,7 +109,12 @@ export type OverlayObject<
   prompt?: string;
   onEnter?: NewScript<Game, "overlay", Overlay>;
   onLeave?: NewScript<Game, "overlay", Overlay>;
-  interactions?: Interactions<Game, "overlay", Overlay>;
+  interactions?: Interactions<
+    Game,
+    "overlay",
+    Overlay,
+    { readonly closeOverlay: () => void }
+  >;
 };
 
 export type LocationObject<
