@@ -1,11 +1,14 @@
 import { produce } from "immer";
 import { GameData } from "../syntax/dsl";
-import { LocationObject } from "../syntax/script";
+import { LocationObject, NewScript } from "../syntax/script";
 import { GameState } from "../syntax/state";
 import { GameWorld, StateObject } from "../types/world";
 import { Action } from "./actions";
 import { getInteractions, Interaction } from "./getInteractions";
 import { runScript } from "./runScript";
+
+const capitalize = <S extends string>(s: S): Capitalize<S> =>
+  (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>;
 
 type Content<Game extends GameWorld> = {
   actions: Action<Game>[];
@@ -78,8 +81,77 @@ export const executeContentFlow = <Game extends GameWorld>(
     actions.push(...newActions);
   };
 
-  const describeLocation = (locationContent: LocationObject<Game, string>) => {
-    if (locationContent.describe) {
+  const withErrorMessage = (message: string) => {
+    console.log("DEBUG STATE, ERROR", state);
+    actions.push({
+      type: "error",
+      message,
+    });
+
+    return {
+      actions,
+      prompt: "Error",
+      interactions: [],
+    };
+  };
+
+  const describeLocation = () => {
+    const currentLocation = localState.currentLocation as string;
+    const previousLocation = localState.previousLocation as string | undefined;
+    const locationContent = content.locations[currentLocation];
+
+    if (currentLocation !== previousLocation && previousLocation) {
+      const previousLocationContent = content.locations[previousLocation];
+      if (!previousLocationContent) {
+        return withErrorMessage(
+          `Previous location "${String(previousLocation)}" not found`
+        );
+      }
+      const leaveScript = (previousLocationContent[
+        `onLeaveTo${capitalize(currentLocation)}` as keyof LocationObject<
+          Game,
+          string
+        >
+      ] ?? previousLocationContent.onLeave) as NewScript<
+        Game,
+        "location",
+        string
+      >;
+
+      if (leaveScript) {
+        const onLeaveActions = runScript<
+          Game,
+          "location",
+          typeof previousLocation
+        >(leaveScript, localState, "location", previousLocation);
+        addActions(onLeaveActions);
+      }
+
+      if (!locationContent) {
+        return withErrorMessage(
+          `Location "${String(currentLocation)}" not found`
+        );
+      }
+
+      // if (locationContent.onEnter) {
+      //   const onEnterActions = runScript<
+      //     Game,
+      //     "location",
+      //     typeof currentLocation
+      //   >(locationContent.onEnter, localState, "location", currentLocation);
+      //   addActions(onEnterActions);
+      // }
+    }
+    addActions([
+      {
+        type: "state",
+        patch: produce((draft) => {
+          draft.previousLocation =
+            currentLocation as typeof draft.currentLocation;
+        }),
+      },
+    ]);
+    if (locationContent?.describe) {
       const describeActions = runScript<
         Game,
         "location",
@@ -93,20 +165,6 @@ export const executeContentFlow = <Game extends GameWorld>(
       addActions(describeActions);
       // Update state mutations, check if locations / overlays have change
     }
-  };
-
-  const withErrorMessage = (message: string) => {
-    console.log("DEBUG STATE, ERROR", state);
-    actions.push({
-      type: "error",
-      message,
-    });
-
-    return {
-      actions,
-      prompt: "Error",
-      interactions: [],
-    };
   };
 
   const updateOverlayState = () => {
@@ -156,11 +214,7 @@ export const executeContentFlow = <Game extends GameWorld>(
       addActions(onEnterActions);
     }
     if (currentOverlayId && !newOverlayId) {
-      const currentLocationContent =
-        content.locations[localState.currentLocation];
-      if (currentLocationContent) {
-        describeLocation(currentLocationContent);
-      }
+      describeLocation();
     }
   };
 
@@ -178,9 +232,11 @@ export const executeContentFlow = <Game extends GameWorld>(
     return withErrorMessage(`Overlay "${String(overlayId)}" not found`);
   }
 
+  let locationDescribed = false;
   const currentInteraction = localState.currentInteraction;
   if (!currentInteraction) {
-    describeLocation(locationContent);
+    locationDescribed = true;
+    describeLocation();
   } else {
     if (overlayId && currentOverlayData?.interactions) {
       const overlayInteractionData = getInteractions(
@@ -229,6 +285,17 @@ export const executeContentFlow = <Game extends GameWorld>(
     }
 
     updateOverlayState();
+    if (
+      localState.currentLocation !== localState.previousLocation &&
+      !locationDescribed
+    ) {
+      locationDescribed = true;
+      describeLocation();
+    }
+  }
+
+  if (actions.find((action) => action.type === "error")) {
+    return { actions, prompt: "Error", interactions: [] };
   }
 
   const interactions: Interaction<

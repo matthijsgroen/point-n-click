@@ -150,7 +150,6 @@ const characterHelper = <Game extends GameWorld>(
 
 const locationHelper = <Game extends GameWorld>(
   getState: () => GameState<Game>,
-  actions: Action<Game>[],
   updateState: (
     patch: (currentState: GameState<Game>) => GameState<Game>
   ) => void
@@ -161,12 +160,13 @@ const locationHelper = <Game extends GameWorld>(
       get(_target, prop) {
         return new Proxy(
           {
-            travel: (text: string) => {
-              actions.push({
-                type: "say",
-                character: String(prop),
-                text: [text],
-              });
+            travel: () => {
+              updateState(
+                produce((draft) => {
+                  (draft.currentLocation as string) = String(prop);
+                  draft.overlayStack = [];
+                })
+              );
             },
           },
           stateItemProxy(getState, updateState, "location", String(prop))
@@ -270,7 +270,7 @@ export const createReadWriteProxy = <
     {
       characters: characterHelper<Game>(getState, actions, applyPatch),
       items: itemsHelper<Game>(getState, applyPatch),
-      locations: locationHelper<Game>(getState, actions, applyPatch),
+      locations: locationHelper<Game>(getState, applyPatch),
       overlays: overlayHelper<Game>(getState, applyPatch),
       lists: listHelper<Game>(applyPatch),
       text: (...text: string[]) => {
