@@ -50,10 +50,18 @@ export const stateItemProxy = <
       if (!itemState) {
         return false;
       }
-      console.log("itemState", itemState);
+      return (
+        (itemState as Record<string, boolean | undefined>)?.[prop as string] ??
+        false
+      );
     }
     if (prop === "state") {
       return itemState?.state ?? "unknown";
+    }
+    if (prop === "name") {
+      if (itemState && "name" in itemState) {
+        return itemState?.name;
+      }
     }
   },
   set(
@@ -62,7 +70,6 @@ export const stateItemProxy = <
     value: string | number | boolean
   ) {
     if (String(prop) === "state") {
-      console.log("set", itemType, itemName, prop, value);
       updateState(
         produce((currentState) => {
           type ItemsState = PartialObjectGroupState<
@@ -80,7 +87,6 @@ export const stateItemProxy = <
       );
     }
     if (isFlag(itemType, itemName, prop)) {
-      console.log("set", itemType, itemName, prop, value);
       updateState(
         produce((currentState) => {
           type ItemsState = PartialObjectGroupState<
@@ -129,7 +135,6 @@ export const readStateItemProxy = <
       ItemType,
       ItemName
     >;
-    console.log("path", `${itemType}s`, itemName, prop);
     if (isFlag(itemType, itemName, prop)) {
       if (!itemState) {
         return false;
@@ -238,7 +243,36 @@ const locationHelper = <Game extends GameWorld>(
         );
       },
     }
-  ) as ScriptHelper<Game, "character", string>["characters"];
+  ) as ScriptHelper<Game, "location", string>["locations"];
+
+const overlayHelper = <Game extends GameWorld>(
+  getState: () => GameState<Game>,
+  actions: Action<Game>[],
+  updateState: (
+    patch: (currentState: GameState<Game>) => GameState<Game>
+  ) => void
+): ScriptHelper<Game, "overlay", string>["overlays"] =>
+  new Proxy(
+    {},
+    {
+      get(_target, prop) {
+        return new Proxy(
+          {
+            open: () => {
+              actions.push({
+                type: "state",
+                patch: produce((draft) => {
+                  draft.overlayStack ??= [];
+                  (draft.overlayStack as string[]).push(String(prop));
+                }),
+              });
+            },
+          },
+          stateItemProxy(getState, updateState, "overlay", String(prop))
+        );
+      },
+    }
+  ) as ScriptHelper<Game, "overlay", string>["overlays"];
 
 export const createScriptHelper = <
   Game extends GameWorld,
@@ -258,6 +292,7 @@ export const createScriptHelper = <
       characters: characterHelper<Game>(getState, actions, applyPatch),
       items: {},
       locations: locationHelper<Game>(getState, actions, applyPatch),
+      overlays: overlayHelper<Game>(getState, actions, applyPatch),
       lists: {},
       text: (...text: string[]) => {
         actions.push({
