@@ -92,7 +92,7 @@ const App = <
         })}
       </ul>
       <strong>{prompt}</strong>
-      <ul className="flex flex-wrap gap-2">
+      <ul className="flex flex-col gap-2">
         {interactions.map((action, index) =>
           action.enabled ? (
             <li key={index}>

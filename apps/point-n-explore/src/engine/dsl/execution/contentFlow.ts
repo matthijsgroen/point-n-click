@@ -24,7 +24,6 @@ export const executeContentFlow = <Game extends GameWorld>(
   content: GameData<Game>,
   state: GameState<Game>
 ): Content<Game> => {
-  console.log("Executing content flow", state);
   /**
    * Flow of the 'point-n-click' version ('describeLocation')
    *
@@ -178,8 +177,6 @@ export const executeContentFlow = <Game extends GameWorld>(
   if (overlayId && !currentOverlayData) {
     return withErrorMessage(`Overlay "${String(overlayId)}" not found`);
   }
-  console.log("locationContent", locationId, locationContent);
-  console.log("overlayContent", overlayId, currentOverlayData);
 
   const currentInteraction = localState.currentInteraction;
   if (!currentInteraction) {
@@ -234,7 +231,6 @@ export const executeContentFlow = <Game extends GameWorld>(
     updateOverlayState();
   }
 
-  console.log("STATE before interactions", localState);
   const interactions: Interaction<
     Game,
     StateObject,

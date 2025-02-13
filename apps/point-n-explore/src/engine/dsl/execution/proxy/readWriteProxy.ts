@@ -198,7 +198,6 @@ const listHelper = <Game extends GameWorld>(
                 }
               })
             );
-            console.log("Adding unique", prop, item);
           },
         };
       },

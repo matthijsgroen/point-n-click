@@ -85,7 +85,7 @@ g.defineOverlay("bakerConversation", {
 
     action(
       "Could you tell me more about that monster?",
-      s.state === "intro",
+      s.state === "visiting",
       (w) => {
         w.characters.player.say("Could you tell me more about that monster?");
         w.characters.baker.say(
