@@ -1,4 +1,5 @@
 import { CustomIfStatement } from "../execution/customIfStatement";
+import { Interaction } from "../execution/getInteractions";
 import { GameWorld, StateObject } from "../types/world";
 import { ObjectState, ObjectGroupState } from "./state";
 
@@ -94,12 +95,11 @@ export type Interactions<
   Item extends keyof Game[`${T}s`],
   ExtraActions = unknown
 > = (
-  state: ReadStateHelper<Game, T, Item>,
-  action: (
-    name: string,
-    condition: boolean,
-    action: NewScript<Game, T, Item, ExtraActions>
-  ) => void
+  state: ReadStateHelper<Game, T, Item> & {
+    readonly addAction: (
+      action: Interaction<Game, T, Item, ExtraActions>
+    ) => void;
+  }
 ) => void;
 
 export type OverlayObject<

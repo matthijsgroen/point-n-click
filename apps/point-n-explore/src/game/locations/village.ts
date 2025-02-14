@@ -79,27 +79,47 @@ g.defineLocation("village", {
     });
   },
 
-  interactions: (_s, actions) => {
-    actions("Go to bakery", true, (w) => {
-      w.locations.bakery.travel();
+  interactions: (s) => {
+    s.addAction({
+      label: "Go to bakery",
+      enabled: true,
+      action: (w) => {
+        w.locations.bakery.travel();
+      },
     });
 
-    actions("Go to smithy", true, (w) => {
-      w.locations.smithy.travel();
+    s.addAction({
+      label: "Go to smithy",
+      enabled: true,
+      action: (w) => {
+        w.locations.smithy.travel();
+      },
     });
 
-    actions("Go north, to the farmlands", true, (w) => {
-      w.locations.farmland.travel();
+    s.addAction({
+      label: "Go north, to the farmlands",
+      enabled: true,
+      action: (w) => {
+        w.locations.farmland.travel();
+      },
       // shortcutKey: "n"
     });
 
-    actions("Go east, to the dark woods", true, (w) => {
-      w.locations.darkwoods.travel();
+    s.addAction({
+      label: "Go east, to the dark woods",
+      enabled: true,
+      action: (w) => {
+        w.locations.darkwoods.travel();
+      },
       // shortcutKey: "e"
     });
 
-    actions("Go south, to the river", true, (w) => {
-      w.locations.river.travel();
+    s.addAction({
+      label: "Go south, to the river",
+      enabled: true,
+      action: (w) => {
+        w.locations.river.travel();
+      },
       // shortcutKey: "s"
     });
   },

@@ -9,9 +9,9 @@ export type Interaction<
   Item extends keyof Game[`${ItemType}s`],
   Extra = unknown
 > = {
-  name: string;
+  label: string;
   enabled: boolean;
-  actionScript: NewScript<Game, ItemType, Item, Extra>;
+  action: NewScript<Game, ItemType, Item, Extra>;
 };
 
 export const getInteractions = <
@@ -26,20 +26,12 @@ export const getInteractions = <
   item: Item
 ): Interaction<Game, ItemType, Item, Extra>[] => {
   const result: Interaction<Game, ItemType, Item, Extra>[] = [];
-  const stateProxy = createReadOnlyProxy(state, itemType, item);
+  const stateProxy = createReadOnlyProxy(state, itemType, item, {
+    addAction: (action: Interaction<Game, ItemType, Item, Extra>) => {
+      result.push(action);
+    },
+  });
 
-  const action = (
-    name: string,
-    enabled: boolean,
-    actionScript: NewScript<Game, ItemType, Item, Extra>
-  ) => {
-    result.push({
-      name,
-      enabled,
-      actionScript,
-    });
-  };
-
-  interactions(stateProxy, action);
+  interactions(stateProxy);
   return result;
 };

@@ -106,12 +106,12 @@ const App = <
                     );
 
                     return produce((draft) => {
-                      draft.currentInteraction = action.name;
+                      draft.currentInteraction = action.label;
                     })(accurateState);
                   });
                 }}
               >
-                {action.name}
+                {action.label}
               </button>
             </li>
           ) : null

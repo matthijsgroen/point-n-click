@@ -259,7 +259,7 @@ export const executeContentFlow = <Game extends GameWorld>(
         overlayId as string
       );
       const interactionData = overlayInteractionData.find(
-        (interaction) => interaction.name === currentInteraction
+        (interaction) => interaction.label === currentInteraction
       );
       if (!interactionData) {
         return withErrorMessage(
@@ -271,7 +271,7 @@ export const executeContentFlow = <Game extends GameWorld>(
         "overlay",
         typeof overlayId,
         { readonly closeOverlay: () => void }
-      >(interactionData.actionScript, localState, "overlay", overlayId);
+      >(interactionData.action, localState, "overlay", overlayId);
       addActions(interactionActions);
     } else if (locationContent.interactions) {
       const locationInteractionData = getInteractions(
@@ -281,7 +281,7 @@ export const executeContentFlow = <Game extends GameWorld>(
         locationId as string
       );
       const interactionData = locationInteractionData.find(
-        (interaction) => interaction.name === currentInteraction
+        (interaction) => interaction.label === currentInteraction
       );
       if (!interactionData) {
         return withErrorMessage(
@@ -289,7 +289,7 @@ export const executeContentFlow = <Game extends GameWorld>(
         );
       }
       const interactionActions = runScript<Game, "location", typeof locationId>(
-        interactionData.actionScript,
+        interactionData.action,
         localState,
         "location",
         locationId

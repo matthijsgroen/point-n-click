@@ -61,13 +61,21 @@ g.defineLocation("bakery", {
     });
   },
 
-  interactions: (_s, action) => {
-    action("Talk to baker", true, (w) => {
-      w.overlays.bakerConversation.open();
+  interactions: (s) => {
+    s.addAction({
+      label: "Talk to baker",
+      enabled: true,
+      action: (w) => {
+        w.overlays.bakerConversation.open();
+      },
     });
 
-    action("Leave bakery", true, (w) => {
-      w.locations.village.travel();
+    s.addAction({
+      label: "Leave bakery",
+      enabled: true,
+      action: (w) => {
+        w.locations.village.travel();
+      },
     });
   },
 });

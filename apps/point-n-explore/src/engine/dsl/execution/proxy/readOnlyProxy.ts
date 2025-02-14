@@ -71,18 +71,21 @@ const readonlyItemProxy = <
 export const createReadOnlyProxy = <
   Game extends GameWorld,
   ItemType extends StateObject,
-  ItemName extends keyof Game[`${ItemType}s`]
+  ItemName extends keyof Game[`${ItemType}s`],
+  Actions extends Record<string, unknown>
 >(
   state: GameState<Game>,
   key: ItemType,
-  item: ItemName
+  item: ItemName,
+  actions: Actions
 ) =>
   new Proxy(
     {
+      ...actions,
       characters: readonlyItemProxy(state, "character"),
       overlays: readonlyItemProxy(state, "overlay"),
       items: readonlyItemProxy(state, "item"),
       locations: readonlyItemProxy(state, "location"),
     },
     readStateItemProxy(state, key, item)
-  ) as ReadStateHelper<Game, ItemType, ItemName>;
+  ) as ReadStateHelper<Game, ItemType, ItemName> & Actions;
