@@ -36,7 +36,6 @@ export const executeContentFlow = <Game extends GameWorld>(
    * - Get the previous location
    * - If the current location is different from the previous location
    *   - Run the 'onLeave' script of the previous location
-   *   - Update the previous location
    *   - Run the 'onEnter' script of the current location
    * - Run the 'describe' script of the current location
    * - Update the previous location
@@ -133,14 +132,28 @@ export const executeContentFlow = <Game extends GameWorld>(
         );
       }
 
-      // if (locationContent.onEnter) {
-      //   const onEnterActions = runScript<
-      //     Game,
-      //     "location",
-      //     typeof currentLocation
-      //   >(locationContent.onEnter, localState, "location", currentLocation);
-      //   addActions(onEnterActions);
-      // }
+      const currentLocationContent = content.locations[currentLocation];
+      if (currentLocationContent) {
+        const enterScript = (currentLocationContent[
+          `onEnterFrom${capitalize(previousLocation)}` as keyof LocationObject<
+            Game,
+            string
+          >
+        ] ?? currentLocationContent?.onEnter) as NewScript<
+          Game,
+          "location",
+          string
+        >;
+
+        if (enterScript) {
+          const onEnterActions = runScript<
+            Game,
+            "location",
+            typeof currentLocation
+          >(enterScript, localState, "location", currentLocation);
+          addActions(onEnterActions);
+        }
+      }
     }
     addActions([
       {
@@ -306,6 +319,9 @@ export const executeContentFlow = <Game extends GameWorld>(
 
   const finalOverlayId = localState.currentOverlay;
   const finalOverlayData = content.overlays[finalOverlayId as string];
+
+  const finalLocationId = localState.currentLocation;
+  const finalLocationData = content.locations[finalLocationId as string];
   let prompt = "You're going to:";
   if (finalOverlayData && finalOverlayData.interactions) {
     if (finalOverlayData.prompt) {
@@ -323,10 +339,10 @@ export const executeContentFlow = <Game extends GameWorld>(
         keyof Game["locations" | "characters" | "items" | "overlays"]
       >[])
     );
-  } else if (locationContent.interactions) {
+  } else if (finalLocationData && finalLocationData.interactions) {
     interactions.push(
       ...getInteractions(
-        locationContent.interactions,
+        finalLocationData.interactions,
         localState,
         "location",
         locationId as string
