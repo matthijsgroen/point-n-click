@@ -6,12 +6,13 @@ import { GameWorld, StateObject } from "../types/world";
 import { Action } from "./actions";
 import { getInteractions, Interaction } from "./getInteractions";
 import { runScript } from "./runScript";
+import { ContentPlugin, DSLExtension, PluginAction } from "../types/plugin";
 
 const capitalize = <S extends string>(s: S): Capitalize<S> =>
   (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>;
 
 type Content<Game extends GameWorld> = {
-  actions: Action<Game>[];
+  actions: (Action<Game> | PluginAction)[];
   prompt: string;
   interactions: Interaction<Game, StateObject, keyof Game[`${StateObject}s`]>[];
 };
@@ -23,47 +24,15 @@ type Content<Game extends GameWorld> = {
  * and possible interactions to perform
  *
  */
-export const executeContentFlow = <Game extends GameWorld>(
-  content: GameData<Game>,
+export const executeContentFlow = <
+  Game extends GameWorld,
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[]
+>(
+  content: GameData<Game, Plugins>,
   state: GameState<Game>
 ): Content<Game> => {
   /**
    * Flow of the 'point-n-click' version ('describeLocation')
-   *
-   * # DescribeLocation
-   *
-   * - Get the current location
-   * - Get the previous location
-   * - If the current location is different from the previous location
-   *   - Run the 'onLeave' script of the previous location
-   *   - Run the 'onEnter' script of the current location
-   * - Run the 'describe' script of the current location
-   * - Update the previous location
-   *
-   * - Get the current overlay
-   * - Run the 'onEnter' script of the current overlay
-   *
-   *
-   * # GetDisplayInfo
-   *
-   * - If interaction is set
-   * - Get the interaction data (from global or local overlay / location)
-   * - Run the interaction script
-   *
-   * - If the interaction script changes the overlay
-   *   - Run the 'onLeave' script of the current overlay
-   *   - Update the current overlay
-   * - If there is still an overlay set (not undefined)
-   *   - Run the 'onEnter' script of the new overlay
-   * - If there is no overlay set (and overlay was set before)
-   *   - Describe the location (#DescribeLocation)
-   *
-   * - If location has changed and was not yet described
-   *   - Describe the location (#DescribeLocation)
-   *
-   * - If no interaction is set
-   *  - Describe the location (#DescribeLocation)
-   *
    */
   //   const seed = state.lastInteractionAt ?? Date.now();
 
@@ -109,19 +78,22 @@ export const executeContentFlow = <Game extends GameWorld>(
       const leaveScript = (previousLocationContent[
         `onLeaveTo${capitalize(currentLocation)}` as keyof LocationObject<
           Game,
-          string
+          string,
+          Plugins
         >
       ] ?? previousLocationContent.onLeave) as NewScript<
         Game,
         "location",
-        string
+        string,
+        Plugins
       >;
 
       if (leaveScript) {
         const onLeaveActions = runScript<
           Game,
           "location",
-          typeof previousLocation
+          typeof previousLocation,
+          Plugins
         >(leaveScript, localState, "location", previousLocation);
         addActions(onLeaveActions);
       }
@@ -137,19 +109,22 @@ export const executeContentFlow = <Game extends GameWorld>(
         const enterScript = (currentLocationContent[
           `onEnterFrom${capitalize(previousLocation)}` as keyof LocationObject<
             Game,
-            string
+            string,
+            Plugins
           >
         ] ?? currentLocationContent?.onEnter) as NewScript<
           Game,
           "location",
-          string
+          string,
+          Plugins
         >;
 
         if (enterScript) {
           const onEnterActions = runScript<
             Game,
             "location",
-            typeof currentLocation
+            typeof currentLocation,
+            Plugins
           >(enterScript, localState, "location", currentLocation);
           addActions(onEnterActions);
         }
@@ -168,7 +143,8 @@ export const executeContentFlow = <Game extends GameWorld>(
       const describeActions = runScript<
         Game,
         "location",
-        typeof localState.currentLocation
+        typeof localState.currentLocation,
+        Plugins
       >(
         locationContent.describe,
         localState,
@@ -197,7 +173,8 @@ export const executeContentFlow = <Game extends GameWorld>(
       const onLeaveActions = runScript<
         Game,
         "overlay",
-        typeof currentOverlayId
+        typeof currentOverlayId,
+        Plugins
       >(
         currentOverlayData.onLeave,
         localState,
@@ -218,12 +195,12 @@ export const executeContentFlow = <Game extends GameWorld>(
     ]);
 
     if (newOverlayId && newOverlayData?.onEnter) {
-      const onEnterActions = runScript<Game, "overlay", typeof newOverlayId>(
-        newOverlayData.onEnter,
-        localState,
+      const onEnterActions = runScript<
+        Game,
         "overlay",
-        newOverlayId as string
-      );
+        typeof newOverlayId,
+        Plugins
+      >(newOverlayData.onEnter, localState, "overlay", newOverlayId as string);
       addActions(onEnterActions);
     }
     if (currentOverlayId && !newOverlayId) {

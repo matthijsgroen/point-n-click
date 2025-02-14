@@ -1,18 +1,26 @@
+import { ContentPlugin, DSLExtension } from "../types/plugin";
 import { Settings } from "../types/settings";
 import { GameWorld } from "../types/world";
 import { LocationObject, OverlayObject } from "./script";
 
-export type GameData<Game extends GameWorld<number>> = {
+export type GameData<
+  Game extends GameWorld<number>,
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = []
+> = {
   settings: Settings<Game>;
   overlays: Partial<
-    Record<keyof Game["overlays"], OverlayObject<Game, string>>
+    Record<keyof Game["overlays"], OverlayObject<Game, string, Plugins>>
   >;
   locations: Partial<
-    Record<keyof Game["locations"], LocationObject<Game, string>>
+    Record<keyof Game["locations"], LocationObject<Game, string, Plugins>>
   >;
 };
 
-type BaseDSL<Version extends number, Game extends GameWorld<Version>> = {
+type BaseDSL<
+  Version extends number,
+  Game extends GameWorld<Version>,
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[]
+> = {
   /**
    * # Overlay
    *
@@ -30,21 +38,22 @@ type BaseDSL<Version extends number, Game extends GameWorld<Version>> = {
    */
   defineOverlay: <Overlay extends keyof Game["overlays"]>(
     id: Overlay,
-    overlayObject: OverlayObject<Game, Overlay>
+    overlayObject: OverlayObject<Game, Overlay, Plugins>
   ) => void;
 
   defineLocation: <Location extends keyof Game["locations"]>(
     id: Location,
-    locationObject: LocationObject<Game, Location>
+    locationObject: LocationObject<Game, Location, Plugins>
   ) => void;
 
-  compile: () => GameData<Game>;
+  compile: () => GameData<Game, Plugins>;
 };
 
 export type GameWorldDSL<
   Version extends number,
-  Game extends GameWorld<Version>
-> = BaseDSL<Version, Game>;
+  Game extends GameWorld<Version>,
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = []
+> = BaseDSL<Version, Game, Plugins>;
 
 /**
  * This is the starting point of your adventure.
@@ -55,14 +64,23 @@ export type GameWorldDSL<
  * @param settings
  * @returns
  */
-export const world = <Game extends GameWorld<number>>(
-  settings: Settings<Game>
-): GameWorldDSL<Game["version"], Game> => {
-  const gameData: GameData<Game> = {
+export const world = <
+  Game extends GameWorld<number>,
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[]
+>(
+  settings: Settings<Game>,
+  plugins: Plugins
+): GameWorldDSL<Game["version"], Game, Plugins> => {
+  const gameData: GameData<Game, Plugins> = {
     settings,
     overlays: {},
     locations: {},
   };
+  console.log(
+    plugins.length,
+    "plugins loaded",
+    plugins.map((p) => p.name)
+  );
 
   return {
     defineOverlay: (id, overlayObject) => {

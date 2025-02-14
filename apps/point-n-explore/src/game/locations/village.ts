@@ -6,9 +6,9 @@ g.defineLocation("village", {
       w.text(
         "You are in the village. Where is was eery and quiet before, everything is now in a {b}festive{/b} atmosphere."
       );
-      // w.descriptionText("");
+      w.descriptionText("");
       w.text("Flags, banners and garlands are hanging everywhere.");
-      // w.descriptionText("");
+      w.descriptionText("");
       w.text("A villager you've never seen before comes to you.");
       w.characters.villager.say(
         `Hurray for {b}[${w.characters.player.name}]{/b}! The dragonslayer!`,
@@ -16,14 +16,14 @@ g.defineLocation("village", {
       );
     }).else(() => {
       w.text("You are in the village. It is eery quiet.");
-      // w.descriptionText("");
+      w.descriptionText("");
     });
 
     w.text(
       "At the left side of the road is is a {b}bakery{/b}.",
       "At the right side of the road a large {b}smithy{/b}."
     );
-    // w.descriptionText("");
+    w.descriptionText("");
 
     w.text(
       "The road continues {b}southwards{/b}, to a {b}river{/b}.",

@@ -101,8 +101,6 @@ type BaseDSL<Version extends number, Game extends GameWorld<Version>> = {
     handleOverlay: OverlayScript<Game, Overlay>
   ) => void;
 
-  defineOverlay2: <Overlay extends keyof Game["overlays"]>(id: Overlay, overlayObject: OverlayObject<Game, Overlay>) => void;
-
   /**
    * # Location
    *

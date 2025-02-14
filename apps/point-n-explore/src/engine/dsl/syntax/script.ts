@@ -1,5 +1,6 @@
 import { CustomIfStatement } from "../execution/customIfStatement";
 import { Interaction } from "../execution/getInteractions";
+import { ContentPlugin, DSLExtension, SystemInterface } from "../types/plugin";
 import { GameWorld, StateObject } from "../types/world";
 import { ObjectState, ObjectGroupState } from "./state";
 
@@ -30,10 +31,22 @@ type ListsHelper<Game extends GameWorld, Actions = unknown> = {
   } & Actions;
 };
 
+type FunctionExceptFirst<F> = F extends (
+  head: SystemInterface,
+  ...rest: infer R
+) => void
+  ? (...args: R) => void
+  : never;
+
+type RemapFunctions<T extends DSLExtension> = {
+  [K in keyof T]: FunctionExceptFirst<T[K]>;
+};
+
 export type ScriptHelper<
   Game extends GameWorld,
   T extends StateObject,
-  Item extends keyof Game[`${T}s`]
+  Item extends keyof Game[`${T}s`],
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = []
 > = {
   readonly characters: CharactersHelper<
     Game,
@@ -68,7 +81,9 @@ export type ScriptHelper<
    * ```
    */
   readonly if: CustomIfStatement;
-} & ObjectState<Game, T, Item> & { name?: string };
+} & ObjectState<Game, T, Item> & { name?: string } & RemapFunctions<
+    Plugins[number]["actions"]
+  >;
 
 export type ReadStateHelper<
   Game extends GameWorld,
@@ -86,8 +101,9 @@ export type NewScript<
   Game extends GameWorld,
   T extends StateObject,
   Item extends keyof Game[`${T}s`],
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = [],
   ExtraActions = unknown
-> = (worldHelper: ScriptHelper<Game, T, Item> & ExtraActions) => void;
+> = (worldHelper: ScriptHelper<Game, T, Item, Plugins> & ExtraActions) => void;
 
 export type Interactions<
   Game extends GameWorld,
@@ -104,11 +120,12 @@ export type Interactions<
 
 export type OverlayObject<
   Game extends GameWorld,
-  Overlay extends keyof Game["overlays"]
+  Overlay extends keyof Game["overlays"],
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[]
 > = {
   prompt?: string;
-  onEnter?: NewScript<Game, "overlay", Overlay>;
-  onLeave?: NewScript<Game, "overlay", Overlay>;
+  onEnter?: NewScript<Game, "overlay", Overlay, Plugins>;
+  onLeave?: NewScript<Game, "overlay", Overlay, Plugins>;
   interactions?: Interactions<
     Game,
     "overlay",
@@ -119,19 +136,20 @@ export type OverlayObject<
 
 export type LocationObject<
   Game extends GameWorld,
-  Location extends keyof Game["locations"]
+  Location extends keyof Game["locations"],
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[]
 > = {
   prompt?: string;
-  onEnter?: NewScript<Game, "location", Location>;
-  onLeave?: NewScript<Game, "location", Location>;
-  describe?: NewScript<Game, "location", Location>;
+  onEnter?: NewScript<Game, "location", Location, Plugins>;
+  onLeave?: NewScript<Game, "location", Location, Plugins>;
+  describe?: NewScript<Game, "location", Location, Plugins>;
   interactions?: Interactions<Game, "location", Location>;
 } & {
   [K in keyof Game["locations"] as `onEnterFrom${Capitalize<
     K & string
-  >}`]?: NewScript<Game, "location", Location>;
+  >}`]?: NewScript<Game, "location", Location, Plugins>;
 } & {
   [K in keyof Game["locations"] as `onLeaveTo${Capitalize<
     K & string
-  >}`]?: NewScript<Game, "location", Location>;
+  >}`]?: NewScript<Game, "location", Location, Plugins>;
 };
