@@ -2,7 +2,6 @@ import { Fragment, useState } from "react";
 import type {
   GameWorldDSL,
   GameWorld,
-  GameState,
   DSLExtension,
   ContentPlugin,
 } from "@point-n-click/engine";
@@ -28,7 +27,6 @@ const App = <
   const [state, setState] = useState(startingState);
 
   const { actions, interactions, prompt } = executeContentFlow(gameData, state);
-  const pendingPatches: ((state: GameState<Game>) => GameState<Game>)[] = [];
 
   return (
     <main className="max-w-3xl mx-auto p-4 flex flex-col gap-4">
@@ -50,11 +48,6 @@ const App = <
                 ))}
               </li>
             );
-          }
-
-          if (action.type === "state") {
-            pendingPatches.push(action.patch);
-            return null;
           }
 
           if (action.type === "say") {
@@ -105,16 +98,6 @@ const App = <
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                 onClick={() => {
                   setState(action.action);
-                  // setState((state) => {
-                  //   const accurateState = pendingPatches.reduce(
-                  //     (draft, patch) => patch(draft),
-                  //     state
-                  //   );
-
-                  //   return produce((draft) => {
-                  //     draft.currentInteraction = action.label;
-                  //   })(accurateState);
-                  // });
                 }}
               >
                 {action.label}
