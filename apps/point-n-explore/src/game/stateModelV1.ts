@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import { GameDefinition } from "../engine/dsl/types/world";
+import { GameDefinition } from "@point-n-click/engine";
 
 export type GameState = GameDefinition<
   1,

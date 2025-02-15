@@ -1,23 +1,28 @@
 import { Fragment, useState } from "react";
-import { GameWorldDSL } from "../dsl/syntax/dsl";
-import { GameWorld } from "../dsl/types/world";
-import { executeContentFlow } from "../dsl/execution/contentFlow";
-import { produce } from "immer";
-import { GameState } from "../dsl/syntax/state";
+import type {
+  GameWorldDSL,
+  GameWorld,
+  GameState,
+  DSLExtension,
+  ContentPlugin,
+} from "@point-n-click/engine";
+import { executeContentFlow } from "@point-n-click/engine";
 
 type Props<
   Game extends GameWorld,
-  GameDSL extends GameWorldDSL<number, Game>
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[],
+  GameDSL extends GameWorldDSL<number, Game, Plugins>
 > = {
   game: GameDSL;
 };
 
 const App = <
   Game extends GameWorld,
-  GameDSL extends GameWorldDSL<number, Game>
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[],
+  GameDSL extends GameWorldDSL<number, Game, Plugins>
 >({
   game,
-}: Props<Game, GameDSL>) => {
+}: Props<Game, Plugins, GameDSL>) => {
   const gameData = game.compile();
   const startingState = gameData.settings.initialState;
   const [state, setState] = useState(startingState);
@@ -99,16 +104,17 @@ const App = <
               <button
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                 onClick={() => {
-                  setState((state) => {
-                    const accurateState = pendingPatches.reduce(
-                      (draft, patch) => patch(draft),
-                      state
-                    );
+                  setState(action.action);
+                  // setState((state) => {
+                  //   const accurateState = pendingPatches.reduce(
+                  //     (draft, patch) => patch(draft),
+                  //     state
+                  //   );
 
-                    return produce((draft) => {
-                      draft.currentInteraction = action.label;
-                    })(accurateState);
-                  });
+                  //   return produce((draft) => {
+                  //     draft.currentInteraction = action.label;
+                  //   })(accurateState);
+                  // });
                 }}
               >
                 {action.label}

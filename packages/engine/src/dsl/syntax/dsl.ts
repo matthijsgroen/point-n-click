@@ -1,4 +1,4 @@
-import { ContentPlugin, DSLExtension } from "../types/plugin";
+import { ContentPlugin, DSLExtension } from "../types/plugins";
 import { Settings } from "../types/settings";
 import { GameWorld } from "../types/world";
 import { LocationObject, OverlayObject } from "./script";
@@ -14,9 +14,10 @@ export type GameData<
   locations: Partial<
     Record<keyof Game["locations"], LocationObject<Game, string, Plugins>>
   >;
+  plugins: Plugins;
 };
 
-type BaseDSL<
+export type BaseDSL<
   Version extends number,
   Game extends GameWorld<Version>,
   Plugins extends readonly ContentPlugin<string, DSLExtension>[]
@@ -75,12 +76,8 @@ export const world = <
     settings,
     overlays: {},
     locations: {},
+    plugins,
   };
-  console.log(
-    plugins.length,
-    "plugins loaded",
-    plugins.map((p) => p.name)
-  );
 
   return {
     defineOverlay: (id, overlayObject) => {

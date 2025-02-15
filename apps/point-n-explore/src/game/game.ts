@@ -1,8 +1,8 @@
 // import {  world } from "point-n-click";
 // import terminalTheme from "@point-n-click/theme-cli";
 // import bookTheme from "@point-n-click/theme-book";
-import { world } from "../engine/dsl/syntax/dsl";
-import { plugin as describePlugin } from "../engine/web/describePlugin";
+import { world } from "@point-n-click/engine";
+import { plugin as describePlugin } from "../web/describePlugin";
 import { GameState } from "./stateModelV1";
 
 // const palette = createColorPalette([
@@ -62,7 +62,7 @@ import { GameState } from "./stateModelV1";
 //   pain: hexColor("400000"),
 // });
 
-const plugins = [describePlugin] as const;
+export const plugins = [describePlugin] as const;
 
 const game = world<GameState, typeof plugins>(
   {

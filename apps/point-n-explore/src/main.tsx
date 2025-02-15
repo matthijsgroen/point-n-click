@@ -1,11 +1,12 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import App from './engine/web/App.tsx'
-import game from "./game";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import App from "./web/App.tsx";
+import { game, plugins } from "./game";
 
+import { GameState } from "./game/stateModelV1.ts";
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App game={game} />
-  </StrictMode>,
-)
+    <App<GameState, typeof plugins, typeof game> game={game} />
+  </StrictMode>
+);

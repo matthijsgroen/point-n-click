@@ -1,4 +1,4 @@
-import { ContentPlugin, SystemInterface } from "../dsl/types/plugin";
+import { ContentPlugin, SystemInterface } from "@point-n-click/engine";
 
 const actions = {
   descriptionText: (helper: SystemInterface, ...text: string[]) => {

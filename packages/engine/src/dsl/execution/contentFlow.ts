@@ -6,15 +6,23 @@ import { GameWorld, StateObject } from "../types/world";
 import { Action } from "./actions";
 import { getInteractions, Interaction } from "./getInteractions";
 import { runScript } from "./runScript";
-import { ContentPlugin, DSLExtension, PluginAction } from "../types/plugin";
+import { ContentPlugin, DSLExtension, PluginAction } from "../types/plugins";
 
 const capitalize = <S extends string>(s: S): Capitalize<S> =>
   (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>;
 
-type Content<Game extends GameWorld> = {
+type Content<
+  Game extends GameWorld,
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[]
+> = {
   actions: (Action<Game> | PluginAction)[];
   prompt: string;
-  interactions: Interaction<Game, StateObject, keyof Game[`${StateObject}s`]>[];
+  interactions: Interaction<
+    Game,
+    StateObject,
+    keyof Game[`${StateObject}s`],
+    Plugins
+  >[];
 };
 
 /**
@@ -24,13 +32,13 @@ type Content<Game extends GameWorld> = {
  * and possible interactions to perform
  *
  */
-export const executeContentFlow = <
+const collectContentFlow = <
   Game extends GameWorld,
   Plugins extends readonly ContentPlugin<string, DSLExtension>[]
 >(
   content: GameData<Game, Plugins>,
   state: GameState<Game>
-): Content<Game> => {
+): Content<Game, Plugins> => {
   /**
    * Flow of the 'point-n-click' version ('describeLocation')
    */
@@ -50,7 +58,6 @@ export const executeContentFlow = <
   };
 
   const withErrorMessage = (message: string) => {
-    console.log("DEBUG STATE, ERROR", state);
     actions.push({
       type: "error",
       message,
@@ -94,7 +101,13 @@ export const executeContentFlow = <
           "location",
           typeof previousLocation,
           Plugins
-        >(leaveScript, localState, "location", previousLocation);
+        >(
+          leaveScript,
+          localState,
+          content.plugins,
+          "location",
+          previousLocation
+        );
         addActions(onLeaveActions);
       }
 
@@ -125,7 +138,13 @@ export const executeContentFlow = <
             "location",
             typeof currentLocation,
             Plugins
-          >(enterScript, localState, "location", currentLocation);
+          >(
+            enterScript,
+            localState,
+            content.plugins,
+            "location",
+            currentLocation
+          );
           addActions(onEnterActions);
         }
       }
@@ -148,6 +167,7 @@ export const executeContentFlow = <
       >(
         locationContent.describe,
         localState,
+        content.plugins,
         "location",
         localState.currentLocation
       );
@@ -178,6 +198,7 @@ export const executeContentFlow = <
       >(
         currentOverlayData.onLeave,
         localState,
+        content.plugins,
         "overlay",
         currentOverlayId as string
       );
@@ -200,7 +221,13 @@ export const executeContentFlow = <
         "overlay",
         typeof newOverlayId,
         Plugins
-      >(newOverlayData.onEnter, localState, "overlay", newOverlayId as string);
+      >(
+        newOverlayData.onEnter,
+        localState,
+        content.plugins,
+        "overlay",
+        newOverlayId as string
+      );
       addActions(onEnterActions);
     }
     if (currentOverlayId && !newOverlayId) {
@@ -247,8 +274,15 @@ export const executeContentFlow = <
         Game,
         "overlay",
         typeof overlayId,
+        Plugins,
         { readonly closeOverlay: () => void }
-      >(interactionData.action, localState, "overlay", overlayId);
+      >(
+        interactionData.action,
+        localState,
+        content.plugins,
+        "overlay",
+        overlayId
+      );
       addActions(interactionActions);
     } else if (locationContent.interactions) {
       const locationInteractionData = getInteractions(
@@ -265,9 +299,15 @@ export const executeContentFlow = <
           `Interaction "${currentInteraction}" not found`
         );
       }
-      const interactionActions = runScript<Game, "location", typeof locationId>(
+      const interactionActions = runScript<
+        Game,
+        "location",
+        typeof locationId,
+        Plugins
+      >(
         interactionData.action,
         localState,
+        content.plugins,
         "location",
         locationId
       );
@@ -291,7 +331,8 @@ export const executeContentFlow = <
   const interactions: Interaction<
     Game,
     StateObject,
-    keyof Game[`${StateObject}s`]
+    keyof Game[`${StateObject}s`],
+    Plugins
   >[] = [];
 
   const finalOverlayId = localState.currentOverlay;
@@ -313,7 +354,8 @@ export const executeContentFlow = <
       ) as Interaction<
         Game,
         StateObject,
-        keyof Game["locations" | "characters" | "items" | "overlays"]
+        keyof Game["locations" | "characters" | "items" | "overlays"],
+        Plugins
       >[])
     );
   } else if (finalLocationData && finalLocationData.interactions) {
@@ -328,4 +370,54 @@ export const executeContentFlow = <
   }
 
   return { actions, prompt, interactions };
+};
+
+export type UserInteraction<Game extends GameWorld> = {
+  label: string;
+  enabled: boolean;
+  action: (state: GameState<Game>) => GameState<Game>;
+};
+
+type ContentResult<Game extends GameWorld> = {
+  actions: (Action<Game> | PluginAction)[];
+  prompt: string;
+  interactions: UserInteraction<Game>[];
+};
+
+export const executeContentFlow = <
+  Game extends GameWorld,
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[]
+>(
+  content: GameData<Game, Plugins>,
+  state: GameState<Game>
+): ContentResult<Game> => {
+  const { actions, prompt, interactions } = collectContentFlow(content, state);
+
+  const patches = actions.filter((action) => action.type === "state");
+  const remainderInteractions = actions.filter(
+    (action) => action.type !== "state"
+  );
+
+  const wrappedInteractions = interactions.map((interaction) => {
+    const wrappedAction = (state: GameState<Game>) => {
+      const patchedState = patches.reduce(
+        (currentState, patch) => patch.patch(currentState),
+        state
+      );
+      return produce((draft) => {
+        draft.currentInteraction = interaction.label;
+      })(patchedState);
+    };
+
+    return {
+      ...interaction,
+      action: wrappedAction,
+    };
+  });
+
+  return {
+    actions: remainderInteractions,
+    prompt,
+    interactions: wrappedInteractions,
+  };
 };

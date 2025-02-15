@@ -1,6 +1,6 @@
 import { CustomIfStatement } from "../execution/customIfStatement";
 import { Interaction } from "../execution/getInteractions";
-import { ContentPlugin, DSLExtension, SystemInterface } from "../types/plugin";
+import { ContentPlugin, DSLExtension, SystemInterface } from "../types/plugins";
 import { GameWorld, StateObject } from "../types/world";
 import { ObjectState, ObjectGroupState } from "./state";
 
@@ -109,11 +109,12 @@ export type Interactions<
   Game extends GameWorld,
   T extends StateObject,
   Item extends keyof Game[`${T}s`],
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = [],
   ExtraActions = unknown
 > = (
   state: ReadStateHelper<Game, T, Item> & {
     readonly addAction: (
-      action: Interaction<Game, T, Item, ExtraActions>
+      action: Interaction<Game, T, Item, Plugins, ExtraActions>
     ) => void;
   }
 ) => void;
@@ -130,6 +131,7 @@ export type OverlayObject<
     Game,
     "overlay",
     Overlay,
+    Plugins,
     { readonly closeOverlay: () => void }
   >;
 };
@@ -143,7 +145,7 @@ export type LocationObject<
   onEnter?: NewScript<Game, "location", Location, Plugins>;
   onLeave?: NewScript<Game, "location", Location, Plugins>;
   describe?: NewScript<Game, "location", Location, Plugins>;
-  interactions?: Interactions<Game, "location", Location>;
+  interactions?: Interactions<Game, "location", Location, Plugins>;
 } & {
   [K in keyof Game["locations"] as `onEnterFrom${Capitalize<
     K & string
