@@ -5,7 +5,8 @@ export type Action<Game extends GameWorld> =
   | TextAction
   | ErrorAction
   | SayAction<Game>
-  | StateAction<Game>;
+  | StateAction<Game>
+  | PluginAction;
 
 export type TextAction = {
   type: "text";
@@ -26,4 +27,13 @@ export type SayAction<Game extends GameWorld> = {
 export type StateAction<Game extends GameWorld> = {
   type: "state";
   patch: (state: GameState<Game>) => GameState<Game>;
+};
+
+export type PluginAction<
+  PluginName extends string = string,
+  Format extends Record<string, unknown> = Record<string, unknown>
+> = {
+  type: "plugin";
+  plugin: PluginName;
+  action: Format;
 };

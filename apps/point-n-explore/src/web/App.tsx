@@ -6,6 +6,7 @@ import type {
   ContentPlugin,
 } from "@point-n-click/engine";
 import { executeContentFlow } from "@point-n-click/engine";
+import { DescribeText, isDescribeTextAction } from "./describePlugin";
 
 type Props<
   Game extends GameWorld,
@@ -37,6 +38,13 @@ const App = <
       </div>
       <ul>
         {actions.map((action, index) => {
+          if (isDescribeTextAction(action)) {
+            return (
+              <li key={index}>
+                <DescribeText action={action} />
+              </li>
+            );
+          }
           if (action.type === "text") {
             return (
               <li key={index}>

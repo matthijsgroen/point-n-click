@@ -16,9 +16,6 @@
       "dependsOn": ["^build"],
       "outputs": ["{projectRoot}/dist"]
     },
-    "dev": {
-      "dependsOn": ["^build"]
-    },
     "test": {
       "dependsOn": ["^test"]
     },

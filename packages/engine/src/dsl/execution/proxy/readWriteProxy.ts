@@ -5,6 +5,11 @@ import { ScriptHelper } from "../../syntax/script";
 import { Action } from "../actions";
 import { customIfStatement } from "../customIfStatement";
 import { isFlag } from "./isFlag";
+import {
+  ContentPlugin,
+  DSLExtension,
+  SystemInterface,
+} from "../../types/plugins";
 
 export const stateItemProxy = <
   Game extends GameWorld,
@@ -256,37 +261,65 @@ const overlayHelper = <Game extends GameWorld>(
 export const createReadWriteProxy = <
   Game extends GameWorld,
   ItemType extends StateObject,
-  ItemName extends keyof Game[`${ItemType}s`]
+  ItemName extends keyof Game[`${ItemType}s`],
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = []
 >(
   getState: () => GameState<Game>,
   actions: Action<Game>[],
   applyPatch: (
     patch: (currentState: GameState<Game>) => GameState<Game>
   ) => void,
+  plugins: Plugins,
   currentItemType: ItemType,
   currentItemName: ItemName
-): ScriptHelper<Game, ItemType, ItemName> =>
-  new Proxy(
-    {
-      characters: characterHelper<Game>(getState, actions, applyPatch),
-      items: itemsHelper<Game>(getState, applyPatch),
-      locations: locationHelper<Game>(getState, applyPatch),
-      overlays: overlayHelper<Game>(getState, applyPatch),
-      lists: listHelper<Game>(applyPatch),
-      text: (...text: string[]) => {
-        actions.push({
-          type: "text",
-          text,
-        });
-      },
-      if: customIfStatement,
-      closeOverlay: () => {
-        applyPatch(
-          produce((draft) => {
-            draft.overlayStack?.pop();
-          })
-        );
-      },
+): ScriptHelper<Game, ItemType, ItemName, Plugins> => {
+  const baseObject = {
+    characters: characterHelper<Game>(getState, actions, applyPatch),
+    items: itemsHelper<Game>(getState, applyPatch),
+    locations: locationHelper<Game>(getState, applyPatch),
+    overlays: overlayHelper<Game>(getState, applyPatch),
+    lists: listHelper<Game>(applyPatch),
+    text: (...text: string[]) => {
+      actions.push({
+        type: "text",
+        text,
+      });
     },
+    if: customIfStatement,
+    closeOverlay: () => {
+      applyPatch(
+        produce((draft) => {
+          draft.overlayStack?.pop();
+        })
+      );
+    },
+    ...plugins.reduce((acc, plugin) => {
+      const exposedActions = Object.fromEntries(
+        Object.entries(plugin.actions).map(([key, value]) => [
+          key,
+          (...args: any[]) => {
+            const systemInterface: SystemInterface = {
+              addAction: (action: any) =>
+                actions.push({
+                  type: "plugin",
+                  plugin: plugin.name,
+                  action,
+                }),
+            };
+            plugin.actions[key](systemInterface, ...args);
+          },
+        ])
+      );
+
+      return {
+        ...acc,
+        ...exposedActions,
+      };
+    }, {}),
+  };
+
+  return new Proxy(
+    baseObject,
     stateItemProxy(getState, applyPatch, currentItemType, currentItemName)
-  ) as ScriptHelper<Game, ItemType, ItemName>;
+  ) as ScriptHelper<Game, ItemType, ItemName, Plugins>;
+};
