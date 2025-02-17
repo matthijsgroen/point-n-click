@@ -25,6 +25,10 @@ type OverlaysHelper<
   Actions = unknown
 > = ObjectGroupState<Game, "overlay", Actions>;
 
+export type ScenesHelper<Game extends GameWorld, Actions = unknown> = {
+  [K in Game["scenes"]]: Actions;
+};
+
 type ListsHelper<Game extends GameWorld, Actions = unknown> = {
   [K in keyof Game["lists"]]: {
     readonly has: (item: Game["lists"][K]) => boolean;
@@ -44,8 +48,6 @@ type RemapFunctions<T extends DSLExtension> = {
 
 export type ScriptHelper<
   Game extends GameWorld,
-  T extends StateObject,
-  Item extends keyof Game[`${T}s`],
   Plugins extends readonly ContentPlugin<string, DSLExtension>[] = []
 > = {
   readonly characters: CharactersHelper<
@@ -55,6 +57,7 @@ export type ScriptHelper<
   readonly items: ItemsHelper<Game>;
   readonly locations: LocationsHelper<Game, { readonly travel: () => void }>;
   readonly overlays: OverlaysHelper<Game, { readonly open: () => void }>;
+  readonly scenes: ScenesHelper<Game, { readonly play: () => void }>;
   readonly lists: ListsHelper<
     Game,
     {
@@ -81,12 +84,20 @@ export type ScriptHelper<
    * ```
    */
   readonly if: CustomIfStatement;
-} & ObjectState<Game, T, Item> & { name?: string } & (Plugins extends readonly [
-    ContentPlugin<string, DSLExtension>,
-    ...ContentPlugin<string, DSLExtension>[]
-  ]
-    ? RemapFunctions<Plugins[number]["actions"]>
-    : {});
+} & (Plugins extends readonly [
+  ContentPlugin<string, DSLExtension>,
+  ...ContentPlugin<string, DSLExtension>[]
+]
+  ? RemapFunctions<Plugins[number]["actions"]>
+  : {});
+
+export type ObjectScriptHelper<
+  Game extends GameWorld,
+  T extends StateObject,
+  Item extends keyof Game[`${T}s`],
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = []
+> = ScriptHelper<Game, Plugins> &
+  ObjectState<Game, T, Item> & { name?: string };
 
 export type ReadStateHelper<
   Game extends GameWorld,
@@ -100,13 +111,21 @@ export type ReadStateHelper<
   readonly lists: ListsHelper<Game>;
 } & ObjectState<Game, T, Item> & { name?: string };
 
-export type NewScript<
+export type Script<
   Game extends GameWorld,
   T extends StateObject,
   Item extends keyof Game[`${T}s`],
   Plugins extends readonly ContentPlugin<string, DSLExtension>[] = [],
   ExtraActions = unknown
-> = (worldHelper: ScriptHelper<Game, T, Item, Plugins> & ExtraActions) => void;
+> = (
+  worldHelper: ObjectScriptHelper<Game, T, Item, Plugins> & ExtraActions
+) => void;
+
+export type SceneScript<
+  Game extends GameWorld,
+  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = [],
+  ExtraActions = unknown
+> = (worldHelper: ScriptHelper<Game, Plugins> & ExtraActions) => void;
 
 export type Interactions<
   Game extends GameWorld,
@@ -128,8 +147,14 @@ export type OverlayObject<
   Plugins extends readonly ContentPlugin<string, DSLExtension>[]
 > = {
   prompt?: string;
-  onEnter?: NewScript<Game, "overlay", Overlay, Plugins>;
-  onLeave?: NewScript<Game, "overlay", Overlay, Plugins>;
+  onEnter?: Script<
+    Game,
+    "overlay",
+    Overlay,
+    Plugins,
+    { readonly close: () => void }
+  >;
+  onLeave?: Script<Game, "overlay", Overlay, Plugins>;
   interactions?: Interactions<
     Game,
     "overlay",
@@ -145,16 +170,16 @@ export type LocationObject<
   Plugins extends readonly ContentPlugin<string, DSLExtension>[]
 > = {
   prompt?: string;
-  onEnter?: NewScript<Game, "location", Location, Plugins>;
-  onLeave?: NewScript<Game, "location", Location, Plugins>;
-  describe?: NewScript<Game, "location", Location, Plugins>;
+  onEnter?: Script<Game, "location", Location, Plugins>;
+  onLeave?: Script<Game, "location", Location, Plugins>;
+  describe?: Script<Game, "location", Location, Plugins>;
   interactions?: Interactions<Game, "location", Location, Plugins>;
 } & {
   [K in keyof Game["locations"] as `onEnterFrom${Capitalize<
     K & string
-  >}`]?: NewScript<Game, "location", Location, Plugins>;
+  >}`]?: Script<Game, "location", Location, Plugins>;
 } & {
   [K in keyof Game["locations"] as `onLeaveTo${Capitalize<
     K & string
-  >}`]?: NewScript<Game, "location", Location, Plugins>;
+  >}`]?: Script<Game, "location", Location, Plugins>;
 };

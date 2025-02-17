@@ -1,4 +1,4 @@
-import { Interactions, NewScript } from "../syntax/script";
+import { Interactions, Script } from "../syntax/script";
 import { GameState } from "../syntax/state";
 import { ContentPlugin, DSLExtension } from "../types/plugins";
 import { GameWorld, StateObject } from "../types/world";
@@ -13,7 +13,7 @@ export type Interaction<
 > = {
   label: string;
   enabled: boolean;
-  action: NewScript<Game, ItemType, Item, Plugins, Extra>;
+  action: Script<Game, ItemType, Item, Plugins, Extra>;
 };
 
 export const getInteractions = <

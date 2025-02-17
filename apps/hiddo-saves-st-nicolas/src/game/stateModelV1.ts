@@ -23,8 +23,8 @@ export type GameState = GameDefinition<
       headPete: {};
       reporter: {};
     };
-    overlays: { tvIntro: {} };
+    overlays: {};
     lists: {};
-    scenes: "";
+    scenes: "tvIntro";
   }
 >;

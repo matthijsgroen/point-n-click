@@ -6,11 +6,17 @@ export type Action<Game extends GameWorld> =
   | ErrorAction
   | SayAction<Game>
   | StateAction<Game>
+  | SceneAction<Game>
   | PluginAction;
 
 export type TextAction = {
   type: "text";
   text: string[];
+};
+
+export type SceneAction<Game extends GameWorld> = {
+  type: "scene";
+  scene: Game["scenes"];
 };
 
 export type ErrorAction = {

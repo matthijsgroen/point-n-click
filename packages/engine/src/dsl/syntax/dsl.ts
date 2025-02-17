@@ -1,7 +1,7 @@
 import { ContentPlugin, DSLExtension } from "../types/plugins";
 import { Settings } from "../types/settings";
 import { GameWorld } from "../types/world";
-import { LocationObject, OverlayObject } from "./script";
+import { LocationObject, OverlayObject, SceneScript } from "./script";
 
 export type GameData<
   Game extends GameWorld<number>,
@@ -14,6 +14,7 @@ export type GameData<
   locations: Partial<
     Record<keyof Game["locations"], LocationObject<Game, string, Plugins>>
   >;
+  scenes: Partial<Record<Game["scenes"], SceneScript<Game, Plugins>>>;
   plugins: Plugins;
 };
 
@@ -47,6 +48,11 @@ export type BaseDSL<
     locationObject: LocationObject<Game, Location, Plugins>
   ) => void;
 
+  defineScene: <Scene extends Game["scenes"]>(
+    id: Scene,
+    script: SceneScript<Game, Plugins>
+  ) => void;
+
   compile: () => GameData<Game, Plugins>;
 };
 
@@ -76,6 +82,7 @@ export const world = <
     settings,
     overlays: {},
     locations: {},
+    scenes: {},
     plugins,
   };
 
@@ -85,6 +92,9 @@ export const world = <
     },
     defineLocation: (id, locationObject) => {
       gameData.locations[id] = locationObject;
+    },
+    defineScene: (id, script) => {
+      gameData.scenes[id] = script;
     },
     compile: () => {
       return gameData;

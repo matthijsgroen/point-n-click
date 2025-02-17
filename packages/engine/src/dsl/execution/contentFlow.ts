@@ -1,6 +1,6 @@
 import { produce } from "immer";
 import { GameData } from "../syntax/dsl";
-import { LocationObject, NewScript } from "../syntax/script";
+import { LocationObject, Script } from "../syntax/script";
 import { GameState } from "../syntax/state";
 import { GameWorld, StateObject } from "../types/world";
 import { Action } from "./actions";
@@ -88,7 +88,7 @@ const collectContentFlow = <
           string,
           Plugins
         >
-      ] ?? previousLocationContent.onLeave) as NewScript<
+      ] ?? previousLocationContent.onLeave) as Script<
         Game,
         "location",
         string,
@@ -101,13 +101,7 @@ const collectContentFlow = <
           "location",
           typeof previousLocation,
           Plugins
-        >(
-          leaveScript,
-          localState,
-          content.plugins,
-          "location",
-          previousLocation
-        );
+        >(leaveScript, localState, content, "location", previousLocation);
         addActions(onLeaveActions);
       }
 
@@ -125,7 +119,7 @@ const collectContentFlow = <
             string,
             Plugins
           >
-        ] ?? currentLocationContent?.onEnter) as NewScript<
+        ] ?? currentLocationContent?.onEnter) as Script<
           Game,
           "location",
           string,
@@ -138,13 +132,7 @@ const collectContentFlow = <
             "location",
             typeof currentLocation,
             Plugins
-          >(
-            enterScript,
-            localState,
-            content.plugins,
-            "location",
-            currentLocation
-          );
+          >(enterScript, localState, content, "location", currentLocation);
           addActions(onEnterActions);
         }
       }
@@ -167,7 +155,7 @@ const collectContentFlow = <
       >(
         locationContent.describe,
         localState,
-        content.plugins,
+        content,
         "location",
         localState.currentLocation
       );
@@ -198,7 +186,7 @@ const collectContentFlow = <
       >(
         currentOverlayData.onLeave,
         localState,
-        content.plugins,
+        content,
         "overlay",
         currentOverlayId as string
       );
@@ -220,11 +208,12 @@ const collectContentFlow = <
         Game,
         "overlay",
         typeof newOverlayId,
-        Plugins
+        Plugins,
+        { close: VoidFunction }
       >(
         newOverlayData.onEnter,
         localState,
-        content.plugins,
+        content,
         "overlay",
         newOverlayId as string
       );
@@ -273,13 +262,7 @@ const collectContentFlow = <
         typeof overlayId,
         Plugins,
         { readonly closeOverlay: () => void }
-      >(
-        interactionData.action,
-        localState,
-        content.plugins,
-        "overlay",
-        overlayId
-      );
+      >(interactionData.action, localState, content, "overlay", overlayId);
       addActions(interactionActions);
     } else if (locationContent.interactions) {
       const locationInteractionData = getInteractions(
@@ -301,13 +284,7 @@ const collectContentFlow = <
         "location",
         typeof locationId,
         Plugins
-      >(
-        interactionData.action,
-        localState,
-        content.plugins,
-        "location",
-        locationId
-      );
+      >(interactionData.action, localState, content, "location", locationId);
       addActions(interactionActions);
     }
   }
@@ -329,6 +306,10 @@ const collectContentFlow = <
     }
     locationsVisited.push(localState.currentLocation);
     describeLocation();
+    if (localState.currentLocation !== localState.previousLocation) {
+      // location not found, exit loop
+      break;
+    }
     updateOverlayState();
   }
 

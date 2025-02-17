@@ -1,7 +1,11 @@
 import { produce } from "immer";
 import { GameWorld, StateObject } from "../../types/world";
 import { GameState, PartialObjectGroupState } from "../../syntax/state";
-import { ScriptHelper } from "../../syntax/script";
+import {
+  ObjectScriptHelper,
+  ScenesHelper,
+  ScriptHelper,
+} from "../../syntax/script";
 import { Action } from "../actions";
 import { customIfStatement } from "../customIfStatement";
 import { isFlag } from "./isFlag";
@@ -128,7 +132,7 @@ export const stateItemProxy = <
 
 const characterHelper = <Game extends GameWorld>(
   getState: () => GameState<Game>,
-  actions: Action<Game>[],
+  addAction: (action: Action<Game>) => void,
   updateState: (
     patch: (currentState: GameState<Game>) => GameState<Game>
   ) => void
@@ -140,7 +144,7 @@ const characterHelper = <Game extends GameWorld>(
         return new Proxy(
           {
             say: (...text: string[]) => {
-              actions.push({
+              addAction({
                 type: "say",
                 character: String(prop),
                 text,
@@ -151,7 +155,7 @@ const characterHelper = <Game extends GameWorld>(
         );
       },
     }
-  ) as ScriptHelper<Game, "character", string>["characters"];
+  ) as ObjectScriptHelper<Game, "character", string>["characters"];
 
 const locationHelper = <Game extends GameWorld>(
   getState: () => GameState<Game>,
@@ -178,7 +182,7 @@ const locationHelper = <Game extends GameWorld>(
         );
       },
     }
-  ) as ScriptHelper<Game, "location", string>["locations"];
+  ) as ObjectScriptHelper<Game, "location", string>["locations"];
 
 const listHelper = <Game extends GameWorld>(
   updateState: (
@@ -218,7 +222,7 @@ const itemsHelper = <Game extends GameWorld>(
   updateState: (
     patch: (currentState: GameState<Game>) => GameState<Game>
   ) => void
-): ScriptHelper<Game, "item", string>["items"] =>
+): ObjectScriptHelper<Game, "item", string>["items"] =>
   new Proxy(
     {},
     {
@@ -229,14 +233,14 @@ const itemsHelper = <Game extends GameWorld>(
         );
       },
     }
-  ) as ScriptHelper<Game, "overlay", string>["overlays"];
+  ) as ObjectScriptHelper<Game, "overlay", string>["overlays"];
 
 const overlayHelper = <Game extends GameWorld>(
   getState: () => GameState<Game>,
   updateState: (
     patch: (currentState: GameState<Game>) => GameState<Game>
   ) => void
-): ScriptHelper<Game, "overlay", string>["overlays"] =>
+): ObjectScriptHelper<Game, "overlay", string>["overlays"] =>
   new Proxy(
     {},
     {
@@ -256,7 +260,26 @@ const overlayHelper = <Game extends GameWorld>(
         );
       },
     }
-  ) as ScriptHelper<Game, "overlay", string>["overlays"];
+  ) as ObjectScriptHelper<Game, "overlay", string>["overlays"];
+
+const sceneHelper = <Game extends GameWorld>(
+  addAction: (action: Action<Game>) => void
+): ScenesHelper<Game, { play: VoidFunction }> =>
+  new Proxy(
+    {},
+    {
+      get(_target, prop) {
+        return {
+          play: () => {
+            addAction({
+              type: "scene",
+              scene: String(prop),
+            });
+          },
+        };
+      },
+    }
+  ) as ScenesHelper<Game, { play: VoidFunction }>;
 
 export const createReadWriteProxy = <
   Game extends GameWorld,
@@ -265,22 +288,23 @@ export const createReadWriteProxy = <
   Plugins extends readonly ContentPlugin<string, DSLExtension>[] = []
 >(
   getState: () => GameState<Game>,
-  actions: Action<Game>[],
+  addAction: (action: Action<Game>) => void,
   applyPatch: (
     patch: (currentState: GameState<Game>) => GameState<Game>
   ) => void,
   plugins: Plugins,
-  currentItemType: ItemType,
-  currentItemName: ItemName
-): ScriptHelper<Game, ItemType, ItemName, Plugins> => {
+  currentItemType?: ItemType,
+  currentItemName?: ItemName
+): ObjectScriptHelper<Game, ItemType, ItemName, Plugins> => {
   const baseObject = {
-    characters: characterHelper<Game>(getState, actions, applyPatch),
+    characters: characterHelper<Game>(getState, addAction, applyPatch),
     items: itemsHelper<Game>(getState, applyPatch),
     locations: locationHelper<Game>(getState, applyPatch),
     overlays: overlayHelper<Game>(getState, applyPatch),
+    scenes: sceneHelper<Game>(addAction),
     lists: listHelper<Game>(applyPatch),
     text: (...text: string[]) => {
-      actions.push({
+      addAction({
         type: "text",
         text,
       });
@@ -300,7 +324,7 @@ export const createReadWriteProxy = <
           (...args: any[]) => {
             const systemInterface: SystemInterface = {
               addAction: (action: any) =>
-                actions.push({
+                addAction({
                   type: "plugin",
                   plugin: plugin.name,
                   action,
@@ -318,8 +342,17 @@ export const createReadWriteProxy = <
     }, {}),
   };
 
+  if (currentItemType === undefined || currentItemName === undefined) {
+    return baseObject as unknown as ObjectScriptHelper<
+      Game,
+      ItemType,
+      ItemName,
+      Plugins
+    >;
+  }
+
   return new Proxy(
     baseObject,
     stateItemProxy(getState, applyPatch, currentItemType, currentItemName)
-  ) as ScriptHelper<Game, ItemType, ItemName, Plugins>;
+  ) as ObjectScriptHelper<Game, ItemType, ItemName, Plugins>;
 };

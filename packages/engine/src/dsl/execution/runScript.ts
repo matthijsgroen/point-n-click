@@ -1,4 +1,5 @@
-import { NewScript, ScriptHelper } from "../syntax/script";
+import { GameData } from "../syntax/dsl";
+import { ObjectScriptHelper, Script } from "../syntax/script";
 import { GameState } from "../syntax/state";
 import type { ContentPlugin, DSLExtension } from "../types/plugins";
 import { GameWorld, StateObject } from "../types/world";
@@ -12,14 +13,37 @@ export const runScript = <
   Plugins extends readonly ContentPlugin<string, DSLExtension>[] = [],
   Extra = unknown
 >(
-  script: NewScript<Game, StateObject, string, Plugins, Extra>,
+  script: Script<Game, StateObject, string, Plugins, Extra>,
   state: GameState<Game>,
-  plugins: Plugins,
+  content: GameData<Game, Plugins>,
   currentItemType: ItemType,
   currentItemName: ItemName
 ): Action<Game>[] => {
   let newState = state;
   const actions: Action<Game>[] = [];
+  const addAction = (action: Action<Game>) => {
+    if (action.type === "scene") {
+      const scene = content.scenes[action.scene];
+      if (!scene) {
+        actions.push({
+          type: "error",
+          message: `Scene "${action.scene}" not found`,
+        });
+        return;
+      }
+
+      const sceneHelper = createReadWriteProxy(
+        () => newState,
+        addAction,
+        applyPatch,
+        content.plugins
+      ) as ObjectScriptHelper<Game, ItemType, ItemName, Plugins> & Extra;
+      scene(sceneHelper);
+      return;
+    }
+
+    actions.push(action);
+  };
 
   const applyPatch = (
     patch: (currentState: GameState<Game>) => GameState<Game>
@@ -33,12 +57,12 @@ export const runScript = <
 
   const worldHelper = createReadWriteProxy(
     () => newState,
-    actions,
+    addAction,
     applyPatch,
-    plugins,
+    content.plugins,
     currentItemType,
     currentItemName
-  ) as ScriptHelper<Game, ItemType, ItemName, Plugins> & Extra;
+  ) as ObjectScriptHelper<Game, ItemType, ItemName, Plugins> & Extra;
 
   script(worldHelper);
 
