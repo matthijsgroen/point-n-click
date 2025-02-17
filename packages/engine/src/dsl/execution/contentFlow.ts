@@ -375,6 +375,7 @@ const collectContentFlow = <
 export type UserInteraction<Game extends GameWorld> = {
   label: string;
   enabled: boolean;
+  shortcutKey?: string;
   action: (state: GameState<Game>) => GameState<Game>;
 };
 

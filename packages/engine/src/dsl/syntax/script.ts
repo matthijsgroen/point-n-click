@@ -81,9 +81,12 @@ export type ScriptHelper<
    * ```
    */
   readonly if: CustomIfStatement;
-} & ObjectState<Game, T, Item> & { name?: string } & RemapFunctions<
-    Plugins[number]["actions"]
-  >;
+} & ObjectState<Game, T, Item> & { name?: string } & (Plugins extends readonly [
+    ContentPlugin<string, DSLExtension>,
+    ...ContentPlugin<string, DSLExtension>[]
+  ]
+    ? RemapFunctions<Plugins[number]["actions"]>
+    : {});
 
 export type ReadStateHelper<
   Game extends GameWorld,

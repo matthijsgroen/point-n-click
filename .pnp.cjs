@@ -19,6 +19,10 @@ const RAW_RUNTIME_STATE =
       "reference": "workspace:apps/courier-of-the-king"\
     },\
     {\
+      "name": "hiddo-saves-st-nicolas",\
+      "reference": "workspace:apps/hiddo-saves-st-nicolas"\
+    },\
+    {\
       "name": "@point-n-click/engine",\
       "reference": "workspace:packages/engine"\
     }\
@@ -28,6 +32,7 @@ const RAW_RUNTIME_STATE =
   "fallbackExclusionList": [\
     ["@point-n-click/engine", ["workspace:packages/engine"]],\
     ["courier-for-the-king", ["workspace:apps/courier-of-the-king"]],\
+    ["hiddo-saves-st-nicolas", ["workspace:apps/hiddo-saves-st-nicolas"]],\
     ["point-n-click-repo", ["workspace:."]]\
   ],\
   "fallbackPool": [\
@@ -4512,6 +4517,32 @@ const RAW_RUNTIME_STATE =
           ["function-bind", "npm:1.1.2"]\
         ],\
         "linkType": "HARD"\
+      }]\
+    ]],\
+    ["hiddo-saves-st-nicolas", [\
+      ["workspace:apps/hiddo-saves-st-nicolas", {\
+        "packageLocation": "./apps/hiddo-saves-st-nicolas/",\
+        "packageDependencies": [\
+          ["hiddo-saves-st-nicolas", "workspace:apps/hiddo-saves-st-nicolas"],\
+          ["@eslint/js", "npm:9.20.0"],\
+          ["@point-n-click/engine", "workspace:packages/engine"],\
+          ["@tailwindcss/vite", "virtual:51996f1bc83ceefef037c1f83615706ca01b0b2972a1fcaf91ea21a340a60cca616578dad50a647fc5c99a08a86c053112884170bd59affbacfe07cb7d0f800d#npm:4.0.6"],\
+          ["@types/react", "npm:19.0.8"],\
+          ["@types/react-dom", "virtual:51996f1bc83ceefef037c1f83615706ca01b0b2972a1fcaf91ea21a340a60cca616578dad50a647fc5c99a08a86c053112884170bd59affbacfe07cb7d0f800d#npm:19.0.3"],\
+          ["@vitejs/plugin-react-swc", "virtual:51996f1bc83ceefef037c1f83615706ca01b0b2972a1fcaf91ea21a340a60cca616578dad50a647fc5c99a08a86c053112884170bd59affbacfe07cb7d0f800d#npm:3.8.0"],\
+          ["eslint", "virtual:686d9701637e27b1357227531471ac68ece9e47145de1aefc93b02b7d71f6d9b5f6ad5f70ef553cc429fca224466a51e9bcdaab672dab409c9b3fd9975560e7f#npm:9.20.1"],\
+          ["eslint-plugin-react-hooks", "virtual:51996f1bc83ceefef037c1f83615706ca01b0b2972a1fcaf91ea21a340a60cca616578dad50a647fc5c99a08a86c053112884170bd59affbacfe07cb7d0f800d#npm:5.1.0"],\
+          ["eslint-plugin-react-refresh", "virtual:51996f1bc83ceefef037c1f83615706ca01b0b2972a1fcaf91ea21a340a60cca616578dad50a647fc5c99a08a86c053112884170bd59affbacfe07cb7d0f800d#npm:0.4.19"],\
+          ["globals", "npm:15.15.0"],\
+          ["immer", "npm:10.1.1"],\
+          ["react", "npm:19.0.0"],\
+          ["react-dom", "virtual:51996f1bc83ceefef037c1f83615706ca01b0b2972a1fcaf91ea21a340a60cca616578dad50a647fc5c99a08a86c053112884170bd59affbacfe07cb7d0f800d#npm:19.0.0"],\
+          ["tailwindcss", "npm:4.0.6"],\
+          ["typescript", "patch:typescript@npm%3A5.7.3#optional!builtin<compat/typescript>::version=5.7.3&hash=5786d5"],\
+          ["typescript-eslint", "virtual:686d9701637e27b1357227531471ac68ece9e47145de1aefc93b02b7d71f6d9b5f6ad5f70ef553cc429fca224466a51e9bcdaab672dab409c9b3fd9975560e7f#npm:8.24.0"],\
+          ["vite", "virtual:51996f1bc83ceefef037c1f83615706ca01b0b2972a1fcaf91ea21a340a60cca616578dad50a647fc5c99a08a86c053112884170bd59affbacfe07cb7d0f800d#npm:6.1.0"]\
+        ],\
+        "linkType": "SOFT"\
       }]\
     ]],\
     ["htmlnano", [\
