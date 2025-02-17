@@ -1,11 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { PluginAction } from "../execution/actions";
 import { GameWorld } from "./world";
-
-export type PluginAction = {
-  type: "plugin";
-  plugin: string;
-  action: Record<string, unknown>;
-};
 
 export type SystemInterface = {
   addAction: <T extends PluginAction["action"]>(action: T) => void;

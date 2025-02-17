@@ -1,10 +1,6 @@
 import { NewScript, ScriptHelper } from "../syntax/script";
 import { GameState } from "../syntax/state";
-import type {
-  ContentPlugin,
-  DSLExtension,
-  PluginAction,
-} from "../types/plugins";
+import type { ContentPlugin, DSLExtension } from "../types/plugins";
 import { GameWorld, StateObject } from "../types/world";
 import { Action } from "./actions";
 import { createReadWriteProxy } from "./proxy/readWriteProxy";

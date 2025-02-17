@@ -12,7 +12,8 @@
   },
   "scripts": {
     "watch": "parcel watch",
-    "build": "parcel build"
+    "build": "parcel build",
+    "check-types": "tsc --noEmit"
   },
   "devDependencies": {
     "@parcel/core": "^2.13.3",

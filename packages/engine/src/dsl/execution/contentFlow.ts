@@ -6,7 +6,7 @@ import { GameWorld, StateObject } from "../types/world";
 import { Action } from "./actions";
 import { getInteractions, Interaction } from "./getInteractions";
 import { runScript } from "./runScript";
-import { ContentPlugin, DSLExtension, PluginAction } from "../types/plugins";
+import { ContentPlugin, DSLExtension } from "../types/plugins";
 
 const capitalize = <S extends string>(s: S): Capitalize<S> =>
   (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>;
@@ -15,7 +15,7 @@ type Content<
   Game extends GameWorld,
   Plugins extends readonly ContentPlugin<string, DSLExtension>[]
 > = {
-  actions: (Action<Game> | PluginAction)[];
+  actions: Action<Game>[];
   prompt: string;
   interactions: Interaction<
     Game,
@@ -379,7 +379,7 @@ export type UserInteraction<Game extends GameWorld> = {
 };
 
 type ContentResult<Game extends GameWorld> = {
-  actions: (Action<Game> | PluginAction)[];
+  actions: Action<Game>[];
   prompt: string;
   interactions: UserInteraction<Game>[];
 };
