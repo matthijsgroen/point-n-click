@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./web/App.tsx";
-import { game, plugins } from "./game";
+import { game, plugins } from "./game/index.ts";
 
 import { GameState } from "./game/stateModelV1.ts";
 
