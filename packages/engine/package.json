@@ -2,25 +2,19 @@
   "name": "@point-n-click/engine",
   "private": true,
   "version": "2.0.0-alpha.0",
-  "source": "src/main.ts",
-  "main": "dist/main.js",
-  "module": "dist/module.js",
-  "types": "dist/types.d.ts",
+  "main": "src/main.ts",
+  "module": "src/main.ts",
   "type": "module",
   "dependencies": {
     "immer": "^10.1.1"
   },
   "scripts": {
-    "watch": "parcel watch",
-    "build": "parcel build",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@parcel/core": "^2.13.3",
     "@types/node": "^22.13.4",
     "eslint": "^9.19.0",
     "globals": "^15.14.0",
-    "parcel": "^2.13.3",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.22.0"
   }

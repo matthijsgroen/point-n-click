@@ -251,10 +251,7 @@ const collectContentFlow = <
 
   let locationDescribed = false;
   const currentInteraction = localState.currentInteraction;
-  if (!currentInteraction) {
-    locationDescribed = true;
-    describeLocation();
-  } else {
+  if (currentInteraction !== undefined) {
     if (overlayId && currentOverlayData?.interactions) {
       const overlayInteractionData = getInteractions(
         currentOverlayData.interactions,
@@ -313,15 +310,26 @@ const collectContentFlow = <
       );
       addActions(interactionActions);
     }
+  }
 
-    updateOverlayState();
-    if (
-      localState.currentLocation !== localState.previousLocation &&
-      !locationDescribed
-    ) {
-      locationDescribed = true;
-      describeLocation();
+  if (!currentInteraction) {
+    locationDescribed = true;
+    describeLocation();
+  }
+
+  updateOverlayState();
+  let locationsVisited: (string | number | symbol)[] = [];
+  while (localState.currentLocation !== localState.previousLocation) {
+    if (locationsVisited.includes(localState.currentLocation)) {
+      return withErrorMessage(
+        `Infinite loop detected in location "${String(
+          localState.currentLocation
+        )}"`
+      );
     }
+    locationsVisited.push(localState.currentLocation);
+    describeLocation();
+    updateOverlayState();
   }
 
   if (actions.find((action) => action.type === "error")) {
