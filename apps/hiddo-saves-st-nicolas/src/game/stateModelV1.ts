@@ -1,6 +1,9 @@
-import { GameDefinition } from "@point-n-click/engine";
+import {
+  GameStateDefinition,
+  GameSettingsDefinition,
+} from "@point-n-click/engine";
 
-export type GameState = GameDefinition<
+export type GameState = GameStateDefinition<
   1,
   {
     version: 1;
@@ -26,5 +29,15 @@ export type GameState = GameDefinition<
     overlays: {};
     lists: {};
     scenes: "tvIntro";
+  }
+>;
+
+export type GameSettings = GameSettingsDefinition<
+  1,
+  {
+    version: 1;
+    timePlayed: number;
+    backgroundVolume: number;
+    soundVolume: number;
   }
 >;

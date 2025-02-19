@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import { GameDefinition } from "@point-n-click/engine";
+import {
+  GameStateDefinition,
+  GameSettingsDefinition,
+} from "@point-n-click/engine";
 
-export type GameState = GameDefinition<
+export type GameState = GameStateDefinition<
   1,
   {
     version: 1;
@@ -186,5 +189,15 @@ export type GameState = GameDefinition<
         | "beaker";
     };
     scenes: "cauldronResult" | "cauldronEffect";
+  }
+>;
+
+export type GameSettings = GameSettingsDefinition<
+  1,
+  {
+    version: 1;
+    timePlayed: number;
+    backgroundVolume: number;
+    soundVolume: number;
   }
 >;

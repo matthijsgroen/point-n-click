@@ -3,7 +3,7 @@
 // import bookTheme from "@point-n-click/theme-book";
 import { world } from "@point-n-click/engine";
 import { plugin as describePlugin } from "../web/describePlugin";
-import { GameState } from "./stateModelV1";
+import { GameSettings, GameState } from "./stateModelV1";
 
 // const palette = createColorPalette([
 //   "default",
@@ -64,7 +64,7 @@ import { GameState } from "./stateModelV1";
 
 export const plugins = [describePlugin] as const;
 
-const game = world<GameState, typeof plugins>(
+const game = world<GameState, GameSettings, typeof plugins>(
   {
     gameTitle: "Courier for the king",
     meta: {

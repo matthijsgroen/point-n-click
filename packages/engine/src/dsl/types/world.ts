@@ -48,7 +48,16 @@ export type GameWorld<Version extends number = number> = {
   scenes: string;
 };
 
-export type GameDefinition<
+export type GameSettings<Version extends number = number> = {
+  version: Version;
+} & Record<string, number | string | number[] | string[]>;
+
+export type GameStateDefinition<
   Version extends number,
   Game extends GameWorld<Version>
 > = Game;
+
+export type GameSettingsDefinition<
+  Version extends number,
+  Settings extends GameSettings<Version>
+> = Settings;

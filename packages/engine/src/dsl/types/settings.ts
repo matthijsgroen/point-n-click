@@ -1,7 +1,7 @@
 import { GameState } from "../syntax/state";
 import { GameWorld } from "./world";
 
-export type Settings<Game extends GameWorld> = {
+export type GameDefinition<Game extends GameWorld> = {
   /**
    * The title of your game. Displayed on the title screen
    * and as title of the webpage / browser tab.

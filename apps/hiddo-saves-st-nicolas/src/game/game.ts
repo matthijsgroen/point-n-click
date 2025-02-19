@@ -1,12 +1,12 @@
 import { ContentPlugin, DSLExtension, world } from "@point-n-click/engine";
-import { GameState } from "./stateModelV1";
+import { GameSettings, GameState } from "./stateModelV1";
 
 export const plugins = [] as const satisfies ContentPlugin<
   string,
   DSLExtension
 >[];
 
-const game = world<GameState, typeof plugins>(
+const game = world<GameState, GameSettings, typeof plugins>(
   {
     gameTitle: "Hiddo redt het Sinterklaasfeest",
     meta: {
