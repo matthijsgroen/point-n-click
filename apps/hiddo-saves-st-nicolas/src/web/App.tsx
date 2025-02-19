@@ -4,24 +4,27 @@ import type {
   GameWorld,
   DSLExtension,
   ContentPlugin,
+  GameSettings,
 } from "@point-n-click/engine";
 import { executeContentFlow } from "@point-n-click/engine";
 
 type Props<
   Game extends GameWorld,
+  Settings extends GameSettings,
   Plugins extends readonly ContentPlugin<string, DSLExtension>[],
-  GameDSL extends GameWorldDSL<number, Game, Plugins>
+  GameDSL extends GameWorldDSL<number, Game, Settings, Plugins>
 > = {
   game: GameDSL;
 };
 
 const App = <
   Game extends GameWorld,
+  Settings extends GameSettings,
   Plugins extends readonly ContentPlugin<string, DSLExtension>[],
-  GameDSL extends GameWorldDSL<number, Game, Plugins>
+  GameDSL extends GameWorldDSL<number, Game, Settings, Plugins>
 >({
   game,
-}: Props<Game, Plugins, GameDSL>) => {
+}: Props<Game, Settings, Plugins, GameDSL>) => {
   const gameData = game.compile();
   const startingState = gameData.settings.initialState;
   const [state, setState] = useState(startingState);
