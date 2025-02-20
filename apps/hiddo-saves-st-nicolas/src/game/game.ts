@@ -1,10 +1,7 @@
-import { ContentPlugin, DSLExtension, world } from "@point-n-click/engine";
+import { world, displayObjectsPlugin } from "@point-n-click/engine";
 import { GameSettings, GameState } from "./stateModelV1";
 
-export const plugins = [] as const satisfies ContentPlugin<
-  string,
-  DSLExtension
->[];
+export const plugins = [displayObjectsPlugin] as const;
 
 const game = world<GameState, GameSettings, typeof plugins>(
   {

@@ -6,14 +6,14 @@ import { GameWorld, StateObject } from "../types/world";
 import { Action } from "./actions";
 import { getInteractions, Interaction } from "./getInteractions";
 import { runScript } from "./runScript";
-import { ContentPlugin, DSLExtension } from "../types/plugins";
+import { BaseContentPlugin } from "../types/plugins";
 
 const capitalize = <S extends string>(s: S): Capitalize<S> =>
   (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>;
 
 type Content<
   Game extends GameWorld,
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[]
+  Plugins extends readonly BaseContentPlugin[]
 > = {
   actions: Action<Game>[];
   prompt: string;
@@ -34,7 +34,7 @@ type Content<
  */
 const collectContentFlow = <
   Game extends GameWorld,
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[]
+  Plugins extends readonly BaseContentPlugin[]
 >(
   content: GameData<Game, Plugins>,
   state: GameState<Game>
@@ -209,7 +209,7 @@ const collectContentFlow = <
         "overlay",
         typeof newOverlayId,
         Plugins,
-        { close: VoidFunction }
+        { closeOverlay: VoidFunction }
       >(
         newOverlayData.onEnter,
         localState,
@@ -376,7 +376,7 @@ type ContentResult<Game extends GameWorld> = {
 
 export const executeContentFlow = <
   Game extends GameWorld,
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[]
+  Plugins extends readonly BaseContentPlugin[]
 >(
   content: GameData<Game, Plugins>,
   state: GameState<Game>

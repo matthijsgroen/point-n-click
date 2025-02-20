@@ -1,6 +1,10 @@
 import { CustomIfStatement } from "../execution/customIfStatement";
 import { Interaction } from "../execution/getInteractions";
-import { ContentPlugin, DSLExtension, SystemInterface } from "../types/plugins";
+import {
+  BaseContentPlugin,
+  ContentExtension,
+  DSLExtension,
+} from "../types/plugins";
 import { GameWorld, StateObject } from "../types/world";
 import { ObjectState, ObjectGroupState } from "./state";
 
@@ -35,20 +39,13 @@ type ListsHelper<Game extends GameWorld, Actions = unknown> = {
   } & Actions;
 };
 
-type FunctionExceptFirst<F> = F extends (
-  head: SystemInterface,
-  ...rest: infer R
-) => void
-  ? (...args: R) => void
-  : never;
-
-type RemapFunctions<T extends DSLExtension> = {
-  [K in keyof T]: FunctionExceptFirst<T[K]>;
+export type ActionFunctions<T extends DSLExtension | ContentExtension> = {
+  [K in keyof T]: ReturnType<T[K]>;
 };
 
 export type ScriptHelper<
   Game extends GameWorld,
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = []
+  Plugins extends readonly BaseContentPlugin[] = []
 > = {
   readonly characters: CharactersHelper<
     Game,
@@ -84,18 +81,15 @@ export type ScriptHelper<
    * ```
    */
   readonly if: CustomIfStatement;
-} & (Plugins extends readonly [
-  ContentPlugin<string, DSLExtension>,
-  ...ContentPlugin<string, DSLExtension>[]
-]
-  ? RemapFunctions<Plugins[number]["actions"]>
+} & (Plugins extends readonly [BaseContentPlugin, ...BaseContentPlugin[]]
+  ? ActionFunctions<Plugins[number]["actions"]>
   : {});
 
 export type ObjectScriptHelper<
   Game extends GameWorld,
   T extends StateObject,
   Item extends keyof Game[`${T}s`],
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = []
+  Plugins extends readonly BaseContentPlugin[] = []
 > = ScriptHelper<Game, Plugins> &
   ObjectState<Game, T, Item> & { name?: string };
 
@@ -115,7 +109,7 @@ export type Script<
   Game extends GameWorld,
   T extends StateObject,
   Item extends keyof Game[`${T}s`],
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = [],
+  Plugins extends readonly BaseContentPlugin[] = [],
   ExtraActions = unknown
 > = (
   worldHelper: ObjectScriptHelper<Game, T, Item, Plugins> & ExtraActions
@@ -123,7 +117,7 @@ export type Script<
 
 export type SceneScript<
   Game extends GameWorld,
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = [],
+  Plugins extends readonly BaseContentPlugin[] = [],
   ExtraActions = unknown
 > = (worldHelper: ScriptHelper<Game, Plugins> & ExtraActions) => void;
 
@@ -131,7 +125,7 @@ export type Interactions<
   Game extends GameWorld,
   T extends StateObject,
   Item extends keyof Game[`${T}s`],
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = [],
+  Plugins extends readonly BaseContentPlugin[] = [],
   ExtraActions = unknown
 > = (
   state: ReadStateHelper<Game, T, Item> & {
@@ -144,7 +138,7 @@ export type Interactions<
 export type OverlayObject<
   Game extends GameWorld,
   Overlay extends keyof Game["overlays"],
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[]
+  Plugins extends readonly BaseContentPlugin[]
 > = {
   prompt?: string;
   onEnter?: Script<
@@ -152,7 +146,7 @@ export type OverlayObject<
     "overlay",
     Overlay,
     Plugins,
-    { readonly close: () => void }
+    { readonly closeOverlay: () => void }
   >;
   onLeave?: Script<Game, "overlay", Overlay, Plugins>;
   interactions?: Interactions<
@@ -167,7 +161,7 @@ export type OverlayObject<
 export type LocationObject<
   Game extends GameWorld,
   Location extends keyof Game["locations"],
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[]
+  Plugins extends readonly BaseContentPlugin[]
 > = {
   prompt?: string;
   onEnter?: Script<Game, "location", Location, Plugins>;

@@ -1,7 +1,7 @@
 import { GameData } from "../syntax/dsl";
 import { ObjectScriptHelper, Script } from "../syntax/script";
 import { GameState } from "../syntax/state";
-import type { ContentPlugin, DSLExtension } from "../types/plugins";
+import type { BaseContentPlugin } from "../types/plugins";
 import { GameWorld, StateObject } from "../types/world";
 import { Action } from "./actions";
 import { createReadWriteProxy } from "./proxy/readWriteProxy";
@@ -10,8 +10,8 @@ export const runScript = <
   Game extends GameWorld,
   ItemType extends StateObject,
   ItemName extends keyof Game[`${ItemType}s`],
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = [],
-  Extra = unknown
+  Plugins extends readonly BaseContentPlugin[] = [],
+  Extra extends Record<string, (...args: any) => void> | unknown = unknown
 >(
   script: Script<Game, StateObject, string, Plugins, Extra>,
   state: GameState<Game>,
@@ -36,7 +36,7 @@ export const runScript = <
         () => newState,
         addAction,
         applyPatch,
-        content.plugins
+        content
       ) as ObjectScriptHelper<Game, ItemType, ItemName, Plugins> & Extra;
       scene(sceneHelper);
       return;
@@ -59,7 +59,7 @@ export const runScript = <
     () => newState,
     addAction,
     applyPatch,
-    content.plugins,
+    content,
     currentItemType,
     currentItemName
   ) as ObjectScriptHelper<Game, ItemType, ItemName, Plugins> & Extra;

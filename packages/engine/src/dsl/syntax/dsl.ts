@@ -1,11 +1,20 @@
-import { ContentPlugin, DSLExtension } from "../types/plugins";
+import {
+  BaseContentPlugin,
+  ContentPlugin,
+  DSLExtension,
+} from "../types/plugins";
 import { GameDefinition } from "../types/settings";
 import { GameSettings, GameWorld } from "../types/world";
-import { LocationObject, OverlayObject, SceneScript } from "./script";
+import {
+  ActionFunctions,
+  LocationObject,
+  OverlayObject,
+  SceneScript,
+} from "./script";
 
 export type GameData<
   Game extends GameWorld<number>,
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = []
+  Plugins extends readonly BaseContentPlugin[] = []
 > = {
   settings: GameDefinition<Game>;
   overlays: Partial<
@@ -22,7 +31,7 @@ export type BaseDSL<
   Version extends number,
   Game extends GameWorld<Version>,
   Settings extends GameSettings<Version>,
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[]
+  Plugins extends readonly BaseContentPlugin[]
 > = {
   /**
    * # Overlay
@@ -55,9 +64,12 @@ export type BaseDSL<
   ) => void;
 
   // define game screen? (title screen, game over screen, settings screen, save screen, load screen)
+  // define display object? (characters, poses, states, etc) content + state + actions + render
 
   compile: () => GameData<Game, Plugins>;
-};
+} & (Plugins extends readonly [BaseContentPlugin, ...BaseContentPlugin[]]
+  ? ActionFunctions<Plugins[number]["content"]>
+  : {});
 
 export type GameWorldDSL<
   Version extends number,
@@ -78,7 +90,7 @@ export type GameWorldDSL<
 export const world = <
   Game extends GameWorld<number>,
   Settings extends GameSettings<number>,
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[]
+  Plugins extends readonly BaseContentPlugin[]
 >(
   settings: GameDefinition<Game>,
   plugins: Plugins

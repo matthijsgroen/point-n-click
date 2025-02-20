@@ -1,19 +1,19 @@
 import { produce } from "immer";
-import { GameWorld, StateObject } from "../../types/world";
-import { GameState, PartialObjectGroupState } from "../../syntax/state";
-import {
-  ObjectScriptHelper,
-  ScenesHelper,
-  ScriptHelper,
-} from "../../syntax/script";
-import { Action } from "../actions";
+import type { GameWorld, StateObject } from "../../types/world";
+import type { GameState, PartialObjectGroupState } from "../../syntax/state";
+import type { ObjectScriptHelper, ScenesHelper } from "../../syntax/script";
+import type { Action } from "../actions";
 import { customIfStatement } from "../customIfStatement";
 import { isFlag } from "./isFlag";
-import {
-  ContentPlugin,
-  DSLExtension,
-  SystemInterface,
+import type {
+  BaseContentPlugin,
+  SystemPluginInterface,
 } from "../../types/plugins";
+import type { GameData } from "../../syntax/dsl";
+
+export type SystemInternalInterface<Game extends GameWorld> = {
+  addAction: (action: Action<Game>) => void;
+};
 
 export const stateItemProxy = <
   Game extends GameWorld,
@@ -285,14 +285,14 @@ export const createReadWriteProxy = <
   Game extends GameWorld,
   ItemType extends StateObject,
   ItemName extends keyof Game[`${ItemType}s`],
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = []
+  Plugins extends readonly BaseContentPlugin[] = []
 >(
   getState: () => GameState<Game>,
   addAction: (action: Action<Game>) => void,
   applyPatch: (
     patch: (currentState: GameState<Game>) => GameState<Game>
   ) => void,
-  plugins: Plugins,
+  content: GameData<Game, Plugins>,
   currentItemType?: ItemType,
   currentItemName?: ItemName
 ): ObjectScriptHelper<Game, ItemType, ItemName, Plugins> => {
@@ -317,20 +317,25 @@ export const createReadWriteProxy = <
         })
       );
     },
-    ...plugins.reduce((acc, plugin) => {
+    ...content.plugins.reduce((acc, plugin) => {
       const exposedActions = Object.fromEntries(
         Object.entries(plugin.actions).map(([key, value]) => [
           key,
           (...args: any[]) => {
-            const systemInterface: SystemInterface = {
+            const systemInterface: SystemPluginInterface<Game> = {
               addAction: (action: any) =>
                 addAction({
                   type: "plugin",
                   plugin: plugin.name,
                   action,
                 }),
+              getContent: <
+                Plugins extends readonly BaseContentPlugin[],
+                TContent extends GameData<Game, Plugins>
+              >() => content as unknown as TContent,
             };
-            plugin.actions[key](systemInterface, ...args);
+
+            return plugin.actions[key](systemInterface)(...args);
           },
         ])
       );

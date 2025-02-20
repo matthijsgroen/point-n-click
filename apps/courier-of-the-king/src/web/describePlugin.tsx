@@ -3,7 +3,7 @@ import {
   ContentPlugin,
   GameWorld,
   PluginAction,
-  SystemInterface,
+  SystemPluginInterface,
 } from "@point-n-click/engine";
 import { Fragment } from "react/jsx-runtime";
 
@@ -13,17 +13,20 @@ type DescribeTextAction = PluginAction<
 >;
 
 const actions = {
-  descriptionText: (helper: SystemInterface, ...text: string[]) => {
-    helper.addAction({
-      type: "descriptionText",
-      text,
-    });
-  },
+  descriptionText:
+    <TGame extends GameWorld>(helper: SystemPluginInterface<TGame>) =>
+    (...text: string[]) => {
+      helper.addAction({
+        type: "descriptionText",
+        text,
+      });
+    },
 } as const;
 
-export const plugin: ContentPlugin<"Descriptions", typeof actions> = {
+export const plugin: ContentPlugin<"Descriptions", typeof actions, {}> = {
   name: "Descriptions",
   actions,
+  content: {},
 };
 
 export const isDescribeTextAction = <Game extends GameWorld>(
