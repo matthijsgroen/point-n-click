@@ -1,7 +1,6 @@
 import {
   BaseContentPlugin,
-  ContentPlugin,
-  DSLExtension,
+  SystemPluginContentInterface,
 } from "../types/plugins";
 import { GameDefinition } from "../types/settings";
 import { GameSettings, GameWorld } from "../types/world";
@@ -24,6 +23,7 @@ export type GameData<
     Record<keyof Game["locations"], LocationObject<Game, string, Plugins>>
   >;
   scenes: Partial<Record<Game["scenes"], SceneScript<Game, Plugins>>>;
+  displayObjects: Partial<Record<keyof Game["displayObjects"], unknown>>;
   plugins: Plugins;
 };
 
@@ -67,16 +67,17 @@ export type BaseDSL<
   // define display object? (characters, poses, states, etc) content + state + actions + render
 
   compile: () => GameData<Game, Plugins>;
-} & (Plugins extends readonly [BaseContentPlugin, ...BaseContentPlugin[]]
-  ? ActionFunctions<Plugins[number]["content"]>
-  : {});
+};
 
 export type GameWorldDSL<
   Version extends number,
   Game extends GameWorld<Version>,
   Settings extends GameSettings<Version>,
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = []
-> = BaseDSL<Version, Game, Settings, Plugins>;
+  Plugins extends readonly BaseContentPlugin[] = []
+> = BaseDSL<Version, Game, Settings, Plugins> &
+  (Plugins extends readonly [BaseContentPlugin, ...BaseContentPlugin[]]
+    ? ActionFunctions<Plugins[number]["content"]>
+    : {});
 
 /**
  * This is the starting point of your adventure.
@@ -95,26 +96,46 @@ export const world = <
   settings: GameDefinition<Game>,
   plugins: Plugins
 ): GameWorldDSL<Game["version"], Game, Settings, Plugins> => {
-  const gameData: GameData<Game, Plugins> = {
+  let gameData: GameData<Game, Plugins> = {
     settings,
     overlays: {},
     locations: {},
     scenes: {},
+    displayObjects: {},
     plugins,
   };
 
-  return {
-    defineOverlay: (id, overlayObject) => {
-      gameData.overlays[id] = overlayObject;
-    },
-    defineLocation: (id, locationObject) => {
-      gameData.locations[id] = locationObject;
-    },
-    defineScene: (id, script) => {
-      gameData.scenes[id] = script;
-    },
-    compile: () => {
-      return gameData;
+  const systemInterface: SystemPluginContentInterface<Game> = {
+    updateContent: (patch) => {
+      gameData = patch(gameData as any) as unknown as GameData<Game, Plugins>;
     },
   };
+
+  return plugins.reduce(
+    (acc, plugin) => {
+      const defineFunctions = Object.fromEntries(
+        Object.entries(plugin.content).map(([key, value]) => {
+          return [key, value(systemInterface)];
+        })
+      );
+      return {
+        ...acc,
+        ...defineFunctions,
+      };
+    },
+    {
+      defineOverlay: (id, overlayObject) => {
+        gameData.overlays[id] = overlayObject;
+      },
+      defineLocation: (id, locationObject) => {
+        gameData.locations[id] = locationObject;
+      },
+      defineScene: (id, script) => {
+        gameData.scenes[id] = script;
+      },
+      compile: () => {
+        return gameData;
+      },
+    } satisfies BaseDSL<Game["version"], Game, Settings, Plugins>
+  ) as GameWorldDSL<Game["version"], Game, Settings, Plugins>;
 };

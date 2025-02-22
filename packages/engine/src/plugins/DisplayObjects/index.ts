@@ -14,7 +14,7 @@ type ImageAsset = {
 
 type DisplayObject<
   Game extends GameWorld,
-  TDisplayObject extends keyof Game["characters"]
+  TDisplayObject extends keyof Game["displayObjects"]
 > = {
   readonly show: (effect?: DisplayEffect, duration?: number) => void;
   readonly hide: (effect?: DisplayEffect, duration?: number) => void;
@@ -23,7 +23,9 @@ type DisplayObject<
 
 type SceneHelper<Game extends GameWorld> = {
   readonly defineImage: (assetPath: string, zIndex: number) => ImageAsset;
-  readonly getDisplayObject: <TDisplayObject extends keyof Game["characters"]>(
+  readonly getDisplayObject: <
+    TDisplayObject extends keyof Game["displayObjects"]
+  >(
     displayObject: TDisplayObject,
     zIndex: number
   ) => DisplayObject<Game, TDisplayObject>;
@@ -82,7 +84,9 @@ const actions = {
 const content = {
   defineDisplayObject:
     <TGame extends GameWorld>(helper: SystemPluginContentInterface<TGame>) =>
-    (name: string) => {},
+    <TDisplayObject extends keyof TGame["displayObjects"]>(
+      name: TDisplayObject
+    ) => {},
 };
 
 export const plugin: ContentPlugin<

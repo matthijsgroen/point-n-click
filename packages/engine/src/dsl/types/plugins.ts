@@ -12,7 +12,9 @@ export type SystemPluginInterface<TGame extends GameWorld> = {
 };
 
 export type SystemPluginContentInterface<TGame extends GameWorld> = {
-  someFunction: () => void;
+  updateContent: <TContent extends GameData<TGame, []>>(
+    patch: (state: TContent) => TContent
+  ) => void;
 };
 
 export type DSLExtension<T extends string = string> = Record<

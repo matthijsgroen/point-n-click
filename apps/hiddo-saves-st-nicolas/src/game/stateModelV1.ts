@@ -29,6 +29,7 @@ export type GameState = GameStateDefinition<
     overlays: {};
     lists: {};
     scenes: "tvIntro";
+    displayObjects: {};
   }
 >;
 

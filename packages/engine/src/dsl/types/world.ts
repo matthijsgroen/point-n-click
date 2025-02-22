@@ -24,6 +24,12 @@ export type WorldObjectSettings = {
   texts?: string;
 };
 
+export type DisplayObjectSettings = {
+  states: Record<string, string>;
+  flags?: `is${string}` | `has${string}`;
+  poses: string;
+};
+
 export type GameWorld<Version extends number = number> = {
   version: Version;
   /**
@@ -45,7 +51,12 @@ export type GameWorld<Version extends number = number> = {
    * a puzzle to solve, lock to pick.
    */
   overlays: Record<string, WorldObjectSettings>;
+  /**
+   * Scenes are pieces of content without interaction, like cutscenes.
+   * After playing they go back to the script that called them.
+   */
   scenes: string;
+  displayObjects: Record<string, DisplayObjectSettings>;
 };
 
 export type GameSettings<Version extends number = number> = {

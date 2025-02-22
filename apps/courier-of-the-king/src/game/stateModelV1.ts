@@ -189,6 +189,7 @@ export type GameState = GameStateDefinition<
         | "beaker";
     };
     scenes: "cauldronResult" | "cauldronEffect";
+    displayObjects: {};
   }
 >;
 
