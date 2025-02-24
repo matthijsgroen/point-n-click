@@ -1,18 +1,10 @@
-import type {
-  ContentPlugin,
-  SystemPluginContentInterface,
-  SystemPluginInterface,
-} from "../../dsl/types/plugins";
-import { GameWorld } from "../../dsl/types/world";
+import { produce } from "immer";
+import type { ContentPlugin, SystemPluginInterface } from "../types/plugins";
+import { GameWorld } from "../types/world";
 
-type DisplayEffect = "fade" | "blur";
+export type DisplayEffect = "fade" | "blur";
 
-type ImageAsset = {
-  readonly show: (effect?: DisplayEffect, duration?: number) => void;
-  readonly hide: (effect?: DisplayEffect, duration?: number) => void;
-};
-
-type DisplayObject<
+export type DisplayObject<
   Game extends GameWorld,
   TDisplayObject extends keyof Game["displayObjects"]
 > = {
@@ -22,7 +14,6 @@ type DisplayObject<
 };
 
 type SceneHelper<Game extends GameWorld> = {
-  readonly defineImage: (assetPath: string, zIndex: number) => ImageAsset;
   readonly getDisplayObject: <
     TDisplayObject extends keyof Game["displayObjects"]
   >(
@@ -40,35 +31,25 @@ const actions = {
       //   text,
       // });
       const sceneHelper = {
-        defineImage: (assetPath: string, zIndex: number) => {
-          return {
-            show: (effect?: DisplayEffect, duration?: number) => {
-              helper.addAction({
-                type: "showImage",
-                assetPath,
-                zIndex,
-                effect,
-                duration,
-              });
-            },
-            hide: (effect?: DisplayEffect, duration?: number) => {
-              helper.addAction({
-                type: "hideImage",
-                assetPath,
-                zIndex,
-                effect,
-                duration,
-              });
-            },
-          };
-        },
         getDisplayObject: (displayObject, zIndex) => {
           return {
             show: (effect?: DisplayEffect, duration?: number) => {
-              // show display object
+              helper.addAction({
+                type: "showObject",
+                displayObject,
+                zIndex,
+                effect,
+                duration,
+              });
             },
             hide: (effect?: DisplayEffect, duration?: number) => {
-              // hide display object
+              helper.addAction({
+                type: "hideObject",
+                displayObject,
+                zIndex,
+                effect,
+                duration,
+              });
             },
             move: (x, y, duration) => {
               // move display object
@@ -81,20 +62,26 @@ const actions = {
     },
 } as const;
 
-const content = {
-  defineDisplayObject:
-    <TGame extends GameWorld>(helper: SystemPluginContentInterface<TGame>) =>
-    <TDisplayObject extends keyof TGame["displayObjects"]>(
-      name: TDisplayObject
-    ) => {},
+export type RenderElement = {
+  assetPath: string;
+  offsetX: number;
+  offsetY: number;
 };
 
-export const plugin: ContentPlugin<
-  "DisplayObjects",
-  typeof actions,
-  typeof content
-> = {
-  name: "DisplayObjects",
-  actions,
-  content,
+export type RenderObject = {
+  size: [number, number];
+  elements: RenderElement[];
 };
+
+export type RenderState<
+  Game extends GameWorld,
+  TDisplayObject extends keyof Game["displayObjects"]
+> = {
+  state: Game["displayObjects"][TDisplayObject]["states"];
+} & (Game["displayObjects"][TDisplayObject]["flags"] extends string
+  ? {
+      flags?: Partial<
+        Record<Game["displayObjects"][TDisplayObject]["flags"], boolean>
+      >;
+    }
+  : {});

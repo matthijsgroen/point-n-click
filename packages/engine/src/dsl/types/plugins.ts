@@ -11,12 +11,6 @@ export type SystemPluginInterface<TGame extends GameWorld> = {
   >() => TContent;
 };
 
-export type SystemPluginContentInterface<TGame extends GameWorld> = {
-  updateContent: <TContent extends GameData<TGame, []>>(
-    patch: (state: TContent) => TContent
-  ) => void;
-};
-
 export type DSLExtension<T extends string = string> = Record<
   T extends "character" ? never : string,
   <TGame extends GameWorld>(
@@ -30,27 +24,9 @@ export type DSLExtension<T extends string = string> = Record<
   ) => Record<string, (...args: any[]) => void>;
 };
 
-type BuiltinFunctions = "defineLocation" | "defineOverlay" | "defineScene";
-
-export type ContentExtension<T extends string = string> = Record<
-  T extends BuiltinFunctions ? never : string,
-  <TGame extends GameWorld>(
-    system: SystemPluginContentInterface<TGame>
-  ) => (...args: any[]) => void
->;
-
-export type ContentPlugin<
-  Name extends string,
-  Actions extends DSLExtension,
-  Content extends ContentExtension
-> = {
+export type ContentPlugin<Name extends string, Actions extends DSLExtension> = {
   name: Name;
   actions: Actions;
-  content: Content;
 };
 
-export type BaseContentPlugin = ContentPlugin<
-  string,
-  DSLExtension,
-  ContentExtension
->;
+export type BaseContentPlugin = ContentPlugin<string, DSLExtension>;

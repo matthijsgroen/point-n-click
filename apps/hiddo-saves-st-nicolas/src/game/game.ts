@@ -1,7 +1,7 @@
-import { world, displayObjectsPlugin } from "@point-n-click/engine";
+import { world } from "@point-n-click/engine";
 import { GameSettings, GameState } from "./stateModelV1";
 
-export const plugins = [displayObjectsPlugin] as const;
+export const plugins = [] as const;
 
 const game = world<GameState, GameSettings, typeof plugins>(
   {

@@ -1,9 +1,10 @@
+import { RenderElement, RenderObject, RenderState } from "../displayObjects";
 import { CustomIfStatement } from "../execution/customIfStatement";
 import { Interaction } from "../execution/getInteractions";
 import {
   BaseContentPlugin,
-  ContentExtension,
   DSLExtension,
+  SystemPluginInterface,
 } from "../types/plugins";
 import { GameWorld, StateObject } from "../types/world";
 import { ObjectState, ObjectGroupState } from "./state";
@@ -39,8 +40,18 @@ type ListsHelper<Game extends GameWorld, Actions = unknown> = {
   } & Actions;
 };
 
-export type ActionFunctions<T extends DSLExtension | ContentExtension> = {
-  [K in keyof T]: ReturnType<T[K]>;
+type PluginFunctionExceptFirst<Game extends GameWorld, F> = F extends (
+  head: SystemPluginInterface<Game>,
+  ...rest: infer R
+) => void
+  ? (...args: R) => void
+  : never;
+
+export type RemapPluginFunctions<
+  Game extends GameWorld,
+  T extends DSLExtension
+> = {
+  [K in keyof T]: PluginFunctionExceptFirst<Game, T[K]>;
 };
 
 export type ScriptHelper<
@@ -82,7 +93,7 @@ export type ScriptHelper<
    */
   readonly if: CustomIfStatement;
 } & (Plugins extends readonly [BaseContentPlugin, ...BaseContentPlugin[]]
-  ? ActionFunctions<Plugins[number]["actions"]>
+  ? RemapPluginFunctions<Game, Plugins[number]["actions"]>
   : {});
 
 export type ObjectScriptHelper<
@@ -176,4 +187,16 @@ export type LocationObject<
   [K in keyof Game["locations"] as `onLeaveTo${Capitalize<
     K & string
   >}`]?: Script<Game, "location", Location, Plugins>;
+};
+
+export type DisplayObjectInterface<
+  Game extends GameWorld,
+  Display extends keyof Game["displayObjects"]
+> = {
+  compose: (data: RenderState<Game, Display>) => RenderObject;
+} & {
+  [K in Game["displayObjects"][Display]["poses"] as `pose${Capitalize<K>}`]: RenderState<
+    Game,
+    Display
+  >;
 };

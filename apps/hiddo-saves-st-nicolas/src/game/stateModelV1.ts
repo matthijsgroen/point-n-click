@@ -29,7 +29,16 @@ export type GameState = GameStateDefinition<
     overlays: {};
     lists: {};
     scenes: "tvIntro";
-    displayObjects: {};
+    displayObjects: {
+      hiddo: {
+        states: {
+          head: "thinking" | "happy";
+          body: "normal" | "thinking";
+        };
+        flags: "hasGlasses";
+        poses: "normal" | "thinking";
+      };
+    };
   }
 >;
 
