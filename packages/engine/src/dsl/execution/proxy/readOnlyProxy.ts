@@ -1,4 +1,4 @@
-import { ReadStateHelper } from "../../syntax/script";
+import { ObjectReadStateHelper, ReadStateHelper } from "../../syntax/script";
 import { GameState, ObjectGroupState, ObjectState } from "../../syntax/state";
 import { GameWorld, StateObject } from "../../types/world";
 import { isFlag } from "./isFlag";
@@ -68,7 +68,7 @@ const readonlyItemProxy = <
     }
   ) as ObjectGroupState<Game, ItemType>;
 
-export const createReadOnlyProxy = <
+export const createReadOnlyItemProxy = <
   Game extends GameWorld,
   ItemType extends StateObject,
   ItemName extends keyof Game[`${ItemType}s`],
@@ -82,10 +82,17 @@ export const createReadOnlyProxy = <
   new Proxy(
     {
       ...actions,
-      characters: readonlyItemProxy(state, "character"),
-      overlays: readonlyItemProxy(state, "overlay"),
-      items: readonlyItemProxy(state, "item"),
-      locations: readonlyItemProxy(state, "location"),
+      ...createReadOnlyProxy(state),
     },
     readStateItemProxy(state, key, item)
-  ) as ReadStateHelper<Game, ItemType, ItemName> & Actions;
+  ) as ObjectReadStateHelper<Game, ItemType, ItemName> & Actions;
+
+export const createReadOnlyProxy = <Game extends GameWorld>(
+  state: GameState<Game>
+): ReadStateHelper<Game> =>
+  ({
+    characters: readonlyItemProxy(state, "character"),
+    overlays: readonlyItemProxy(state, "overlay"),
+    items: readonlyItemProxy(state, "item"),
+    locations: readonlyItemProxy(state, "location"),
+  } as ReadStateHelper<Game>);

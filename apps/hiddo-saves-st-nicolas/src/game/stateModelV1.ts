@@ -32,11 +32,23 @@ export type GameState = GameStateDefinition<
     displayObjects: {
       hiddo: {
         states: {
-          head: "thinking" | "happy";
+          head: "thinking" | "happy" | "shocked";
           body: "normal" | "thinking";
         };
         flags: "hasGlasses";
-        poses: "normal" | "thinking";
+        poses: "normal" | "thinking" | "shocked";
+      };
+      background: {
+        states: {
+          image:
+            | "home"
+            | "lawn"
+            | "hallway"
+            | "kitchen"
+            | "livingRoom"
+            | "studyOfSaintNicolas"
+            | "studyOfRhymhePete";
+        };
       };
     };
   }

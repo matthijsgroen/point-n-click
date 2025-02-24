@@ -27,7 +27,7 @@ export type WorldObjectSettings = {
 export type DisplayObjectSettings = {
   states: Record<string, string>;
   flags?: `is${string}` | `has${string}`;
-  poses: string;
+  poses?: string;
 };
 
 export type GameWorld<Version extends number = number> = {

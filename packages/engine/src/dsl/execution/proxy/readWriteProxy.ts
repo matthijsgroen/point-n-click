@@ -10,6 +10,7 @@ import type {
   SystemPluginInterface,
 } from "../../types/plugins";
 import type { GameData } from "../../syntax/dsl";
+import { setupSceneHelper } from "../setupScene";
 
 export type SystemInternalInterface<Game extends GameWorld> = {
   addAction: (action: Action<Game>) => void;
@@ -310,6 +311,12 @@ export const createReadWriteProxy = <
       });
     },
     if: customIfStatement,
+    setupScene: setupSceneHelper<Game, Plugins>(
+      getState,
+      addAction,
+      applyPatch,
+      content
+    ),
     closeOverlay: () => {
       applyPatch(
         produce((draft) => {

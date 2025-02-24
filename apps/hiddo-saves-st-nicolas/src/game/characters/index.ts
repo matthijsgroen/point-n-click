@@ -1,1 +1,2 @@
 import "./hiddo";
+import "./backgrounds";

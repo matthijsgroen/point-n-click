@@ -1,71 +1,31 @@
-import { produce } from "immer";
-import type { ContentPlugin, SystemPluginInterface } from "../types/plugins";
 import { GameWorld } from "../types/world";
 
 export type DisplayEffect = "fade" | "blur";
 
 export type DisplayObject<
-  Game extends GameWorld,
-  TDisplayObject extends keyof Game["displayObjects"]
+  TGame extends GameWorld,
+  TDisplayObject extends keyof TGame["displayObjects"]
 > = {
   readonly show: (effect?: DisplayEffect, duration?: number) => void;
   readonly hide: (effect?: DisplayEffect, duration?: number) => void;
   readonly move: (x: number, y: number, duration?: number) => void;
+  readonly pose: (
+    pose: Exclude<TGame["displayObjects"][TDisplayObject]["poses"], undefined>
+  ) => void;
 };
 
-type SceneHelper<Game extends GameWorld> = {
-  readonly getDisplayObject: <
-    TDisplayObject extends keyof Game["displayObjects"]
-  >(
+export type SceneHelper<TGame extends GameWorld> = {
+  readonly get: <TDisplayObject extends keyof TGame["displayObjects"]>(
     displayObject: TDisplayObject,
-    zIndex: number
-  ) => DisplayObject<Game, TDisplayObject>;
+    zIndex: number,
+    position: [number, number],
+    state?: RenderState<TGame, TDisplayObject>
+  ) => DisplayObject<TGame, TDisplayObject>;
 };
-
-const actions = {
-  setupScene:
-    <TGame extends GameWorld>(helper: SystemPluginInterface<TGame>) =>
-    <TResult>(sceneDefinition: (s: SceneHelper<TGame>) => TResult): TResult => {
-      // helper.addAction({
-      //   type: "descriptionText",
-      //   text,
-      // });
-      const sceneHelper = {
-        getDisplayObject: (displayObject, zIndex) => {
-          return {
-            show: (effect?: DisplayEffect, duration?: number) => {
-              helper.addAction({
-                type: "showObject",
-                displayObject,
-                zIndex,
-                effect,
-                duration,
-              });
-            },
-            hide: (effect?: DisplayEffect, duration?: number) => {
-              helper.addAction({
-                type: "hideObject",
-                displayObject,
-                zIndex,
-                effect,
-                duration,
-              });
-            },
-            move: (x, y, duration) => {
-              // move display object
-            },
-          };
-        },
-      };
-
-      return sceneDefinition(sceneHelper);
-    },
-} as const;
 
 export type RenderElement = {
   assetPath: string;
-  offsetX: number;
-  offsetY: number;
+  offset: [number, number];
 };
 
 export type RenderObject = {
@@ -74,14 +34,14 @@ export type RenderObject = {
 };
 
 export type RenderState<
-  Game extends GameWorld,
-  TDisplayObject extends keyof Game["displayObjects"]
+  TGame extends GameWorld,
+  TDisplayObject extends keyof TGame["displayObjects"]
 > = {
-  state: Game["displayObjects"][TDisplayObject]["states"];
-} & (Game["displayObjects"][TDisplayObject]["flags"] extends string
+  state: TGame["displayObjects"][TDisplayObject]["states"];
+} & (TGame["displayObjects"][TDisplayObject]["flags"] extends string
   ? {
       flags?: Partial<
-        Record<Game["displayObjects"][TDisplayObject]["flags"], boolean>
+        Record<TGame["displayObjects"][TDisplayObject]["flags"], boolean>
       >;
     }
   : {});

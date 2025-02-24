@@ -2,7 +2,7 @@ import { Interactions, Script } from "../syntax/script";
 import { GameState } from "../syntax/state";
 import { ContentPlugin, DSLExtension } from "../types/plugins";
 import { GameWorld, StateObject } from "../types/world";
-import { createReadOnlyProxy } from "./proxy/readOnlyProxy";
+import { createReadOnlyItemProxy } from "./proxy/readOnlyProxy";
 
 export type Interaction<
   Game extends GameWorld,
@@ -29,7 +29,7 @@ export const getInteractions = <
   item: Item
 ): Interaction<Game, ItemType, Item, Plugins, Extra>[] => {
   const result: Interaction<Game, ItemType, Item, Plugins, Extra>[] = [];
-  const stateProxy = createReadOnlyProxy(state, itemType, item, {
+  const stateProxy = createReadOnlyItemProxy(state, itemType, item, {
     addAction: (action: Interaction<Game, ItemType, Item, Plugins, Extra>) => {
       result.push(action);
     },

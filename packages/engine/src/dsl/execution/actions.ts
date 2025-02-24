@@ -1,3 +1,4 @@
+import { DisplayEffect, RenderState } from "../displayObjects";
 import { GameState } from "../syntax/state";
 import { GameWorld } from "../types/world";
 
@@ -7,6 +8,7 @@ export type Action<Game extends GameWorld> =
   | SayAction<Game>
   | StateAction<Game>
   | SceneAction<Game>
+  | DisplayObjectAction<Game>
   | PluginAction;
 
 export type TextAction = {
@@ -33,6 +35,51 @@ export type SayAction<Game extends GameWorld> = {
 export type StateAction<Game extends GameWorld> = {
   type: "state";
   patch: (state: GameState<Game>) => GameState<Game>;
+};
+
+export type DisplayObjectOperation<Game extends GameWorld> =
+  | ShowOperation
+  | HideOperation
+  | MoveOperation
+  | PoseOperation<Game>
+  | DefineOperation<Game>;
+
+export type DefineOperation<Game extends GameWorld> = {
+  type: "define";
+  displayState: RenderState<Game, keyof Game["displayObjects"]>;
+  position: [number, number];
+  zIndex: number;
+};
+
+export type ShowOperation = {
+  type: "show";
+  effect?: DisplayEffect;
+  duration?: number;
+};
+
+export type HideOperation = {
+  type: "hide";
+  effect?: DisplayEffect;
+  duration?: number;
+};
+
+export type MoveOperation = {
+  type: "move";
+  x: number;
+  y: number;
+  duration?: number;
+};
+
+export type PoseOperation<Game extends GameWorld> = {
+  type: "pose";
+  displayState: RenderState<Game, keyof Game["displayObjects"]>;
+  position?: [number, number];
+};
+
+export type DisplayObjectAction<Game extends GameWorld> = {
+  type: "displayObject";
+  object: keyof Game["displayObjects"];
+  operation: DisplayObjectOperation<Game>;
 };
 
 export type PluginAction<

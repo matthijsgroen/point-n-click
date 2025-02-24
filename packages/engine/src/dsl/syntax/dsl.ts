@@ -20,7 +20,9 @@ export type GameData<
     Record<keyof Game["locations"], LocationObject<Game, string, Plugins>>
   >;
   scenes: Partial<Record<Game["scenes"], SceneScript<Game, Plugins>>>;
-  displayObjects: Partial<Record<keyof Game["displayObjects"], unknown>>;
+  displayObjects: Partial<{
+    [K in keyof Game["displayObjects"]]: DisplayObjectInterface<Game, K>;
+  }>;
   plugins: Plugins;
 };
 

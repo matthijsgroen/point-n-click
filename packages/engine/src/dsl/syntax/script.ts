@@ -1,4 +1,9 @@
-import { RenderElement, RenderObject, RenderState } from "../displayObjects";
+import {
+  RenderElement,
+  RenderObject,
+  RenderState,
+  SceneHelper,
+} from "../displayObjects";
 import { CustomIfStatement } from "../execution/customIfStatement";
 import { Interaction } from "../execution/getInteractions";
 import {
@@ -74,6 +79,11 @@ export type ScriptHelper<
     }
   >;
   readonly text: (...sentences: string[]) => void;
+
+  readonly setupScene: <TResult>(
+    sceneDefinition: (s: SceneHelper<Game>) => TResult
+  ) => TResult;
+
   /**
    * By using this custom if statement, you can chain multiple conditions and actions together.
    * The engine will be able to browse all content when using this custom if statement, to collect
@@ -104,17 +114,19 @@ export type ObjectScriptHelper<
 > = ScriptHelper<Game, Plugins> &
   ObjectState<Game, T, Item> & { name?: string };
 
-export type ReadStateHelper<
-  Game extends GameWorld,
-  T extends StateObject,
-  Item extends keyof Game[`${T}s`]
-> = {
+export type ReadStateHelper<Game extends GameWorld> = {
   readonly characters: CharactersHelper<Game>;
   readonly items: ItemsHelper<Game>;
   readonly locations: LocationsHelper<Game>;
   readonly overlays: OverlaysHelper<Game>;
   readonly lists: ListsHelper<Game>;
-} & ObjectState<Game, T, Item> & { name?: string };
+};
+
+export type ObjectReadStateHelper<
+  Game extends GameWorld,
+  T extends StateObject,
+  Item extends keyof Game[`${T}s`]
+> = ReadStateHelper<Game> & ObjectState<Game, T, Item> & { name?: string };
 
 export type Script<
   Game extends GameWorld,
@@ -139,7 +151,7 @@ export type Interactions<
   Plugins extends readonly BaseContentPlugin[] = [],
   ExtraActions = unknown
 > = (
-  state: ReadStateHelper<Game, T, Item> & {
+  state: ObjectReadStateHelper<Game, T, Item> & {
     readonly addAction: (
       action: Interaction<Game, T, Item, Plugins, ExtraActions>
     ) => void;
@@ -194,9 +206,11 @@ export type DisplayObjectInterface<
   Display extends keyof Game["displayObjects"]
 > = {
   compose: (data: RenderState<Game, Display>) => RenderObject;
-} & {
-  [K in Game["displayObjects"][Display]["poses"] as `pose${Capitalize<K>}`]: RenderState<
-    Game,
-    Display
-  >;
-};
+  defaultPose: (state: ReadStateHelper<Game>) => RenderState<Game, Display>;
+} & (Game["displayObjects"][Display]["poses"] extends string
+  ? {
+      [K in Game["displayObjects"][Display]["poses"] as `pose${Capitalize<K>}`]: (
+        state: ReadStateHelper<Game>
+      ) => RenderState<Game, Display>;
+    }
+  : {});
