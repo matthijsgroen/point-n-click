@@ -83,7 +83,19 @@ export const setupSceneHelper =
               operation: {
                 type: "pose",
                 displayState: state,
-                // position,
+              },
+            });
+          },
+          flags: (flags) => {
+            addAction({
+              type: "displayObject",
+              object: displayObject,
+              operation: {
+                type: "pose",
+                displayState: {
+                  state: {},
+                  flags,
+                },
               },
             });
           },

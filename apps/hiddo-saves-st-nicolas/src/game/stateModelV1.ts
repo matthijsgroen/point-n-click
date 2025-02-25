@@ -50,6 +50,10 @@ export type GameState = GameStateDefinition<
             | "studyOfRhymhePete";
         };
       };
+      home: {
+        states: { image: "home" };
+        flags: "hasKidsOnCouch" | "isTVOn";
+      };
     };
   }
 >;

@@ -12,7 +12,15 @@ export type DisplayObject<
   readonly pose: (
     pose: Exclude<TGame["displayObjects"][TDisplayObject]["poses"], undefined>
   ) => void;
-};
+} & (TGame["displayObjects"][TDisplayObject]["flags"] extends string
+  ? {
+      readonly flags: (
+        flags: Partial<
+          Record<TGame["displayObjects"][TDisplayObject]["flags"], boolean>
+        >
+      ) => void;
+    }
+  : {});
 
 export type SceneHelper<TGame extends GameWorld> = {
   readonly get: <TDisplayObject extends keyof TGame["displayObjects"]>(

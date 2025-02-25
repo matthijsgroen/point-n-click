@@ -9,27 +9,26 @@ g.defineLocation("home", {
     const { player: hiddo, jinte } = w.characters;
 
     // Add some code I wish I had
-    const { hiddoC, background } = w.setupScene((scene) => ({
-      background: scene.get("background", 0, [0, 0], {
-        state: { image: "lawn" },
-      }),
-      hiddoC: scene.get("hiddo", 1, [0.2, 0.8]),
+    const { background } = w.setupScene((scene) => ({
+      background: scene.get("home", 0, [0, 0]),
     }));
 
-    background.show();
-    hiddoC.show();
-    hiddoC.pose("normal");
-    // jinteCharacter.show();
+    background.show("fade", 200);
 
     hiddo.say("Mam, het gaat beginnen!");
+    background.flags({ hasKidsOnCouch: true });
     jinte.say("Hoofdpiet is op de TV!");
+    background.flags({ isTVOn: true });
 
     w.scenes.tvIntro.play();
 
+    background.flags({ isTVOn: false });
     jinte.say("Mam! We moeten Sinterklaas helpen!");
     hiddo.say("Ze zoeken kinderen om te helpen voorbereiden voor pakjesavond!");
     hiddo.say("Onze.... {i}slik{/i} kadootjes staan op het spel!");
-    hiddoC.pose("shocked");
+    background.flags({ hasKidsOnCouch: false });
+
+    background.hide("fade", 200);
 
     w.locations.lawn.travel();
   },

@@ -22,8 +22,9 @@ g.defineDisplayObject("hiddo", {
       assetPath: shock,
       offset: [0, 0],
     };
+    type Heads = Exclude<typeof state, undefined>["head"];
 
-    const heads: Record<(typeof state)["head"], RenderElement> = {
+    const heads: Record<Heads, RenderElement> = {
       happy: normalHead,
       thinking: normalHead,
       shocked: shockedHead,
