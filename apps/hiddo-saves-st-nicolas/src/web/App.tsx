@@ -5,8 +5,9 @@ import type {
   DSLExtension,
   ContentPlugin,
   GameSettings,
+  GameData,
 } from "@point-n-click/engine";
-import { executeContentFlow } from "@point-n-click/engine";
+import { executeContentFlow, useRenderState } from "@point-n-click/engine";
 
 type Props<
   Game extends GameWorld,
@@ -28,6 +29,11 @@ const App = <
   const gameData = game.compile();
   const startingState = gameData.settings.initialState;
   const [state, setState] = useState(startingState);
+  const updateRenderState = useRenderState<
+    Game,
+    Plugins,
+    GameData<Game, Plugins>
+  >(gameData);
 
   const { actions, interactions, prompt } = executeContentFlow(gameData, state);
 
@@ -81,6 +87,15 @@ const App = <
                 className="font-bold bg-red-600  text-white rounded-lg p-4 my-2"
               >
                 ERROR: {action.message}
+              </li>
+            );
+          }
+
+          if (action.type === "displayObject") {
+            const renderState = updateRenderState(action);
+            return (
+              <li key={index} className="text-gray-500 font-mono my-2">
+                {JSON.stringify(renderState)}
               </li>
             );
           }
