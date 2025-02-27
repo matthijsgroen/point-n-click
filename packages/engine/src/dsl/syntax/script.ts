@@ -1,7 +1,7 @@
 import {
   RenderElement,
   RenderObject,
-  RenderState,
+  ObjectRenderState,
   SceneHelper,
 } from "../displayObjects";
 import { CustomIfStatement } from "../execution/customIfStatement";
@@ -205,12 +205,14 @@ export type DisplayObjectInterface<
   Game extends GameWorld,
   Display extends keyof Game["displayObjects"]
 > = {
-  compose: (data: RenderState<Game, Display>) => RenderObject;
-  defaultPose: (state: ReadStateHelper<Game>) => RenderState<Game, Display>;
+  compose: (data: ObjectRenderState<Game, Display>) => RenderObject;
+  defaultPose: (
+    state: ReadStateHelper<Game>
+  ) => ObjectRenderState<Game, Display>;
 } & (Game["displayObjects"][Display]["poses"] extends string
   ? {
       [K in Game["displayObjects"][Display]["poses"] as `pose${Capitalize<K>}`]: (
         state: ReadStateHelper<Game>
-      ) => RenderState<Game, Display>;
+      ) => ObjectRenderState<Game, Display>;
     }
   : {});

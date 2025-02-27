@@ -7,6 +7,7 @@ import { Action } from "./actions";
 import { getInteractions, Interaction } from "./getInteractions";
 import { runScript } from "./runScript";
 import { BaseContentPlugin } from "../types/plugins";
+import { useMemo } from "react";
 
 const capitalize = <S extends string>(s: S): Capitalize<S> =>
   (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>;
@@ -374,7 +375,7 @@ type ContentResult<Game extends GameWorld> = {
   interactions: UserInteraction<Game>[];
 };
 
-export const executeContentFlow = <
+const _executeContentFlow = <
   Game extends GameWorld,
   Plugins extends readonly BaseContentPlugin[]
 >(
@@ -411,3 +412,12 @@ export const executeContentFlow = <
     interactions: wrappedInteractions,
   };
 };
+
+export const executeContentFlow = <
+  Game extends GameWorld,
+  Plugins extends readonly BaseContentPlugin[]
+>(
+  content: GameData<Game, Plugins>,
+  state: GameState<Game>
+): ContentResult<Game> =>
+  useMemo(() => _executeContentFlow(content, state), [content, state]);

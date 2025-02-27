@@ -6,6 +6,7 @@
   "module": "src/main.ts",
   "type": "module",
   "dependencies": {
+    "@types/react": "^19.0.10",
     "immer": "^10.1.1"
   },
   "scripts": {
@@ -17,5 +18,8 @@
     "globals": "^15.14.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.22.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
   }
 }

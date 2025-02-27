@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import type {
   GameWorldDSL,
   GameWorld,
@@ -7,7 +7,13 @@ import type {
   GameSettings,
   GameData,
 } from "@point-n-click/engine";
-import { executeContentFlow, useRenderState } from "@point-n-click/engine";
+import {
+  executeContentFlow,
+  RenderDisplayAction,
+  useAction,
+  useRenderState,
+  Viewport,
+} from "@point-n-click/engine";
 
 type Props<
   Game extends GameWorld,
@@ -29,21 +35,32 @@ const App = <
   const gameData = game.compile();
   const startingState = gameData.settings.initialState;
   const [state, setState] = useState(startingState);
-  const updateRenderState = useRenderState<
+  const [renderState, updateRenderState] = useRenderState<
     Game,
     Plugins,
     GameData<Game, Plugins>
   >(gameData);
 
   const { actions, interactions, prompt } = executeContentFlow(gameData, state);
+  const { action, completeAction, allCompleted } = useAction(actions);
 
   return (
     <main className="max-w-3xl mx-auto p-4 flex flex-col gap-4">
       <h1 className="text-3xl mb-3">{gameData.settings.gameTitle}</h1>
       <h2 className="text-xl mb-3">Script</h2>
-      <div className="bg-gray-400 py-2 px-4 rounded text-white">
+      <Viewport width={1280} height={720} renderState={renderState} />
+      {action.type === "displayObject" && (
+        <RenderDisplayAction
+          action={action}
+          onComplete={completeAction}
+          updateRenderState={updateRenderState}
+        />
+      )}
+
+      <div className="text-gray-500 font-mono">{JSON.stringify(action)}</div>
+      {/* <div className="bg-gray-400 py-2 px-4 rounded text-white">
         Active Interaction: {state.currentInteraction ?? "<none>"}
-      </div>
+      </div> 
       <ul>
         {actions.map((action, index) => {
           if (action.type === "text") {
@@ -105,25 +122,30 @@ const App = <
               {JSON.stringify(action)}
             </li>
           );
-        })}
+        })} 
       </ul>
-      <strong>{prompt}</strong>
-      <ul className="flex flex-col gap-2">
-        {interactions.map((action, index) =>
-          action.enabled ? (
-            <li key={index}>
-              <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                onClick={() => {
-                  setState(action.action);
-                }}
-              >
-                {action.label}
-              </button>
-            </li>
-          ) : null
-        )}
-      </ul>
+      */}
+      {allCompleted && (
+        <>
+          <strong>{prompt}</strong>
+          <ul className="flex flex-col gap-2">
+            {interactions.map((action, index) =>
+              action.enabled ? (
+                <li key={index}>
+                  <button
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                    onClick={() => {
+                      setState(action.action);
+                    }}
+                  >
+                    {action.label}
+                  </button>
+                </li>
+              ) : null
+            )}
+          </ul>
+        </>
+      )}
     </main>
   );
 };

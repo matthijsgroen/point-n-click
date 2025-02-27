@@ -1,4 +1,4 @@
-import { DisplayEffect, RenderState } from "../displayObjects";
+import { DisplayEffect, ObjectRenderState } from "../displayObjects";
 import { GameState } from "../syntax/state";
 import { GameWorld } from "../types/world";
 
@@ -46,7 +46,7 @@ export type DisplayObjectOperation<Game extends GameWorld> =
 
 export type DefineOperation<Game extends GameWorld> = {
   type: "define";
-  displayState: RenderState<Game, keyof Game["displayObjects"]>;
+  displayState: ObjectRenderState<Game, keyof Game["displayObjects"]>;
   position: [number, number];
   zIndex: number;
 };
@@ -72,7 +72,7 @@ export type MoveOperation = {
 
 export type PoseOperation<Game extends GameWorld> = {
   type: "pose";
-  displayState: RenderState<Game, keyof Game["displayObjects"]>;
+  displayState: ObjectRenderState<Game, keyof Game["displayObjects"]>;
   position?: [number, number];
 };
 

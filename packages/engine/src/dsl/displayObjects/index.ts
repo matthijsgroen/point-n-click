@@ -27,7 +27,7 @@ export type SceneHelper<TGame extends GameWorld> = {
     displayObject: TDisplayObject,
     zIndex: number,
     position: [number, number],
-    state?: RenderState<TGame, TDisplayObject>
+    state?: ObjectRenderState<TGame, TDisplayObject>
   ) => DisplayObject<TGame, TDisplayObject>;
 };
 
@@ -41,7 +41,7 @@ export type RenderObject = {
   elements: RenderElement[];
 };
 
-export type RenderState<
+export type ObjectRenderState<
   TGame extends GameWorld,
   TDisplayObject extends keyof TGame["displayObjects"]
 > = {
@@ -52,4 +52,4 @@ export type RenderState<
         Record<TGame["displayObjects"][TDisplayObject]["flags"], boolean>
       >;
     }
-  : {});
+  : { flags?: {} });
