@@ -14,6 +14,8 @@ import {
   useRenderState,
   Viewport,
 } from "@point-n-click/engine";
+import { RenderText } from "./RenderText";
+import { RenderSay } from "./RenderSay";
 
 type Props<
   Game extends GameWorld,
@@ -55,6 +57,12 @@ const App = <
           onComplete={completeAction}
           updateRenderState={updateRenderState}
         />
+      )}
+      {action.type === "text" && (
+        <RenderText action={action} onComplete={completeAction} />
+      )}
+      {action.type === "say" && (
+        <RenderSay action={action} onComplete={completeAction} />
       )}
 
       <div className="text-gray-500 font-mono">{JSON.stringify(action)}</div>
