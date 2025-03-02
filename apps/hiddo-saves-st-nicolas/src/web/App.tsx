@@ -41,23 +41,27 @@ const App = <
   const { action, completeAction, allCompleted } = useAction(actions);
 
   return (
-    <main className="max-w-3xl mx-auto p-4 flex flex-col gap-4">
-      <h1 className="text-3xl mb-3">{gameData.settings.gameTitle}</h1>
-      <h2 className="text-xl mb-3">Script</h2>
-      <Viewport width={1280} height={720} renderState={renderState} />
-      {action.type === "displayObject" && (
-        <RenderDisplayAction
-          action={action}
-          onComplete={completeAction}
-          updateRenderState={updateRenderState}
-        />
-      )}
-      {action.type === "text" && (
-        <RenderText action={action} onComplete={completeAction} />
-      )}
-      {action.type === "say" && (
-        <RenderSay action={action} state={state} onComplete={completeAction} />
-      )}
+    <main className="mx-auto py-4 flex flex-col gap-4">
+      <h1 className="text-3xl mx-4 mb-3">{gameData.settings.gameTitle}</h1>
+      <Viewport width={1280} height={720} renderState={renderState}>
+        {action.type === "displayObject" && (
+          <RenderDisplayAction
+            action={action}
+            onComplete={completeAction}
+            updateRenderState={updateRenderState}
+          />
+        )}
+        {action.type === "text" && (
+          <RenderText action={action} onComplete={completeAction} />
+        )}
+        {action.type === "say" && (
+          <RenderSay
+            action={action}
+            state={state}
+            onComplete={completeAction}
+          />
+        )}
+      </Viewport>
 
       <div className="text-gray-500 font-mono">{JSON.stringify(action)}</div>
       {/* <div className="bg-gray-400 py-2 px-4 rounded text-white">

@@ -15,7 +15,7 @@ export const RenderSay = <TGame extends GameWorld>({
   const proxy = createReadOnlyProxy(state);
   return (
     <div
-      className="bg-black/50 py-4 px-8 rounded-md text-white select-none cursor-pointer"
+      className="bg-black/50 py-4 px-8 rounded-md text-white select-none cursor-pointer absolute bottom-4 left-4 right-4"
       onClick={onComplete}
     >
       <h6 className="text-lg font-bold">
