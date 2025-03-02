@@ -57,6 +57,7 @@ export type ScriptHelper<Game extends GameWorld> = {
     }
   >;
   readonly text: (...sentences: string[]) => void;
+  readonly descriptionText: (...sentences: string[]) => void;
 
   readonly setupScene: <TResult>(
     sceneDefinition: (s: SceneHelper<Game>) => TResult

@@ -4,6 +4,7 @@ import { GameWorld } from "../types/world";
 
 export type Action<Game extends GameWorld> =
   | TextAction
+  | DescriptionTextAction
   | ErrorAction
   | SayAction<Game>
   | StateAction<Game>
@@ -13,6 +14,11 @@ export type Action<Game extends GameWorld> =
 
 export type TextAction = {
   type: "text";
+  text: string[];
+};
+
+export type DescriptionTextAction = {
+  type: "descriptionText";
   text: string[];
 };
 

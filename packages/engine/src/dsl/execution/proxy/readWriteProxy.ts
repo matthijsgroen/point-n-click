@@ -305,6 +305,12 @@ export const createReadWriteProxy = <
         text,
       });
     },
+    descriptionText: (...text: string[]) => {
+      addAction({
+        type: "descriptionText",
+        text,
+      });
+    },
     if: customIfStatement,
     setupScene: setupSceneHelper<Game>(
       getState,
