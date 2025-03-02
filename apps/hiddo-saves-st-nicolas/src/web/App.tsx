@@ -56,11 +56,7 @@ const App = <
         <RenderText action={action} onComplete={completeAction} />
       )}
       {action.type === "say" && (
-        <RenderSay
-          action={action}
-          data={gameData}
-          onComplete={completeAction}
-        />
+        <RenderSay action={action} state={state} onComplete={completeAction} />
       )}
 
       <div className="text-gray-500 font-mono">{JSON.stringify(action)}</div>

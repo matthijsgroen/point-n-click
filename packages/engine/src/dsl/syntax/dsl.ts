@@ -1,4 +1,3 @@
-import { BaseContentPlugin } from "../types/plugins";
 import { GameDefinition } from "../types/settings";
 import { GameSettings, GameWorld } from "../types/world";
 import {

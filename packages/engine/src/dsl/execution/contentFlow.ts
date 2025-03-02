@@ -6,24 +6,15 @@ import { GameWorld, StateObject } from "../types/world";
 import { Action } from "./actions";
 import { getInteractions, Interaction } from "./getInteractions";
 import { runScript } from "./runScript";
-import { BaseContentPlugin } from "../types/plugins";
 import { useMemo } from "react";
 
 const capitalize = <S extends string>(s: S): Capitalize<S> =>
   (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>;
 
-type Content<
-  Game extends GameWorld,
-  Plugins extends readonly BaseContentPlugin[]
-> = {
+type Content<Game extends GameWorld> = {
   actions: Action<Game>[];
   prompt: string;
-  interactions: Interaction<
-    Game,
-    StateObject,
-    keyof Game[`${StateObject}s`],
-    Plugins
-  >[];
+  interactions: Interaction<Game, StateObject, keyof Game[`${StateObject}s`]>[];
 };
 
 /**
@@ -33,13 +24,10 @@ type Content<
  * and possible interactions to perform
  *
  */
-const collectContentFlow = <
-  Game extends GameWorld,
-  Plugins extends readonly BaseContentPlugin[]
->(
-  content: GameData<Game, Plugins>,
+const collectContentFlow = <Game extends GameWorld>(
+  content: GameData<Game>,
   state: GameState<Game>
-): Content<Game, Plugins> => {
+): Content<Game> => {
   /**
    * Flow of the 'point-n-click' version ('describeLocation')
    */
@@ -86,22 +74,15 @@ const collectContentFlow = <
       const leaveScript = (previousLocationContent[
         `onLeaveTo${capitalize(currentLocation)}` as keyof LocationObject<
           Game,
-          string,
-          Plugins
+          string
         >
-      ] ?? previousLocationContent.onLeave) as Script<
-        Game,
-        "location",
-        string,
-        Plugins
-      >;
+      ] ?? previousLocationContent.onLeave) as Script<Game, "location", string>;
 
       if (leaveScript) {
         const onLeaveActions = runScript<
           Game,
           "location",
-          typeof previousLocation,
-          Plugins
+          typeof previousLocation
         >(leaveScript, localState, content, "location", previousLocation);
         addActions(onLeaveActions);
       }
@@ -117,22 +98,19 @@ const collectContentFlow = <
         const enterScript = (currentLocationContent[
           `onEnterFrom${capitalize(previousLocation)}` as keyof LocationObject<
             Game,
-            string,
-            Plugins
+            string
           >
         ] ?? currentLocationContent?.onEnter) as Script<
           Game,
           "location",
-          string,
-          Plugins
+          string
         >;
 
         if (enterScript) {
           const onEnterActions = runScript<
             Game,
             "location",
-            typeof currentLocation,
-            Plugins
+            typeof currentLocation
           >(enterScript, localState, content, "location", currentLocation);
           addActions(onEnterActions);
         }
@@ -151,8 +129,7 @@ const collectContentFlow = <
       const describeActions = runScript<
         Game,
         "location",
-        typeof localState.currentLocation,
-        Plugins
+        typeof localState.currentLocation
       >(
         locationContent.describe,
         localState,
@@ -182,8 +159,7 @@ const collectContentFlow = <
       const onLeaveActions = runScript<
         Game,
         "overlay",
-        typeof currentOverlayId,
-        Plugins
+        typeof currentOverlayId
       >(
         currentOverlayData.onLeave,
         localState,
@@ -209,7 +185,6 @@ const collectContentFlow = <
         Game,
         "overlay",
         typeof newOverlayId,
-        Plugins,
         { closeOverlay: VoidFunction }
       >(
         newOverlayData.onEnter,
@@ -261,7 +236,6 @@ const collectContentFlow = <
         Game,
         "overlay",
         typeof overlayId,
-        Plugins,
         { readonly closeOverlay: () => void }
       >(interactionData.action, localState, content, "overlay", overlayId);
       addActions(interactionActions);
@@ -280,12 +254,13 @@ const collectContentFlow = <
           `Interaction "${currentInteraction}" not found`
         );
       }
-      const interactionActions = runScript<
-        Game,
+      const interactionActions = runScript<Game, "location", typeof locationId>(
+        interactionData.action,
+        localState,
+        content,
         "location",
-        typeof locationId,
-        Plugins
-      >(interactionData.action, localState, content, "location", locationId);
+        locationId
+      );
       addActions(interactionActions);
     }
   }
@@ -321,8 +296,7 @@ const collectContentFlow = <
   const interactions: Interaction<
     Game,
     StateObject,
-    keyof Game[`${StateObject}s`],
-    Plugins
+    keyof Game[`${StateObject}s`]
   >[] = [];
 
   const finalOverlayId = localState.currentOverlay;
@@ -344,8 +318,7 @@ const collectContentFlow = <
       ) as Interaction<
         Game,
         StateObject,
-        keyof Game["locations" | "characters" | "items" | "overlays"],
-        Plugins
+        keyof Game["locations" | "characters" | "items" | "overlays"]
       >[])
     );
   } else if (finalLocationData && finalLocationData.interactions) {
@@ -375,11 +348,8 @@ type ContentResult<Game extends GameWorld> = {
   interactions: UserInteraction<Game>[];
 };
 
-const _executeContentFlow = <
-  Game extends GameWorld,
-  Plugins extends readonly BaseContentPlugin[]
->(
-  content: GameData<Game, Plugins>,
+const _executeContentFlow = <Game extends GameWorld>(
+  content: GameData<Game>,
   state: GameState<Game>
 ): ContentResult<Game> => {
   const { actions, prompt, interactions } = collectContentFlow(content, state);
@@ -413,11 +383,8 @@ const _executeContentFlow = <
   };
 };
 
-export const executeContentFlow = <
-  Game extends GameWorld,
-  Plugins extends readonly BaseContentPlugin[]
->(
-  content: GameData<Game, Plugins>,
+export const executeContentFlow = <Game extends GameWorld>(
+  content: GameData<Game>,
   state: GameState<Game>
 ): ContentResult<Game> =>
   useMemo(() => _executeContentFlow(content, state), [content, state]);

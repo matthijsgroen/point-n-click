@@ -1,12 +1,13 @@
+import { PropsWithChildren } from "react";
 import { RenderObject } from "../dsl/displayObjects";
 
-type Props = {
+type Props = PropsWithChildren<{
   width: number;
   height: number;
   renderState: Record<string, RenderObject>;
-};
+}>;
 
-export const Viewport = ({ width, height, renderState }: Props) => {
+export const Viewport = ({ width, height, renderState, children }: Props) => {
   const imagesToRender = Object.entries(renderState).flatMap(
     ([object, info]) => {
       console.log("object", object, info, renderState);
@@ -25,6 +26,7 @@ export const Viewport = ({ width, height, renderState }: Props) => {
             className="object-contain absolute"
           />
         ))}
+        {children}
       </div>
       <p className="font-mono text-xs text-gray-500">
         {JSON.stringify(renderState)}

@@ -1,6 +1,5 @@
 import { Interactions, Script } from "../syntax/script";
 import { GameState } from "../syntax/state";
-import { ContentPlugin, DSLExtension } from "../types/plugins";
 import { GameWorld, StateObject } from "../types/world";
 import { createReadOnlyItemProxy } from "./proxy/readOnlyProxy";
 

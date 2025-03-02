@@ -6,7 +6,6 @@ import type {
 } from "../dsl/displayObjects";
 import { DisplayObjectAction } from "../dsl/execution/actions";
 import { GameData } from "../dsl/syntax/dsl";
-import { BaseContentPlugin } from "../dsl/types/plugins";
 import { GameWorld } from "../dsl/types/world";
 import { useCallback, useState } from "react";
 
@@ -24,7 +23,6 @@ type ObjectInfo<TGame extends GameWorld> = {
 
 const renderStateToRenderLayout = <
   TGame extends GameWorld,
-  TPlugins extends readonly BaseContentPlugin[],
   TGameData extends GameData<TGame>
 >(
   data: TGameData,

@@ -2,19 +2,18 @@ import { DisplayEffect, SceneHelper } from "../displayObjects";
 import { capitalize } from "../support/capitalize";
 import { GameData } from "../syntax/dsl";
 import { GameState } from "../syntax/state";
-import { BaseContentPlugin } from "../types/plugins";
 import { GameWorld } from "../types/world";
 import { Action } from "./actions";
 import { createReadOnlyProxy } from "./proxy/readOnlyProxy";
 
 export const setupSceneHelper =
-  <Game extends GameWorld, Plugins extends readonly BaseContentPlugin[] = []>(
+  <Game extends GameWorld>(
     getState: () => GameState<Game>,
     addAction: (action: Action<Game>) => void,
     _updateState: (
       patch: (currentState: GameState<Game>) => GameState<Game>
     ) => void,
-    content: GameData<Game, Plugins>
+    content: GameData<Game>
   ) =>
   <TResult>(sceneDefinition: (s: SceneHelper<Game>) => TResult): TResult => {
     const sceneHelper: SceneHelper<Game> = {
