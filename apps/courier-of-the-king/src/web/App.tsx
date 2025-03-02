@@ -7,13 +7,11 @@ import type {
   GameSettings,
 } from "@point-n-click/engine";
 import { executeContentFlow } from "@point-n-click/engine";
-import { DescribeText, isDescribeTextAction } from "./describePlugin";
 
 type Props<
   Game extends GameWorld,
   Settings extends GameSettings,
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[],
-  GameDSL extends GameWorldDSL<number, Game, Settings, Plugins>
+  GameDSL extends GameWorldDSL<number, Game, Settings>
 > = {
   game: GameDSL;
 };
@@ -21,11 +19,10 @@ type Props<
 const App = <
   Game extends GameWorld,
   Settings extends GameSettings,
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[],
-  GameDSL extends GameWorldDSL<number, Game, Settings, Plugins>
+  GameDSL extends GameWorldDSL<number, Game, Settings>
 >({
   game,
-}: Props<Game, Settings, Plugins, GameDSL>) => {
+}: Props<Game, Settings, GameDSL>) => {
   const gameData = game.compile();
   const startingState = gameData.settings.initialState;
   const [state, setState] = useState(startingState);
@@ -41,13 +38,13 @@ const App = <
       </div>
       <ul>
         {actions.map((action, index) => {
-          if (isDescribeTextAction(action)) {
-            return (
-              <li key={index}>
-                <DescribeText action={action} />
-              </li>
-            );
-          }
+          // if (isDescribeTextAction(action)) {
+          //   return (
+          //     <li key={index}>
+          //       <DescribeText action={action} />
+          //     </li>
+          //   );
+          // }
           if (action.type === "text") {
             return (
               <li key={index}>

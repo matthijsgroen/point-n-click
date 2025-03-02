@@ -59,10 +59,7 @@ export type RemapPluginFunctions<
   [K in keyof T]: PluginFunctionExceptFirst<Game, T[K]>;
 };
 
-export type ScriptHelper<
-  Game extends GameWorld,
-  Plugins extends readonly BaseContentPlugin[] = []
-> = {
+export type ScriptHelper<Game extends GameWorld> = {
   readonly characters: CharactersHelper<
     Game,
     { readonly say: (...sentences: string[]) => void }
@@ -102,17 +99,13 @@ export type ScriptHelper<
    * ```
    */
   readonly if: CustomIfStatement;
-} & (Plugins extends readonly [BaseContentPlugin, ...BaseContentPlugin[]]
-  ? RemapPluginFunctions<Game, Plugins[number]["actions"]>
-  : {});
+};
 
 export type ObjectScriptHelper<
   Game extends GameWorld,
   T extends StateObject,
-  Item extends keyof Game[`${T}s`],
-  Plugins extends readonly BaseContentPlugin[] = []
-> = ScriptHelper<Game, Plugins> &
-  ObjectState<Game, T, Item> & { name?: string };
+  Item extends keyof Game[`${T}s`]
+> = ScriptHelper<Game> & ObjectState<Game, T, Item> & { name?: string };
 
 export type ReadStateHelper<Game extends GameWorld> = {
   readonly characters: CharactersHelper<Game>;
@@ -132,73 +125,63 @@ export type Script<
   Game extends GameWorld,
   T extends StateObject,
   Item extends keyof Game[`${T}s`],
-  Plugins extends readonly BaseContentPlugin[] = [],
   ExtraActions = unknown
-> = (
-  worldHelper: ObjectScriptHelper<Game, T, Item, Plugins> & ExtraActions
-) => void;
+> = (worldHelper: ObjectScriptHelper<Game, T, Item> & ExtraActions) => void;
 
-export type SceneScript<
-  Game extends GameWorld,
-  Plugins extends readonly BaseContentPlugin[] = [],
-  ExtraActions = unknown
-> = (worldHelper: ScriptHelper<Game, Plugins> & ExtraActions) => void;
+export type SceneScript<Game extends GameWorld, ExtraActions = unknown> = (
+  worldHelper: ScriptHelper<Game> & ExtraActions
+) => void;
 
 export type Interactions<
   Game extends GameWorld,
   T extends StateObject,
   Item extends keyof Game[`${T}s`],
-  Plugins extends readonly BaseContentPlugin[] = [],
   ExtraActions = unknown
 > = (
   state: ObjectReadStateHelper<Game, T, Item> & {
     readonly addAction: (
-      action: Interaction<Game, T, Item, Plugins, ExtraActions>
+      action: Interaction<Game, T, Item, ExtraActions>
     ) => void;
   }
 ) => void;
 
 export type OverlayObject<
   Game extends GameWorld,
-  Overlay extends keyof Game["overlays"],
-  Plugins extends readonly BaseContentPlugin[]
+  Overlay extends keyof Game["overlays"]
 > = {
   prompt?: string;
   onEnter?: Script<
     Game,
     "overlay",
     Overlay,
-    Plugins,
     { readonly closeOverlay: () => void }
   >;
-  onLeave?: Script<Game, "overlay", Overlay, Plugins>;
+  onLeave?: Script<Game, "overlay", Overlay>;
   interactions?: Interactions<
     Game,
     "overlay",
     Overlay,
-    Plugins,
     { readonly closeOverlay: () => void }
   >;
 };
 
 export type LocationObject<
   Game extends GameWorld,
-  Location extends keyof Game["locations"],
-  Plugins extends readonly BaseContentPlugin[]
+  Location extends keyof Game["locations"]
 > = {
   prompt?: string;
-  onEnter?: Script<Game, "location", Location, Plugins>;
-  onLeave?: Script<Game, "location", Location, Plugins>;
-  describe?: Script<Game, "location", Location, Plugins>;
-  interactions?: Interactions<Game, "location", Location, Plugins>;
+  onEnter?: Script<Game, "location", Location>;
+  onLeave?: Script<Game, "location", Location>;
+  describe?: Script<Game, "location", Location>;
+  interactions?: Interactions<Game, "location", Location>;
 } & {
   [K in keyof Game["locations"] as `onEnterFrom${Capitalize<
     K & string
-  >}`]?: Script<Game, "location", Location, Plugins>;
+  >}`]?: Script<Game, "location", Location>;
 } & {
   [K in keyof Game["locations"] as `onLeaveTo${Capitalize<
     K & string
-  >}`]?: Script<Game, "location", Location, Plugins>;
+  >}`]?: Script<Game, "location", Location>;
 };
 
 export type DisplayObjectInterface<

@@ -25,7 +25,7 @@ type ObjectInfo<TGame extends GameWorld> = {
 const renderStateToRenderLayout = <
   TGame extends GameWorld,
   TPlugins extends readonly BaseContentPlugin[],
-  TGameData extends GameData<TGame, TPlugins>
+  TGameData extends GameData<TGame>
 >(
   data: TGameData,
   renderState: RenderState<TGame>
@@ -53,8 +53,7 @@ export type RenderState<TGame extends GameWorld> = Record<
 
 export const useRenderState = <
   TGame extends GameWorld,
-  TPlugins extends readonly BaseContentPlugin[],
-  TGameData extends GameData<TGame, TPlugins>
+  TGameData extends GameData<TGame>
 >(
   data: TGameData
 ): [

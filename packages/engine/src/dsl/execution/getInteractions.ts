@@ -8,29 +8,27 @@ export type Interaction<
   Game extends GameWorld,
   ItemType extends StateObject,
   Item extends keyof Game[`${ItemType}s`],
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = [],
   Extra = unknown
 > = {
   label: string;
   enabled: boolean;
-  action: Script<Game, ItemType, Item, Plugins, Extra>;
+  action: Script<Game, ItemType, Item, Extra>;
 };
 
 export const getInteractions = <
   Game extends GameWorld,
   ItemType extends StateObject,
   Item extends keyof Game[`${ItemType}s`],
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[] = [],
   Extra = unknown
 >(
-  interactions: Interactions<Game, ItemType, Item, Plugins, Extra>,
+  interactions: Interactions<Game, ItemType, Item, Extra>,
   state: GameState<Game>,
   itemType: ItemType,
   item: Item
-): Interaction<Game, ItemType, Item, Plugins, Extra>[] => {
-  const result: Interaction<Game, ItemType, Item, Plugins, Extra>[] = [];
+): Interaction<Game, ItemType, Item, Extra>[] => {
+  const result: Interaction<Game, ItemType, Item, Extra>[] = [];
   const stateProxy = createReadOnlyItemProxy(state, itemType, item, {
-    addAction: (action: Interaction<Game, ItemType, Item, Plugins, Extra>) => {
+    addAction: (action: Interaction<Game, ItemType, Item, Extra>) => {
       result.push(action);
     },
   });

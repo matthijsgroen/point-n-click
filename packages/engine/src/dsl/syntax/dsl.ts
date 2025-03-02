@@ -8,29 +8,24 @@ import {
   SceneScript,
 } from "./script";
 
-export type GameData<
-  Game extends GameWorld<number>,
-  Plugins extends readonly BaseContentPlugin[] = []
-> = {
+export type GameData<Game extends GameWorld<number>> = {
   settings: GameDefinition<Game>;
   overlays: Partial<
-    Record<keyof Game["overlays"], OverlayObject<Game, string, Plugins>>
+    Record<keyof Game["overlays"], OverlayObject<Game, string>>
   >;
   locations: Partial<
-    Record<keyof Game["locations"], LocationObject<Game, string, Plugins>>
+    Record<keyof Game["locations"], LocationObject<Game, string>>
   >;
-  scenes: Partial<Record<Game["scenes"], SceneScript<Game, Plugins>>>;
+  scenes: Partial<Record<Game["scenes"], SceneScript<Game>>>;
   displayObjects: Partial<{
     [K in keyof Game["displayObjects"]]: DisplayObjectInterface<Game, K>;
   }>;
-  plugins: Plugins;
 };
 
 export type BaseDSL<
   Version extends number,
   Game extends GameWorld<Version>,
-  Settings extends GameSettings<Version>,
-  Plugins extends readonly BaseContentPlugin[]
+  Settings extends GameSettings<Version>
 > = {
   /**
    * # Overlay
@@ -49,17 +44,17 @@ export type BaseDSL<
    */
   defineOverlay: <Overlay extends keyof Game["overlays"]>(
     id: Overlay,
-    overlayObject: OverlayObject<Game, Overlay, Plugins>
+    overlayObject: OverlayObject<Game, Overlay>
   ) => void;
 
   defineLocation: <Location extends keyof Game["locations"]>(
     id: Location,
-    locationObject: LocationObject<Game, Location, Plugins>
+    locationObject: LocationObject<Game, Location>
   ) => void;
 
   defineScene: <Scene extends Game["scenes"]>(
     id: Scene,
-    script: SceneScript<Game, Plugins>
+    script: SceneScript<Game>
   ) => void;
 
   // define game screen? (title screen, game over screen, settings screen, save screen, load screen)
@@ -69,15 +64,14 @@ export type BaseDSL<
     displayObject: DisplayObjectInterface<Game, DisplayObject>
   ) => void;
 
-  compile: () => GameData<Game, Plugins>;
+  compile: () => GameData<Game>;
 };
 
 export type GameWorldDSL<
   Version extends number,
   Game extends GameWorld<Version>,
-  Settings extends GameSettings<Version>,
-  Plugins extends readonly BaseContentPlugin[] = []
-> = BaseDSL<Version, Game, Settings, Plugins>;
+  Settings extends GameSettings<Version>
+> = BaseDSL<Version, Game, Settings>;
 
 /**
  * This is the starting point of your adventure.
@@ -90,19 +84,16 @@ export type GameWorldDSL<
  */
 export const world = <
   Game extends GameWorld<number>,
-  Settings extends GameSettings<number>,
-  Plugins extends readonly BaseContentPlugin[]
+  Settings extends GameSettings<number>
 >(
-  settings: GameDefinition<Game>,
-  plugins: Plugins
-): GameWorldDSL<Game["version"], Game, Settings, Plugins> => {
-  let gameData: GameData<Game, Plugins> = {
+  settings: GameDefinition<Game>
+): GameWorldDSL<Game["version"], Game, Settings> => {
+  let gameData: GameData<Game> = {
     settings,
     overlays: {},
     locations: {},
     scenes: {},
     displayObjects: {},
-    plugins,
   };
 
   return {

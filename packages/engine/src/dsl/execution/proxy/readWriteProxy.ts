@@ -5,10 +5,6 @@ import type { ObjectScriptHelper, ScenesHelper } from "../../syntax/script";
 import type { Action } from "../actions";
 import { customIfStatement } from "../customIfStatement";
 import { isFlag } from "./isFlag";
-import type {
-  BaseContentPlugin,
-  SystemPluginInterface,
-} from "../../types/plugins";
 import type { GameData } from "../../syntax/dsl";
 import { setupSceneHelper } from "../setupScene";
 
@@ -285,18 +281,17 @@ const sceneHelper = <Game extends GameWorld>(
 export const createReadWriteProxy = <
   Game extends GameWorld,
   ItemType extends StateObject,
-  ItemName extends keyof Game[`${ItemType}s`],
-  Plugins extends readonly BaseContentPlugin[] = []
+  ItemName extends keyof Game[`${ItemType}s`]
 >(
   getState: () => GameState<Game>,
   addAction: (action: Action<Game>) => void,
   applyPatch: (
     patch: (currentState: GameState<Game>) => GameState<Game>
   ) => void,
-  content: GameData<Game, Plugins>,
+  content: GameData<Game>,
   currentItemType?: ItemType,
   currentItemName?: ItemName
-): ObjectScriptHelper<Game, ItemType, ItemName, Plugins> => {
+): ObjectScriptHelper<Game, ItemType, ItemName> => {
   const baseObject = {
     characters: characterHelper<Game>(getState, addAction, applyPatch),
     items: itemsHelper<Game>(getState, applyPatch),
@@ -311,7 +306,7 @@ export const createReadWriteProxy = <
       });
     },
     if: customIfStatement,
-    setupScene: setupSceneHelper<Game, Plugins>(
+    setupScene: setupSceneHelper<Game>(
       getState,
       addAction,
       applyPatch,
@@ -324,47 +319,18 @@ export const createReadWriteProxy = <
         })
       );
     },
-    ...content.plugins.reduce((acc, plugin) => {
-      const exposedActions = Object.fromEntries(
-        Object.entries(plugin.actions).map(([key, value]) => [
-          key,
-          (...args: any[]) => {
-            const systemInterface: SystemPluginInterface<Game> = {
-              addAction: (action: any) =>
-                addAction({
-                  type: "plugin",
-                  plugin: plugin.name,
-                  action,
-                }),
-              getContent: <
-                Plugins extends readonly BaseContentPlugin[],
-                TContent extends GameData<Game, Plugins>
-              >() => content as unknown as TContent,
-            };
-
-            return plugin.actions[key](systemInterface)(...args);
-          },
-        ])
-      );
-
-      return {
-        ...acc,
-        ...exposedActions,
-      };
-    }, {}),
   };
 
   if (currentItemType === undefined || currentItemName === undefined) {
     return baseObject as unknown as ObjectScriptHelper<
       Game,
       ItemType,
-      ItemName,
-      Plugins
+      ItemName
     >;
   }
 
   return new Proxy(
     baseObject,
     stateItemProxy(getState, applyPatch, currentItemType, currentItemName)
-  ) as ObjectScriptHelper<Game, ItemType, ItemName, Plugins>;
+  ) as ObjectScriptHelper<Game, ItemType, ItemName>;
 };

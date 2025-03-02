@@ -2,8 +2,6 @@ import { useState } from "react";
 import type {
   GameWorldDSL,
   GameWorld,
-  DSLExtension,
-  ContentPlugin,
   GameSettings,
   GameData,
 } from "@point-n-click/engine";
@@ -20,8 +18,7 @@ import { RenderSay } from "./RenderSay";
 type Props<
   Game extends GameWorld,
   Settings extends GameSettings,
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[],
-  GameDSL extends GameWorldDSL<number, Game, Settings, Plugins>
+  GameDSL extends GameWorldDSL<number, Game, Settings>
 > = {
   game: GameDSL;
 };
@@ -29,19 +26,16 @@ type Props<
 const App = <
   Game extends GameWorld,
   Settings extends GameSettings,
-  Plugins extends readonly ContentPlugin<string, DSLExtension>[],
-  GameDSL extends GameWorldDSL<number, Game, Settings, Plugins>
+  GameDSL extends GameWorldDSL<number, Game, Settings>
 >({
   game,
-}: Props<Game, Settings, Plugins, GameDSL>) => {
+}: Props<Game, Settings, GameDSL>) => {
   const gameData = game.compile();
   const startingState = gameData.settings.initialState;
   const [state, setState] = useState(startingState);
-  const [renderState, updateRenderState] = useRenderState<
-    Game,
-    Plugins,
-    GameData<Game, Plugins>
-  >(gameData);
+  const [renderState, updateRenderState] = useRenderState<Game, GameData<Game>>(
+    gameData
+  );
 
   const { actions, interactions, prompt } = executeContentFlow(gameData, state);
   const { action, completeAction, allCompleted } = useAction(actions);
@@ -62,7 +56,11 @@ const App = <
         <RenderText action={action} onComplete={completeAction} />
       )}
       {action.type === "say" && (
-        <RenderSay action={action} onComplete={completeAction} />
+        <RenderSay
+          action={action}
+          data={gameData}
+          onComplete={completeAction}
+        />
       )}
 
       <div className="text-gray-500 font-mono">{JSON.stringify(action)}</div>
