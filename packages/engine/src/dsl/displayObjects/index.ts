@@ -27,18 +27,24 @@ export type SceneHelper<TGame extends GameWorld> = {
     displayObject: TDisplayObject,
     zIndex: number,
     position: [number, number],
-    state?: ObjectRenderState<TGame, TDisplayObject>
+    state?: ObjectRenderState<TGame, TDisplayObject>,
+    scale?: number
   ) => DisplayObject<TGame, TDisplayObject>;
 };
 
 export type RenderElement = {
   assetPath: string;
-  offset: [number, number];
+  offset: [x: number, y: number];
 };
 
 export type RenderObject = {
-  size: [number, number];
+  size: [width: number, height: number];
   elements: RenderElement[];
+};
+
+export type PositionedRenderObject = RenderObject & {
+  position: [x: number, y: number];
+  scale: number;
 };
 
 export type ObjectRenderState<

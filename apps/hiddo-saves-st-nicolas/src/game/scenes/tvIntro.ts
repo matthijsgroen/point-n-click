@@ -1,6 +1,16 @@
 import g from "../game";
 
 g.defineScene("tvIntro", (w) => {
+  const { lawn, pete, news } = w.setupScene((scene) => ({
+    lawn: scene.get("lawn", 0, [0, 0]),
+    pete: scene.get("pete", 1, [0.5, 0.2]),
+    news: scene.get("newsOverlay", 2, [0, 0]),
+  }));
+
+  lawn.show("fade", 200);
+  pete.show("fade", 200);
+  news.show("fade", 200);
+
   const { headPete, reporter } = w.characters;
   headPete.say("Hallo kinderen");
   headPete.say("We zijn weer in het land!");

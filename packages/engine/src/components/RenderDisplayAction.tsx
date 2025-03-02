@@ -19,7 +19,7 @@ export const RenderDisplayAction = <TGame extends GameWorld>({
     console.log("calling onComplete");
     const clear = setTimeout(() => {
       onComplete();
-    }, 400);
+    }, 10);
     return () => clearTimeout(clear);
   }, [action, onComplete, updateRenderState]);
 

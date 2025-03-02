@@ -38,17 +38,28 @@ export type GameState = GameStateDefinition<
         flags: "hasGlasses";
         poses: "normal" | "thinking" | "shocked";
       };
+      pete: {
+        states: {
+          body: "headPete" | "bakePete" | "rhyhmePete";
+          head: "enthousiast" | "smile" | "talk" | "cry" | "sad" | "down";
+        };
+        flags: "hasFingerUp";
+      };
       background: {
         states: {
           image:
-            | "home"
-            | "lawn"
             | "hallway"
             | "kitchen"
             | "livingRoom"
             | "studyOfSaintNicolas"
             | "studyOfRhymhePete";
         };
+      };
+      lawn: {
+        states: { image: "lawn" };
+      };
+      newsOverlay: {
+        states: { overlay: "begin" | "end" };
       };
       home: {
         states: { image: "home" };

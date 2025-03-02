@@ -54,6 +54,7 @@ export type DefineOperation<Game extends GameWorld> = {
   type: "define";
   displayState: ObjectRenderState<Game, keyof Game["displayObjects"]>;
   position: [number, number];
+  scale?: number;
   zIndex: number;
 };
 

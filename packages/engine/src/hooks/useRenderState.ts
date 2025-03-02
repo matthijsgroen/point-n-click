@@ -2,7 +2,7 @@ import { produce, type Draft } from "immer";
 import type {
   DisplayEffect,
   ObjectRenderState,
-  RenderObject,
+  PositionedRenderObject,
 } from "../dsl/displayObjects";
 import { DisplayObjectAction } from "../dsl/execution/actions";
 import { GameData } from "../dsl/syntax/dsl";
@@ -12,6 +12,7 @@ import { useCallback, useState } from "react";
 type ObjectInfo<TGame extends GameWorld> = {
   position: [number, number];
   zIndex: number;
+  scale: number;
   state: ObjectRenderState<TGame, keyof TGame["displayObjects"]>;
   visible: boolean;
   effects: {
@@ -27,7 +28,7 @@ const renderStateToRenderLayout = <
 >(
   data: TGameData,
   renderState: RenderState<TGame>
-): Record<string, RenderObject> => {
+): Record<string, PositionedRenderObject> => {
   // Start with object with lowest zIndex
   const sortedObjects = Object.fromEntries(
     Object.entries(renderState)
@@ -37,9 +38,12 @@ const renderStateToRenderLayout = <
         const objectDefinition = data.displayObjects[object];
         const renderObject = objectDefinition?.compose(info.state);
 
-        return [object, renderObject];
+        return [
+          object,
+          { ...renderObject, position: info.position, scale: info.scale },
+        ];
       })
-  ) as Record<string, RenderObject>;
+  ) as Record<string, PositionedRenderObject>;
 
   return sortedObjects;
 };
@@ -55,11 +59,10 @@ export const useRenderState = <
 >(
   data: TGameData
 ): [
-  Record<string, RenderObject>,
+  Record<string, PositionedRenderObject>,
   (action: DisplayObjectAction<TGame>) => void
 ] => {
   const [renderState, setRenderState] = useState<RenderState<TGame>>({});
-  console.log(renderState);
 
   const updateRenderState = useCallback(
     (action: DisplayObjectAction<TGame>) => {
@@ -69,10 +72,10 @@ export const useRenderState = <
         setRenderState(
           produce((draft) => {
             const currentState = draft[String(action.object)]?.state;
-            console.log("define", action.object);
             draft[String(action.object)] = {
               position: operation.position,
               zIndex: operation.zIndex,
+              scale: operation.scale ?? 1,
               state: {
                 state: {
                   ...currentState?.state,

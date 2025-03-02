@@ -17,7 +17,7 @@ export const setupSceneHelper =
   ) =>
   <TResult>(sceneDefinition: (s: SceneHelper<Game>) => TResult): TResult => {
     const sceneHelper: SceneHelper<Game> = {
-      get: (displayObject, zIndex, position, state) => {
+      get: (displayObject, zIndex, position, state, scale) => {
         const proxy = createReadOnlyProxy(getState());
         const objectDefinition = content.displayObjects[displayObject];
         const defaultState = objectDefinition?.defaultPose(proxy);
@@ -36,6 +36,7 @@ export const setupSceneHelper =
               type: "define",
               displayState: state ?? defaultState,
               zIndex,
+              scale: scale ?? 1,
               position,
             },
           });

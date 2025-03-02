@@ -18,10 +18,10 @@ export const RenderSay = <TGame extends GameWorld>({
       className="bg-black/50 py-4 px-8 rounded-md text-white select-none cursor-pointer absolute bottom-4 left-4 right-4"
       onClick={onComplete}
     >
-      <h6 className="text-lg font-bold">
+      <h6 className="text-2xl mb-3 font-bold">
         {String(proxy.characters[action.character].name)}
       </h6>
-      <p>{action.text.join(" ")}</p>
+      <p className="text-2xl">{action.text.join(" ")}</p>
     </div>
   );
 };
