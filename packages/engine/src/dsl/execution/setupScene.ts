@@ -2,7 +2,7 @@ import { DisplayEffect, SceneHelper } from "../displayObjects";
 import { capitalize } from "../support/capitalize";
 import { GameData } from "../syntax/dsl";
 import { GameState } from "../syntax/state";
-import { GameWorld } from "../types/world";
+import { GameWorld, StateObject } from "../types/world";
 import { Action } from "./actions";
 import { createReadOnlyProxy } from "./proxy/readOnlyProxy";
 
@@ -13,7 +13,9 @@ export const setupSceneHelper =
     _updateState: (
       patch: (currentState: GameState<Game>) => GameState<Game>
     ) => void,
-    content: GameData<Game>
+    content: GameData<Game>,
+    itemType: StateObject | "scene",
+    itemName: keyof Game[`${StateObject}s`] | string
   ) =>
   <TResult>(sceneDefinition: (s: SceneHelper<Game>) => TResult): TResult => {
     const sceneHelper: SceneHelper<Game> = {
@@ -32,6 +34,8 @@ export const setupSceneHelper =
           addAction({
             type: "displayObject",
             object: displayObject,
+            itemType,
+            itemName,
             operation: {
               type: "define",
               displayState: state ?? defaultState,
@@ -47,6 +51,8 @@ export const setupSceneHelper =
             addAction({
               type: "displayObject",
               object: displayObject,
+              itemType,
+              itemName,
               operation: {
                 type: "show",
                 effect,
@@ -58,6 +64,8 @@ export const setupSceneHelper =
             addAction({
               type: "displayObject",
               object: displayObject,
+              itemType,
+              itemName,
               operation: {
                 type: "hide",
                 effect,
@@ -80,6 +88,8 @@ export const setupSceneHelper =
             addAction({
               type: "displayObject",
               object: displayObject,
+              itemType,
+              itemName,
               operation: {
                 type: "pose",
                 displayState: state,
@@ -90,6 +100,8 @@ export const setupSceneHelper =
             addAction({
               type: "displayObject",
               object: displayObject,
+              itemType,
+              itemName,
               operation: {
                 type: "pose",
                 displayState: {

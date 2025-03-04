@@ -4,11 +4,10 @@ import { PositionedRenderObject } from "../dsl/displayObjects";
 type Props = PropsWithChildren<{
   width: number;
   height: number;
-  renderState: Record<string, PositionedRenderObject>;
+  renderState: PositionedRenderObject[];
 }>;
 
 export const Viewport = ({ width, height, renderState, children }: Props) => {
-  const itemsToRender = Object.entries(renderState).map(([, info]) => info);
   const frameRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
 
@@ -47,7 +46,7 @@ export const Viewport = ({ width, height, renderState, children }: Props) => {
             height: `${height}px`,
           }}
         >
-          {itemsToRender.map((item, index) => (
+          {renderState.map((item, index) => (
             <div
               key={index}
               className="relative"

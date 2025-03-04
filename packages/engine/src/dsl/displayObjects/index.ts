@@ -1,4 +1,4 @@
-import { GameWorld } from "../types/world";
+import { GameWorld, StateObject } from "../types/world";
 
 export type DisplayEffect = "fade" | "blur";
 
@@ -43,6 +43,9 @@ export type RenderObject = {
 };
 
 export type PositionedRenderObject = RenderObject & {
+  itemType: StateObject | "scene";
+  itemName: string;
+  name: string;
   position: [x: number, y: number];
   scale: number;
 };
@@ -52,6 +55,19 @@ export type ObjectRenderState<
   TDisplayObject extends keyof TGame["displayObjects"]
 > = {
   state: TGame["displayObjects"][TDisplayObject]["states"];
+} & (TGame["displayObjects"][TDisplayObject]["flags"] extends string
+  ? {
+      flags?: Partial<
+        Record<TGame["displayObjects"][TDisplayObject]["flags"], boolean>
+      >;
+    }
+  : { flags?: {} });
+
+export type PartialObjectRenderState<
+  TGame extends GameWorld,
+  TDisplayObject extends keyof TGame["displayObjects"]
+> = {
+  state?: Partial<TGame["displayObjects"][TDisplayObject]["states"]>;
 } & (TGame["displayObjects"][TDisplayObject]["flags"] extends string
   ? {
       flags?: Partial<

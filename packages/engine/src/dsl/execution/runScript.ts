@@ -34,9 +34,20 @@ export const runScript = <
         () => newState,
         addAction,
         applyPatch,
-        content
+        content,
+        "scene",
+        action.scene
       ) as ObjectScriptHelper<Game, ItemType, ItemName> & Extra;
       scene(sceneHelper);
+      addAction({
+        type: "displayObject",
+        object: action.scene,
+        itemType: "scene",
+        itemName: action.scene,
+        operation: {
+          type: "cleanup",
+        },
+      });
       return;
     }
 

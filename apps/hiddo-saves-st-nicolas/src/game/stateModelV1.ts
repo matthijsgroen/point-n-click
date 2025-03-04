@@ -40,10 +40,11 @@ export type GameState = GameStateDefinition<
       };
       pete: {
         states: {
-          body: "headPete" | "bakePete" | "rhyhmePete";
-          head: "enthousiast" | "smile" | "talk" | "cry" | "sad" | "down";
+          body: "headPete" | "bakePete" | "rhymePete";
+          head: "enthusiast" | "smile" | "talk" | "cry" | "sad" | "down";
         };
         flags: "hasFingerUp";
+        poses: "enthusiast" | "sad" | "idea";
       };
       background: {
         states: {

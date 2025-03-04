@@ -6,13 +6,16 @@ import type {
 } from "../dsl/displayObjects";
 import { DisplayObjectAction } from "../dsl/execution/actions";
 import { GameData } from "../dsl/syntax/dsl";
-import { GameWorld } from "../dsl/types/world";
+import { GameWorld, StateObject } from "../dsl/types/world";
 import { useCallback, useState } from "react";
 
 type ObjectInfo<TGame extends GameWorld> = {
   position: [number, number];
   zIndex: number;
   scale: number;
+  itemType: StateObject | "scene";
+  itemName: string;
+  name: string;
   state: ObjectRenderState<TGame, keyof TGame["displayObjects"]>;
   visible: boolean;
   effects: {
@@ -28,25 +31,27 @@ const renderStateToRenderLayout = <
 >(
   data: TGameData,
   renderState: RenderState<TGame>
-): Record<string, PositionedRenderObject> => {
+): PositionedRenderObject[] =>
   // Start with object with lowest zIndex
-  const sortedObjects = Object.fromEntries(
-    Object.entries(renderState)
-      .sort(([, a], [, b]) => a.zIndex - b.zIndex)
-      .filter(([, info]) => info.visible)
-      .map(([object, info]) => {
-        const objectDefinition = data.displayObjects[object];
-        const renderObject = objectDefinition?.compose(info.state);
+  Object.entries(renderState)
+    .sort(([, a], [, b]) => a.zIndex - b.zIndex)
+    .filter(([, info]) => info.visible)
+    .map<PositionedRenderObject>(([object, info]) => {
+      const objectDefinition = data.displayObjects[info.name];
+      if (!objectDefinition) {
+        throw new Error(`DisplayObject definition ${object} not found`);
+      }
+      const renderObject = objectDefinition.compose(info.state);
 
-        return [
-          object,
-          { ...renderObject, position: info.position, scale: info.scale },
-        ];
-      })
-  ) as Record<string, PositionedRenderObject>;
-
-  return sortedObjects;
-};
+      return {
+        ...renderObject,
+        position: info.position,
+        scale: info.scale,
+        name: info.name,
+        itemType: info.itemType,
+        itemName: info.itemName,
+      };
+    });
 
 export type RenderState<TGame extends GameWorld> = Record<
   string,
@@ -58,23 +63,26 @@ export const useRenderState = <
   TGameData extends GameData<TGame>
 >(
   data: TGameData
-): [
-  Record<string, PositionedRenderObject>,
-  (action: DisplayObjectAction<TGame>) => void
-] => {
+): [PositionedRenderObject[], (action: DisplayObjectAction<TGame>) => void] => {
   const [renderState, setRenderState] = useState<RenderState<TGame>>({});
 
   const updateRenderState = useCallback(
     (action: DisplayObjectAction<TGame>) => {
       const operation = action.operation;
+      const key = `${action.itemType}_${String(action.itemName)}_${String(
+        action.object
+      )}`;
 
       if (operation.type === "define") {
         setRenderState(
           produce((draft) => {
-            const currentState = draft[String(action.object)]?.state;
-            draft[String(action.object)] = {
+            const currentState = draft[key]?.state;
+            draft[key] = {
               position: operation.position,
               zIndex: operation.zIndex,
+              itemType: action.itemType,
+              itemName: String(action.itemName),
+              name: String(action.object),
               scale: operation.scale ?? 1,
               state: {
                 state: {
@@ -98,8 +106,8 @@ export const useRenderState = <
       if (operation.type === "show") {
         setRenderState(
           produce((draft) => {
-            draft[String(action.object)].visible = true;
-            draft[String(action.object)].effects.push({
+            draft[key].visible = true;
+            draft[key].effects.push({
               type: "show",
               effect: operation.effect ?? "fade",
               duration: operation.duration ?? 500,
@@ -111,8 +119,8 @@ export const useRenderState = <
       if (operation.type === "hide") {
         setRenderState(
           produce((draft) => {
-            draft[String(action.object)].visible = false;
-            draft[String(action.object)].effects.push({
+            draft[key].visible = false;
+            draft[key].effects.push({
               type: "hide",
               effect: operation.effect ?? "fade",
               duration: operation.duration ?? 500,
@@ -124,7 +132,7 @@ export const useRenderState = <
       if (operation.type === "move") {
         setRenderState(
           produce((draft) => {
-            draft[String(action.object)].position = [operation.x, operation.y];
+            draft[key].position = [operation.x, operation.y];
           })
         );
       }
@@ -132,8 +140,8 @@ export const useRenderState = <
       if (operation.type === "pose") {
         setRenderState(
           produce((draft) => {
-            const currentState = draft[String(action.object)]?.state;
-            draft[String(action.object)].state = {
+            const currentState = draft[key]?.state;
+            draft[key].state = {
               state: {
                 ...currentState?.state,
                 ...operation.displayState.state,
@@ -144,8 +152,22 @@ export const useRenderState = <
               },
             } as Draft<ObjectRenderState<TGame, keyof TGame["displayObjects"]>>;
             if (operation.position) {
-              draft[String(action.object)].position = operation.position;
+              draft[key].position = operation.position;
             }
+          })
+        );
+      }
+      if (operation.type === "cleanup") {
+        setRenderState(
+          produce((draft) => {
+            Object.entries(draft).forEach(([key, value]) => {
+              if (
+                value.itemType === action.itemType &&
+                value.itemName === action.itemName
+              ) {
+                delete draft[key];
+              }
+            });
           })
         );
       }

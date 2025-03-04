@@ -1,6 +1,6 @@
 import { DisplayEffect, ObjectRenderState } from "../displayObjects";
 import { GameState } from "../syntax/state";
-import { GameWorld } from "../types/world";
+import { GameWorld, StateObject } from "../types/world";
 
 export type Action<Game extends GameWorld> =
   | TextAction
@@ -48,7 +48,8 @@ export type DisplayObjectOperation<Game extends GameWorld> =
   | HideOperation
   | MoveOperation
   | PoseOperation<Game>
-  | DefineOperation<Game>;
+  | DefineOperation<Game>
+  | CleanupAction;
 
 export type DefineOperation<Game extends GameWorld> = {
   type: "define";
@@ -56,6 +57,10 @@ export type DefineOperation<Game extends GameWorld> = {
   position: [number, number];
   scale?: number;
   zIndex: number;
+};
+
+export type CleanupAction = {
+  type: "cleanup";
 };
 
 export type ShowOperation = {
@@ -86,6 +91,8 @@ export type PoseOperation<Game extends GameWorld> = {
 export type DisplayObjectAction<Game extends GameWorld> = {
   type: "displayObject";
   object: keyof Game["displayObjects"];
+  itemType: StateObject | "scene";
+  itemName: keyof Game[`${StateObject}s`] | string;
   operation: DisplayObjectOperation<Game>;
 };
 

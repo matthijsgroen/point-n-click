@@ -289,8 +289,8 @@ export const createReadWriteProxy = <
     patch: (currentState: GameState<Game>) => GameState<Game>
   ) => void,
   content: GameData<Game>,
-  currentItemType?: ItemType,
-  currentItemName?: ItemName
+  currentItemType: ItemType | "scene",
+  currentItemName: ItemName | string
 ): ObjectScriptHelper<Game, ItemType, ItemName> => {
   const baseObject = {
     characters: characterHelper<Game>(getState, addAction, applyPatch),
@@ -316,7 +316,9 @@ export const createReadWriteProxy = <
       getState,
       addAction,
       applyPatch,
-      content
+      content,
+      currentItemType,
+      currentItemName
     ),
     closeOverlay: () => {
       applyPatch(
@@ -327,7 +329,7 @@ export const createReadWriteProxy = <
     },
   };
 
-  if (currentItemType === undefined || currentItemName === undefined) {
+  if (currentItemType === "scene") {
     return baseObject as unknown as ObjectScriptHelper<
       Game,
       ItemType,

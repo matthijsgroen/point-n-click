@@ -1,8 +1,8 @@
 import {
-  RenderElement,
   RenderObject,
   ObjectRenderState,
   SceneHelper,
+  PartialObjectRenderState,
 } from "../displayObjects";
 import { CustomIfStatement } from "../execution/customIfStatement";
 import { Interaction } from "../execution/getInteractions";
@@ -178,6 +178,6 @@ export type DisplayObjectInterface<
   ? {
       [K in Game["displayObjects"][Display]["poses"] as `pose${Capitalize<K>}`]: (
         state: ReadStateHelper<Game>
-      ) => ObjectRenderState<Game, Display>;
+      ) => PartialObjectRenderState<Game, Display>;
     }
   : {});

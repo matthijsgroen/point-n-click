@@ -16,7 +16,6 @@ export const RenderDisplayAction = <TGame extends GameWorld>({
   useEffect(() => {
     updateRenderState(action);
     // Some actions require a delay before the next action is executed
-    console.log("calling onComplete");
     const clear = setTimeout(() => {
       onComplete();
     }, 10);
