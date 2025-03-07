@@ -3,6 +3,7 @@ import {
   ObjectRenderState,
   SceneHelper,
   PartialObjectRenderState,
+  FlattenObjectRenderState,
 } from "../displayObjects";
 import { CustomIfStatement } from "../execution/customIfStatement";
 import { Interaction } from "../execution/getInteractions";
@@ -170,14 +171,8 @@ export type DisplayObjectInterface<
   Game extends GameWorld,
   Display extends keyof Game["displayObjects"]
 > = {
-  compose: (data: ObjectRenderState<Game, Display>) => RenderObject;
+  compose: (data: FlattenObjectRenderState<Game, Display>) => RenderObject;
   defaultPose: (
     state: ReadStateHelper<Game>
-  ) => ObjectRenderState<Game, Display>;
-} & (Game["displayObjects"][Display]["poses"] extends string
-  ? {
-      [K in Game["displayObjects"][Display]["poses"] as `pose${Capitalize<K>}`]: (
-        state: ReadStateHelper<Game>
-      ) => PartialObjectRenderState<Game, Display>;
-    }
-  : {});
+  ) => FlattenObjectRenderState<Game, Display>;
+};

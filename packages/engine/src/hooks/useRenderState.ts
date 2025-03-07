@@ -1,6 +1,7 @@
 import { produce, type Draft } from "immer";
 import type {
   DisplayEffect,
+  FlattenObjectRenderState,
   ObjectRenderState,
   PositionedRenderObject,
 } from "../dsl/displayObjects";
@@ -16,7 +17,7 @@ type ObjectInfo<TGame extends GameWorld> = {
   itemType: StateObject | "scene";
   itemName: string;
   name: string;
-  state: ObjectRenderState<TGame, keyof TGame["displayObjects"]>;
+  state: FlattenObjectRenderState<TGame, keyof TGame["displayObjects"]>;
   visible: boolean;
   effects: {
     type: "show" | "hide";
@@ -84,18 +85,7 @@ export const useRenderState = <
               itemName: String(action.itemName),
               name: String(action.object),
               scale: operation.scale ?? 1,
-              state: {
-                state: {
-                  ...currentState?.state,
-                  ...operation.displayState.state,
-                },
-                flags: {
-                  ...(currentState?.flags ?? {}),
-                  ...operation.displayState.flags,
-                },
-              } as Draft<
-                ObjectRenderState<TGame, keyof TGame["displayObjects"]>
-              >,
+              state: Object.assign({}, currentState, operation.displayState),
               visible: false,
               effects: [],
             };
@@ -141,16 +131,11 @@ export const useRenderState = <
         setRenderState(
           produce((draft) => {
             const currentState = draft[key]?.state;
-            draft[key].state = {
-              state: {
-                ...currentState?.state,
-                ...operation.displayState.state,
-              },
-              flags: {
-                ...(currentState?.flags ?? {}),
-                ...operation.displayState.flags,
-              },
-            } as Draft<ObjectRenderState<TGame, keyof TGame["displayObjects"]>>;
+            draft[key].state = Object.assign(
+              {},
+              currentState,
+              operation.displayState
+            );
             if (operation.position) {
               draft[key].position = operation.position;
             }

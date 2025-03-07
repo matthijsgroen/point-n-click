@@ -44,7 +44,6 @@ export type GameState = GameStateDefinition<
           head: "enthusiast" | "smile" | "talk" | "cry" | "sad" | "down";
         };
         flags: "hasFingerUp";
-        poses: "enthusiast" | "sad" | "idea";
       };
       background: {
         states: {

@@ -38,7 +38,7 @@ export const setupSceneHelper =
             itemName,
             operation: {
               type: "define",
-              displayState: state ?? defaultState,
+              displayState: { ...defaultState, ...state },
               zIndex,
               scale: scale ?? 1,
               position,
@@ -76,15 +76,7 @@ export const setupSceneHelper =
           move: (x, y, duration) => {
             // move display object
           },
-          pose: (pose) => {
-            const proxy = createReadOnlyProxy(getState());
-            const poseFunction =
-              objectDefinition?.[`pose${capitalize(pose)}` as "defaultPose"];
-            if (typeof poseFunction !== "function") {
-              return;
-            }
-            const state = poseFunction(proxy);
-
+          pose: (state) => {
             addAction({
               type: "displayObject",
               object: displayObject,
@@ -93,21 +85,6 @@ export const setupSceneHelper =
               operation: {
                 type: "pose",
                 displayState: state,
-              },
-            });
-          },
-          flags: (flags) => {
-            addAction({
-              type: "displayObject",
-              object: displayObject,
-              itemType,
-              itemName,
-              operation: {
-                type: "pose",
-                displayState: {
-                  state: {},
-                  flags,
-                },
               },
             });
           },

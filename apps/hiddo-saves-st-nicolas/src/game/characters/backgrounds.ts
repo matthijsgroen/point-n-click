@@ -14,14 +14,14 @@ g.defineDisplayObject("lawn", {
   },
 
   defaultPose: () => ({
-    state: { image: "lawn" },
+    image: "lawn",
   }),
 });
 
 g.defineDisplayObject("newsOverlay", {
-  compose: ({ state }) => {
+  compose: ({ overlay }) => {
     const elements: RenderElement[] = [
-      state.overlay === "begin"
+      overlay === "begin"
         ? { assetPath: news, offset: [0, 0] }
         : { assetPath: finalNews, offset: [0, 0] },
     ];
@@ -29,26 +29,26 @@ g.defineDisplayObject("newsOverlay", {
   },
 
   defaultPose: () => ({
-    state: { overlay: "begin" },
+    overlay: "begin",
   }),
 });
 
 g.defineDisplayObject("home", {
-  compose: ({ flags }) => {
+  compose: ({ isTVOn, hasKidsOnCouch }) => {
     const elements: RenderElement[] = [];
     elements.push({
       assetPath: home,
       offset: [0, 0],
     });
 
-    if (flags?.isTVOn) {
+    if (isTVOn) {
       elements.push({
         assetPath: tv,
         offset: [0, 0],
       });
     }
 
-    if (flags?.hasKidsOnCouch) {
+    if (hasKidsOnCouch) {
       elements.push({
         assetPath: kids,
         offset: [0, 0],
@@ -59,7 +59,8 @@ g.defineDisplayObject("home", {
   },
 
   defaultPose: () => ({
-    state: { image: "home" },
-    flags: { hasKidsOnCouch: false, isTVOn: false },
+    image: "home",
+    hasKidsOnCouch: false,
+    isTVOn: false,
   }),
 });

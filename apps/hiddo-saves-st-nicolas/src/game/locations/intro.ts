@@ -15,18 +15,19 @@ g.defineLocation("home", {
 
     background.show("fade", 200);
 
+    w.text("een aantal weken voor Sinterklaas avond...");
+    background.pose({ hasKidsOnCouch: true });
     hiddo.say("Mam, het gaat beginnen!");
-    background.flags({ hasKidsOnCouch: true });
+    background.pose({ isTVOn: true });
     jinte.say("Hoofdpiet is op de TV!");
-    background.flags({ isTVOn: true });
 
     w.scenes.tvIntro.play();
 
-    background.flags({ isTVOn: false });
+    background.pose({ isTVOn: false });
     jinte.say("Mam! We moeten Sinterklaas helpen!");
     hiddo.say("Ze zoeken kinderen om te helpen voorbereiden voor pakjesavond!");
     hiddo.say("Onze.... {i}slik{/i} kadootjes staan op het spel!");
-    background.flags({ hasKidsOnCouch: false });
+    background.pose({ hasKidsOnCouch: false });
 
     background.hide("fade", 200);
 

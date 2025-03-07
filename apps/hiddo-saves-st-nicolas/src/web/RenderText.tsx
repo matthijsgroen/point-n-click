@@ -1,4 +1,4 @@
-import { TextAction } from "@point-n-click/engine";
+import type { TextAction } from "@point-n-click/engine";
 
 type Props = {
   action: TextAction;
@@ -7,8 +7,11 @@ type Props = {
 
 export const RenderText = ({ action, onComplete }: Props) => {
   return (
-    <div>
-      <p>{action.text.join(" ")}</p>
+    <div
+      className="bg-black/50 py-4 px-8 rounded-md text-white select-none cursor-pointer absolute bottom-4 left-4 right-4"
+      onClick={onComplete}
+    >
+      <p className="text-2xl">{action.text.join(" ")}</p>
     </div>
   );
 };
