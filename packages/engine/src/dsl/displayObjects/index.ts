@@ -1,6 +1,6 @@
 import { GameWorld, StateObject } from "../types/world";
 
-export type DisplayEffect = "fade" | "blur";
+export type DisplayEffect = "fade" | "blur" | "instant";
 
 export type DisplayObject<
   TGame extends GameWorld,

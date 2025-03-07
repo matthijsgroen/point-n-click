@@ -35,7 +35,6 @@ export type GameState = GameStateDefinition<
           head: "thinking" | "happy" | "shocked";
           body: "normal" | "thinking";
         };
-        flags: "hasGlasses";
         poses: "normal" | "thinking" | "shocked";
       };
       pete: {

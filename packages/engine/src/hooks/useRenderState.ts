@@ -1,8 +1,7 @@
-import { produce, type Draft } from "immer";
+import { produce } from "immer";
 import type {
   DisplayEffect,
   FlattenObjectRenderState,
-  ObjectRenderState,
   PositionedRenderObject,
 } from "../dsl/displayObjects";
 import { DisplayObjectAction } from "../dsl/execution/actions";
@@ -160,6 +159,6 @@ export const useRenderState = <
     []
   );
 
-  const result = renderStateToRenderLayout(data, renderState);
+  const result = renderStateToRenderLayout(data, renderState ?? {});
   return [result, updateRenderState];
 };

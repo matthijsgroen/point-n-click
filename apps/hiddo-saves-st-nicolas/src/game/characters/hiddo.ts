@@ -5,9 +5,7 @@ import shock from "../../assets/doll_Hiddo/02.png";
 import { RenderElement } from "@point-n-click/engine/src/dsl/displayObjects";
 
 g.defineDisplayObject("hiddo", {
-  compose: ({ state, flags }) => {
-    console.log(state, flags);
-
+  compose: ({ head }) => {
     const normalBody: RenderElement = {
       assetPath: normal,
       offset: [0, 0],
@@ -22,9 +20,8 @@ g.defineDisplayObject("hiddo", {
       assetPath: shock,
       offset: [0, 0],
     };
-    type Heads = Exclude<typeof state, undefined>["head"];
 
-    const heads: Record<Heads, RenderElement> = {
+    const heads: Record<typeof head, RenderElement> = {
       happy: normalHead,
       thinking: normalHead,
       shocked: shockedHead,
@@ -32,35 +29,12 @@ g.defineDisplayObject("hiddo", {
 
     return {
       size: [600, 800],
-      elements: [normalBody, heads[state.head]],
+      elements: [normalBody, heads[head]],
     };
   },
 
   defaultPose: () => ({
-    state: {
-      body: "normal",
-      head: "happy",
-    },
-  }),
-
-  poseThinking: () => ({
-    state: {
-      head: "thinking",
-      body: "thinking",
-    },
-  }),
-
-  poseNormal: () => ({
-    state: {
-      body: "normal",
-      head: "happy",
-    },
-  }),
-
-  poseShocked: () => ({
-    state: {
-      body: "normal",
-      head: "shocked",
-    },
+    body: "normal",
+    head: "happy",
   }),
 });

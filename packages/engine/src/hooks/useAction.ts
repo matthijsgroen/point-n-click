@@ -6,7 +6,8 @@ export const useAction = <TGame extends GameWorld>(
   actions: Action<TGame>[]
 ) => {
   const [playActions, setActions] = useState<Action<TGame>[]>(actions);
-  const [actionIndex, setActionIndex] = useState(0);
+  const [index, setActionIndex] = useState(0);
+  const actionIndex = index ?? 0;
 
   useEffect(() => {
     setActions(actions);

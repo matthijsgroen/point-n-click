@@ -4,10 +4,17 @@ import { PositionedRenderObject } from "../dsl/displayObjects";
 type Props = PropsWithChildren<{
   width: number;
   height: number;
+  debug: boolean;
   renderState: PositionedRenderObject[];
 }>;
 
-export const Viewport = ({ width, height, renderState, children }: Props) => {
+export const Viewport = ({
+  width,
+  height,
+  renderState,
+  children,
+  debug,
+}: Props) => {
   const frameRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
 
@@ -39,7 +46,7 @@ export const Viewport = ({ width, height, renderState, children }: Props) => {
         ref={frameRef}
       >
         <div
-          className="bg-gray-400 relative origin-top-left overflow-hidden"
+          className="relative origin-top-left overflow-hidden"
           ref={sceneRef}
           style={{
             width: `${width}px`,
@@ -71,9 +78,11 @@ export const Viewport = ({ width, height, renderState, children }: Props) => {
           {children}
         </div>
       </div>
-      <p className="font-mono text-xs text-gray-500">
-        {JSON.stringify(renderState)}
-      </p>
+      {debug && (
+        <p className="font-mono text-xs text-gray-500">
+          {JSON.stringify(renderState)}
+        </p>
+      )}
     </>
   );
 };
