@@ -1,6 +1,6 @@
 import { PropsWithChildren, use } from "react";
 import { Viewport } from "../components/Viewport";
-import { GameContext } from "./context";
+import { GameStateContext } from "./GameStateProvider";
 
 type Props = PropsWithChildren<{
   width: number;
@@ -15,7 +15,7 @@ export const GameViewport = ({
   children,
   debug = false,
 }: Props) => {
-  const { renderState } = use(GameContext);
+  const { renderState } = use(GameStateContext);
   return (
     <Viewport
       width={width}

@@ -1,16 +1,12 @@
 import { use } from "react";
-import { GameContext } from "./context";
 import { createReadOnlyProxy } from "../dsl/execution/proxy/readOnlyProxy";
-
-export const useGameData = () => {
-  return use(GameContext).gameData;
-};
+import { GameStateContext } from "./GameStateProvider";
 
 export const useGameState = () => {
-  return createReadOnlyProxy(use(GameContext).state);
+  return createReadOnlyProxy(use(GameStateContext).state);
 };
 
 export const useGameAction = () => {
-  const { action, completeAction } = use(GameContext);
+  const { action, completeAction } = use(GameStateContext);
   return { action, completeAction };
 };
