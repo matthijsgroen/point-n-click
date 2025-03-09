@@ -15,7 +15,7 @@ type Store = {
 
 const stores = new Map<string, Store>();
 
-const getStore = (storeName: string): Store => {
+export const getStore = (storeName: string): Store => {
   const store = stores.get(storeName);
   if (store) {
     return store;
@@ -87,6 +87,13 @@ export const useOfflineStorage = <T>(
   const store = getStore(storeName);
 
   useEffect(() => {
+    if (localState !== undefined) {
+      console.log("storing value in offline state", localState);
+      store.setItem<T>(key, localState);
+    }
+  }, [storeName, key, localState]);
+
+  useEffect(() => {
     store
       .getItem<T>(key)
       .then(async (value) => {
@@ -94,31 +101,24 @@ export const useOfflineStorage = <T>(
           setLocalState(value);
         } else if (initializedInitValue !== null) {
           setLocalState(initializedInitValue);
-          await store.setItem<T>(key, initializedInitValue);
         }
       })
       .catch((_e) => {
         // 'Error getting item from store'
         setLocalState(undefined);
       });
-    return store.subscribe<T>(key, setLocalState);
   }, [store, key, initializedInitValue]);
 
   const setValue = useCallback(
     async (value: SetStateAction<T>) => {
+      console.log("storing value in local state");
       if (isSetFunction(value)) {
-        const previousValue = await store.getItem<T>(key);
-        const nextValue = value(previousValue ?? initializedInitValue);
-        if (nextValue !== previousValue) {
-          setLocalState(nextValue); // Optimistic
-          await store.setItem<T>(key, nextValue);
-        }
+        setLocalState((previous) => value(previous ?? initializedInitValue)); // Optimistic
       } else {
         setLocalState(value); // Optimistic
-        await store.setItem<T>(key, value);
       }
     },
-    [store, key, initializedInitValue]
+    [key, initializedInitValue]
   );
 
   const deleteValue = useCallback(
@@ -126,9 +126,9 @@ export const useOfflineStorage = <T>(
       if (optimistic) {
         setLocalState(initializedInitValue);
       }
-      await store.removeItem(key);
+      // await store.removeItem(key);
     },
-    [store, key, initializedInitValue]
+    [key, initializedInitValue]
   );
 
   return [localState, setValue, deleteValue];

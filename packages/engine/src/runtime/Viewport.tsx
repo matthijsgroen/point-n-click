@@ -16,6 +16,7 @@ export const GameViewport = ({
   debug = false,
 }: Props) => {
   const { renderState } = use(GameStateContext);
+  // console.log("RENDERING", renderState);
   return (
     <Viewport
       width={width}

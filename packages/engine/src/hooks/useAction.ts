@@ -1,17 +1,19 @@
 import { Action } from "../dsl/execution/actions";
 import { GameWorld } from "../dsl/types/world";
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
+import { usePersistenceState } from "../runtime/GamePersistenceProvider";
 
-export const useAction = <TGame extends GameWorld>(
-  actions: Action<TGame>[]
-) => {
-  const [playActions, setActions] = useState<Action<TGame>[]>(actions);
-  const [index, setActionIndex] = useState(0);
+export const useAction = (actions: Action<GameWorld>[]) => {
+  const [playActions, setActions] = useState(actions);
+  const [index, setActionIndex] = usePersistenceState("actionIndex");
   const actionIndex = index ?? 0;
 
   useEffect(() => {
-    setActions(actions);
-    setActionIndex(0);
+    if (actions === playActions) {
+      return;
+    }
+    setActions(() => actions);
+    setActionIndex(() => 0);
   }, [actions]);
 
   return {

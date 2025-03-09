@@ -3,12 +3,12 @@ import { Action, DisplayObjectAction } from "../dsl/execution/actions";
 import { GameWorld } from "../main";
 
 export const useDisplayAction = <TGame extends GameWorld>(
-  action: Action<TGame>,
+  action: Action<TGame> | undefined,
   updateRenderState: (action: DisplayObjectAction<TGame>) => void,
   onComplete: VoidFunction
 ) => {
   useEffect(() => {
-    if (action.type !== "displayObject") {
+    if (!action || action.type !== "displayObject") {
       return;
     }
     updateRenderState(action);

@@ -5,10 +5,10 @@ import { GameState } from "../dsl/syntax/state";
 import { PositionedRenderObject } from "../dsl/displayObjects";
 import { Action } from "../dsl/execution/actions";
 import { useRenderState } from "../hooks/useRenderState";
-import { GameData } from "../dsl/syntax/dsl";
 import { executeContentFlow } from "../dsl/execution/contentFlow";
 import { useAction } from "../hooks/useAction";
 import { useDisplayAction } from "../hooks/useDisplayAction";
+import { usePersistenceState } from "./GamePersistenceProvider";
 
 export type GameInteraction = {
   label: string;
@@ -35,12 +35,8 @@ export const GameStateContext = createContext<{
 
 export const GameStateProvider = ({ children }: PropsWithChildren) => {
   const gameData = useGameData();
-  const startingState = gameData.settings.initialState;
-  const [state, setState] = useState(startingState);
-  const [renderState, updateRenderState] = useRenderState<
-    GameWorld,
-    GameData<GameWorld>
-  >(gameData);
+  const [state, setState] = usePersistenceState("state");
+  const [renderState, updateRenderState] = useRenderState(gameData);
   const { actions, interactions, prompt } = executeContentFlow(gameData, state);
   const { action, completeAction, allCompleted } = useAction(actions);
   useDisplayAction(action, updateRenderState, completeAction);
@@ -48,7 +44,7 @@ export const GameStateProvider = ({ children }: PropsWithChildren) => {
   return (
     <GameStateContext.Provider
       value={{
-        state: state as unknown as GameState<GameWorld>,
+        state,
         renderState,
         prompt,
         interactions: allCompleted
@@ -60,7 +56,7 @@ export const GameStateProvider = ({ children }: PropsWithChildren) => {
                 setState(interaction.action);
               },
             })),
-        action: action as unknown as Action<GameWorld>,
+        action,
         completeAction,
       }}
     >
